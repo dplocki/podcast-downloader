@@ -19,9 +19,21 @@ def get_raw_rss_entries(rss_link: str) -> list:
     yield from feedparser.parse(rss_link).entries
 
 
-def build_entry(entry) -> RSSEntity:
-    return RSSEntity(entry.published_parsed, entry.links[0].href)
+def repacked_rss_entries(rss_entries: []) -> RSSEntity:
+
+    def extract_podcast_files(entry) -> []:
+        return filter(lambda l: l.type == 'audio/mpeg', entry.links)
+
+    return (
+        (rss_entry.published_parsed, extract_podcast_files(rss_entry))
+        for rss_entry in rss_entries
+    )
 
 
-def get_rss_entries(rss_link) -> RSSEntity:
-    return (build_entry(entry) for entry in get_raw_rss_entries(rss_link))
+def only_podcast_entries(rss_entries: []) -> []:
+    return (
+        (published_date, links[0].href)
+        for published_date, links in
+        ((published_date, list(links)) for published_date, links in rss_entries)
+        if len(links) > 0
+    )
