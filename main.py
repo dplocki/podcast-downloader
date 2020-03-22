@@ -6,7 +6,9 @@ import feedparser
 
 
 def get_downloaded_files(podcast_directory: str) -> [str]:
-    yield from sorted(os.listdir(podcast_directory))
+    return (file
+            for file in sorted(os.listdir(podcast_directory), reverse=True)
+            if file.endswith('.mp3') and os.path.isfile(os.path.join(podcast_directory, file)))
 
 
 @dataclass
