@@ -11,6 +11,10 @@ def get_downloaded_files(podcast_directory: str) -> [str]:
             if file.endswith('.mp3') and os.path.isfile(os.path.join(podcast_directory, file)))
 
 
+def file_name_to_entry_link_name(link: str) -> str:
+    return link[11:]
+
+
 @dataclass
 class RSSEntity():
     published_date: datetime
