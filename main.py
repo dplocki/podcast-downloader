@@ -1,6 +1,6 @@
 import os
+import time
 from dataclasses import dataclass
-from datetime import datetime
 
 import feedparser
 
@@ -17,15 +17,19 @@ def file_name_to_entry_link_name(link: str) -> str:
 
 @dataclass
 class RSSEntity():
-    published_date: datetime
+    published_date: time.struct_time
     link: str
+
+    def to_file_name(self) -> str:
+        podcast_name = self.link.rpartition('/')[-1]
+        return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name.lower()}'
 
 
 def get_raw_rss_entries(rss_link: str) -> list:
     yield from feedparser.parse(rss_link).entries
 
 
-def repacked_rss_entries(rss_entries: []) -> RSSEntity:
+def repacked_rss_entries(rss_entries: []) -> []:
 
     def extract_podcast_files(entry) -> []:
         return filter(lambda l: l.type == 'audio/mpeg', entry.links)
@@ -36,9 +40,9 @@ def repacked_rss_entries(rss_entries: []) -> RSSEntity:
     )
 
 
-def only_podcast_entries(rss_entries: []) -> []:
+def only_podcast_entries(rss_entries: []) -> [RSSEntity]:
     return (
-        (published_date, links[0].href)
+        RSSEntity(published_date, links[0].href)
         for published_date, links in
         ((published_date, list(links)) for published_date, links in rss_entries)
         if len(links) > 0
