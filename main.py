@@ -1,5 +1,6 @@
 import os
 import time
+import itertools
 from dataclasses import dataclass
 
 import feedparser
@@ -40,10 +41,16 @@ def repacked_rss_entries(rss_entries: []) -> []:
     )
 
 
-def only_podcast_entries(rss_entries: []) -> [RSSEntity]:
+def only_podcast_entities(rss_entries: []) -> [RSSEntity]:
     return (
         RSSEntity(published_date, links[0].href)
         for published_date, links in
         ((published_date, list(links)) for published_date, links in rss_entries)
         if len(links) > 0
     )
+
+
+def only_new_entites(rss_entities: [RSSEntity], files_list: [str]) -> [RSSEntity]:
+    return itertools.takewhile(
+        lambda rss_entity: rss_entity.to_file_name() not in files_list,
+        rss_entities)
