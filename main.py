@@ -61,7 +61,7 @@ def get_rss_entities(get_raw_rss_entries):
             has_entry_podcast_link,
             map(
                 strip_data,
-                get_raw_rss_entries)))
+                get_raw_rss_entries())))
 
 
 # Main script
@@ -76,6 +76,8 @@ def only_new_entites(get_raw_rss_entries, get_last_downloaded_file) -> [RSSEntit
 
 def build_to_download_list(podcast_directory: str, rss_link: str):
     get_last_downloaded_file = partial(get_last_downloaded, podcast_directory)
-    get_raw_rss_entries = partial(get_raw_rss_entries_from_web, rss_link)
+    get_all_rss_entities = partial(
+        get_rss_entities,
+        partial(get_raw_rss_entries_from_web, rss_link))
 
-    return only_new_entites(get_raw_rss_entries, get_last_downloaded_file)
+    return only_new_entites(get_all_rss_entities, get_last_downloaded_file)
