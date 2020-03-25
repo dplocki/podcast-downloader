@@ -33,16 +33,13 @@ class TestFindNewRSSEntites(unittest.TestCase):
         old_one_2 = RSSEntity((2020, 1, 7, 11, 3, 38, 1, 48, 0), 'http://www.p.com/file0002.mp3')
         old_one_3 = RSSEntity((2020, 1, 6, 11, 3, 38, 1, 48, 0), 'http://www.p.com/file0001.mp3')
 
-        rss_entites = [new_one_1, new_one_2, old_one_1, old_one_2, old_one_3]
-        downloaded = [
-            '[20200108] file0003.mp3',
-            '[20200107] file0002.mp3',
-            '[20200106] file0001.mp3']
+        rss_entites = lambda: [new_one_1, new_one_2, old_one_1, old_one_2, old_one_3]
+        last_downloaded_file = lambda: '[20200108] file0003.mp3'
 
         expected = [new_one_1, new_one_2]
 
         # Act
-        result = list(only_new_entites(rss_entites, downloaded))
+        result = list(only_new_entites(rss_entites, last_downloaded_file))
 
         # Assert
         self.assertSequenceEqual(result, expected, "A both new entity should be return as result")
