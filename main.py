@@ -13,13 +13,8 @@ import feedparser
 
 # Logger
 
-def log(msg, paramaters=None):
-    if paramaters:
-        paramaters = paramaters if isinstance(paramaters, list) else [paramaters]
-        message = msg.replace('{}', '\033[97m{}\033[0m').format(*paramaters)
-    else:
-        message = msg
-
+def log(msg, *paramaters):
+    message = msg.replace('{}', '\033[97m{}\033[0m').format(*paramaters) if paramaters else msg
     print(f'[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {message}')
 
 
@@ -98,14 +93,29 @@ def build_to_download_list(podcast_directory: str, rss_link: str):
     return only_new_entites(get_all_rss_entities, get_last_downloaded_file)
 
 
-def download_new_entries(rss_link: str, path: str):
-    result = reversed(list(build_to_download_list(path, rss_link)))
-    for link in result:
-        urllib.request.urlretrieve(link, path)
+def download_rss_entity_to_path(path, rss_entity: RSSEntity):
+    return urllib.request.urlretrieve(
+        rss_entity.link,
+        os.path.join(path, rss_entity.to_file_name()))
 
 
-with open('config.json') as json_file:
-    CONFIG = json.load(json_file)
+if __name__ == '__main__':
+    CONFIG_FILE = 'config.json'
 
-    for rss_source in CONFIG:
-        download_new_entries(rss_source['rss_link'], rss_source['path'])
+    with open(CONFIG_FILE) as json_file:
+        log('Loading configuration (from file: "{}")', CONFIG_FILE)
+        CONFIG = json.load(json_file)
+
+        for rss_source in CONFIG:
+            rss_source_name = rss_source['name']
+            rss_source_path = rss_source['path']
+            rss_source_link = rss_source['rss_link']
+
+            log('Checking "{}"', rss_source_name)
+            missing_files_links = list(build_to_download_list(rss_source_path, rss_source_link))
+            if missing_files_links:
+                for rss_entry in reversed(missing_files_links):
+                    log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
+                    download_rss_entity_to_path(rss_source_path, rss_entry)
+            else:
+                log('{}: Nothing new', rss_source_name)
