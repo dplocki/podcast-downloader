@@ -1,6 +1,7 @@
 import os
 import time
 import itertools
+import urllib
 from functools import partial
 from dataclasses import dataclass
 
@@ -8,7 +9,6 @@ import feedparser
 
 
 # Downloaded directory
-
 
 def file_name_to_entry_link_name(link: str) -> str:
     return link[11:]
@@ -81,3 +81,8 @@ def build_to_download_list(podcast_directory: str, rss_link: str):
         partial(get_raw_rss_entries_from_web, rss_link))
 
     return only_new_entites(get_all_rss_entities, get_last_downloaded_file)
+
+
+def download_new_entries(rss_link: str, path: str):
+    for link in build_to_download_list(path, rss_link):
+        urllib.request.urlretrieve(link, path)
