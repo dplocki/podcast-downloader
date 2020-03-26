@@ -2,6 +2,8 @@ import os
 import time
 import itertools
 import urllib
+import json
+
 from functools import partial
 from dataclasses import dataclass
 
@@ -84,5 +86,13 @@ def build_to_download_list(podcast_directory: str, rss_link: str):
 
 
 def download_new_entries(rss_link: str, path: str):
-    for link in build_to_download_list(path, rss_link):
+    result = reversed(list(build_to_download_list(path, rss_link)))
+    for link in result:
         urllib.request.urlretrieve(link, path)
+
+
+with open('config.json') as json_file:
+    CONFIG = json.load(json_file)
+
+    for rss_source in CONFIG:
+        download_new_entries(rss_source['rss_link'], rss_source['path'])
