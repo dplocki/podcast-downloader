@@ -18,6 +18,13 @@ def log(msg, *paramaters):
     print(f'[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {message}')
 
 
+# Configuration
+
+def load_configuration_file(file_path):
+    with open(file_path) as json_file:
+        return json.load(json_file)
+
+
 # Downloaded directory
 
 def file_name_to_entry_link_name(link: str) -> str:
@@ -101,21 +108,19 @@ def download_rss_entity_to_path(path, rss_entity: RSSEntity):
 
 if __name__ == '__main__':
     CONFIG_FILE = 'config.json'
+    log('Loading configuration (from file: "{}")', CONFIG_FILE)
+    CONFIG = load_configuration_file(CONFIG_FILE)
 
-    with open(CONFIG_FILE) as json_file:
-        log('Loading configuration (from file: "{}")', CONFIG_FILE)
-        CONFIG = json.load(json_file)
+    for rss_source in CONFIG:
+        rss_source_name = rss_source['name']
+        rss_source_path = rss_source['path']
+        rss_source_link = rss_source['rss_link']
 
-        for rss_source in CONFIG:
-            rss_source_name = rss_source['name']
-            rss_source_path = rss_source['path']
-            rss_source_link = rss_source['rss_link']
-
-            log('Checking "{}"', rss_source_name)
-            missing_files_links = list(build_to_download_list(rss_source_path, rss_source_link))
-            if missing_files_links:
-                for rss_entry in reversed(missing_files_links):
-                    log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
-                    download_rss_entity_to_path(rss_source_path, rss_entry)
-            else:
-                log('{}: Nothing new', rss_source_name)
+        log('Checking "{}"', rss_source_name)
+        missing_files_links = list(build_to_download_list(rss_source_path, rss_source_link))
+        if missing_files_links:
+            for rss_entry in reversed(missing_files_links):
+                log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
+                download_rss_entity_to_path(rss_source_path, rss_entry)
+        else:
+            log('{}: Nothing new', rss_source_name)
