@@ -4,10 +4,23 @@ import itertools
 import urllib
 import json
 
+from datetime import datetime
 from functools import partial
 from dataclasses import dataclass
 
 import feedparser
+
+
+# Logger
+
+def log(msg, paramaters=None):
+    if paramaters:
+        paramaters = paramaters if isinstance(paramaters, list) else [paramaters]
+        message = msg.replace('{}', '\033[97m{}\033[0m').format(*paramaters)
+    else:
+        message = msg
+
+    print(f'[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {message}')
 
 
 # Downloaded directory
