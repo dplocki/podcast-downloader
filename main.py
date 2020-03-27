@@ -14,7 +14,8 @@ import feedparser
 # Logger
 
 def log(msg, *paramaters):
-    message = msg.replace('{}', '\033[97m{}\033[0m').format(*paramaters) if paramaters else msg
+    message = msg.replace('{}', '\033[97m{}\033[0m').format(
+        *paramaters) if paramaters else msg
     print(f'[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {message}')
 
 
@@ -48,6 +49,15 @@ class RSSEntity():
     published_date: time.struct_time
     link: str
 
+
+class RSSEntitySimpleName(RSSEntity):
+
+    def to_file_name(self) -> str:
+        return self.link.rpartition('/')[-1]
+
+
+class RSSEntityWithDate(RSSEntity):
+
     def to_file_name(self) -> str:
         podcast_name = self.link.rpartition('/')[-1]
         return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name.lower()}'
@@ -57,7 +67,15 @@ def get_raw_rss_entries_from_web(rss_link: str) -> list:
     yield from feedparser.parse(rss_link).entries
 
 
-def get_rss_entities(get_raw_rss_entries):
+def build_rss_entity_simple_name(strip_rss_entry: {}) -> RSSEntitySimpleName:
+    return RSSEntitySimpleName(strip_rss_entry[0], strip_rss_entry[1][0].href)
+
+
+def build_rss_entity_with_date(strip_rss_entry: {}) -> RSSEntityWithDate:
+    return RSSEntityWithDate(strip_rss_entry[0], strip_rss_entry[1][0].href)
+
+
+def get_rss_entities(build_rss_entity, get_raw_rss_entries):
 
     def strip_data(raw_rss_entry: {}) -> ():
 
@@ -68,9 +86,6 @@ def get_rss_entities(get_raw_rss_entries):
 
     def has_entry_podcast_link(strip_rss_entry: {}) -> bool:
         return len(strip_rss_entry[1]) > 0
-
-    def build_rss_entity(strip_rss_entry: {}) -> RSSEntity:
-        return RSSEntity(strip_rss_entry[0], strip_rss_entry[1][0].href)
 
     return map(
         build_rss_entity,
@@ -91,10 +106,11 @@ def only_new_entites(get_raw_rss_entries, get_last_downloaded_file) -> [RSSEntit
         get_raw_rss_entries())
 
 
-def build_to_download_list(podcast_directory: str, rss_link: str):
+def build_to_download_list(podcast_directory: str, rss_link: str, require_date: bool):
     get_last_downloaded_file = partial(get_last_downloaded, podcast_directory)
     get_all_rss_entities = partial(
         get_rss_entities,
+        build_rss_entity_with_date if require_date else build_rss_entity_simple_name,
         partial(get_raw_rss_entries_from_web, rss_link))
 
     return only_new_entites(get_all_rss_entities, get_last_downloaded_file)
@@ -115,12 +131,18 @@ if __name__ == '__main__':
         rss_source_name = rss_source['name']
         rss_source_path = rss_source['path']
         rss_source_link = rss_source['rss_link']
+        rss_require_date = rss_source.get('require_date', False)
 
         log('Checking "{}"', rss_source_name)
-        missing_files_links = list(build_to_download_list(rss_source_path, rss_source_link))
+        missing_files_links = list(build_to_download_list(
+            rss_source_path,
+            rss_source_link,
+            rss_require_date))
+
         if missing_files_links:
             for rss_entry in reversed(missing_files_links):
-                log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
+                log('{}: Downloading file: "{}"',
+                    rss_source_name, rss_entry.link)
                 download_rss_entity_to_path(rss_source_path, rss_entry)
         else:
             log('{}: Nothing new', rss_source_name)
