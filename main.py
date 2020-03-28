@@ -68,14 +68,6 @@ def get_raw_rss_entries_from_web(rss_link: str) -> list:
     yield from feedparser.parse(rss_link).entries
 
 
-def build_rss_entity_simple_name(strip_rss_entry: {}) -> RSSEntitySimpleName:
-    return RSSEntitySimpleName(strip_rss_entry[0], strip_rss_entry[1][0].href)
-
-
-def build_rss_entity_with_date(strip_rss_entry: {}) -> RSSEntityWithDate:
-    return RSSEntityWithDate(strip_rss_entry[0], strip_rss_entry[1][0].href)
-
-
 def get_rss_entities(build_rss_entity, get_raw_rss_entries):
 
     def strip_data(raw_rss_entry: {}) -> ():
@@ -108,10 +100,19 @@ def only_new_entites(get_raw_rss_entries, get_last_downloaded_file) -> [RSSEntit
 
 
 def build_to_download_list(podcast_directory: str, rss_link: str, require_date: bool):
+
+
+    def build_rss_entity(constructor, strip_rss_entry):
+        return constructor(strip_rss_entry[0], strip_rss_entry[1][0].href)
+
+
     get_last_downloaded_file = partial(get_last_downloaded, podcast_directory)
     get_all_rss_entities = partial(
         get_rss_entities,
-        build_rss_entity_with_date if require_date else build_rss_entity_simple_name,
+        partial(
+            build_rss_entity,
+            RSSEntityWithDate if require_date else RSSEntitySimpleName
+        ),
         partial(get_raw_rss_entries_from_web, rss_link))
 
     return only_new_entites(get_all_rss_entities, get_last_downloaded_file)
