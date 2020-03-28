@@ -50,12 +50,13 @@ class RSSEntity():
     link: str
 
 
+@dataclass
 class RSSEntitySimpleName(RSSEntity):
 
     def to_file_name(self) -> str:
         return self.link.rpartition('/')[-1]
 
-
+@dataclass
 class RSSEntityWithDate(RSSEntity):
 
     def to_file_name(self) -> str:
@@ -141,8 +142,7 @@ if __name__ == '__main__':
 
         if missing_files_links:
             for rss_entry in reversed(missing_files_links):
-                log('{}: Downloading file: "{}"',
-                    rss_source_name, rss_entry.link)
+                log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
                 download_rss_entity_to_path(rss_source_path, rss_entry)
         else:
             log('{}: Nothing new', rss_source_name)
