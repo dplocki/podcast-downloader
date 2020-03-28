@@ -1,3 +1,30 @@
 # Podcast Downloader
 
-The Python script for downloading the recent mp3 from RSS channel.
+The Python script for downloading new mp3 from RSS channel.
+
+## Configuration
+
+Provide a configuraiton file with name `config.json` ([JSON](https://en.wikipedia.org/wiki/JSON) format). It should contain an array of settings. Each setting per RSS channel.
+
+| Property       | Type    | Required | Default | Note |
+|:---------------|:-------:|:--------:|:-------:|:-----|
+| `name`         | string  | yes      | -       | The name of channel (used in logger) |
+| `rss_link`     | string  | yes      | -       | The URL of RSS channel |
+| `path`         | string  | yes      | -       | The path to directory, for podcast files |
+| `require_date` | boolean | no       | `false` | Is date of podcast should be added into name of file |
+
+### Example
+
+```json
+[
+    {
+        "name": "The Skeptic Guide",
+        "rss_link": "http://www.theskepticsguide.org/feed/rss.aspx",
+        "path": "~/podcasts/SGTTU"
+    }
+]
+```
+
+## Adding date to file name
+
+If RSS channel doesn't have single and constant name convention, script is able to adding the date on beginning of downloaded file name. Just set the `require_date` option to true.
