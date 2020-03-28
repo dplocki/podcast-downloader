@@ -54,14 +54,14 @@ class RSSEntity():
 class RSSEntitySimpleName(RSSEntity):
 
     def to_file_name(self) -> str:
-        return self.link.rpartition('/')[-1]
+        return self.link.rpartition('/')[-1].lower()
 
 @dataclass
 class RSSEntityWithDate(RSSEntity):
 
     def to_file_name(self) -> str:
-        podcast_name = self.link.rpartition('/')[-1]
-        return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name.lower()}'
+        podcast_name = RSSEntitySimpleName.to_file_name(self)
+        return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name}'
 
 
 def get_raw_rss_entries_from_web(rss_link: str) -> list:
