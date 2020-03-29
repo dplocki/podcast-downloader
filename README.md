@@ -25,6 +25,16 @@ Provide a configuraiton file with name `config.json` ([JSON](https://en.wikipedi
 ]
 ```
 
+## In action
+
+Using the [example above](#example), the result will be:
+
+```log
+[2020-03-29 11:24:30] Loading configuration (from file: "config.json")
+[2020-03-29 11:24:30] Checking "The Skeptic Guide"
+[2020-03-29 11:24:34] The Skeptic Guide: Downloading file: "https://media.libsyn.com/media/skepticsguide/skepticast2020-03-28.mp3"
+```
+
 ## Adding date to file name
 
 If RSS channel doesn't have single and constant name convention, script is able to adding the date on beginning of downloaded file name. Just set the `require_date` option to true.
