@@ -13,10 +13,9 @@ import feedparser
 
 # Logger
 
-def log(msg, *paramaters):
-    message = msg.replace('{}', '\033[97m{}\033[0m').format(
-        *paramaters) if paramaters else msg
-    print(f'[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {message}')
+def log(message, *paramaters):
+    msg = message.replace('{}', '\033[97m{}\033[0m').format(*paramaters) if paramaters else message
+    print(f'[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {msg}')
 
 
 # Configuration
@@ -27,10 +26,6 @@ def load_configuration_file(file_path):
 
 
 # Downloaded directory
-
-def file_name_to_entry_link_name(link: str) -> str:
-    return link[11:]
-
 
 def get_last_downloaded(podcast_directory: str):
 
