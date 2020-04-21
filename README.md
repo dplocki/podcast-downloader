@@ -12,6 +12,7 @@ Provide a configuraiton file with name `config.json` ([JSON](https://en.wikipedi
 | `rss_link`     | string  | yes      | -       | The URL of RSS channel |
 | `path`         | string  | yes      | -       | The path to directory, for podcast files |
 | `require_date` | boolean | no       | `false` | Is date of podcast should be added into name of file |
+| `disable`      | boolean | no       | `false` | This podcast will be ignored |
 
 ### Example
 

@@ -129,6 +129,11 @@ if __name__ == '__main__':
         rss_source_path = rss_source['path']
         rss_source_link = rss_source['rss_link']
         rss_require_date = rss_source.get('require_date', False)
+        rss_disable = rss_source.get('disable', False)
+
+        if rss_disable:
+            log('Skipping the "{}"', rss_source_name)
+            continue
 
         log('Checking "{}"', rss_source_name)
         missing_files_links = list(build_to_download_list(
