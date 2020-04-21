@@ -120,9 +120,15 @@ def download_rss_entity_to_path(path, rss_entity: RSSEntity):
 
 
 if __name__ == '__main__':
+    import sys
+
     CONFIG_FILE = 'config.json'
     log('Loading configuration (from file: "{}")', CONFIG_FILE)
     CONFIG = load_configuration_file(CONFIG_FILE)
+
+    DOWNLOADS_LIMITS = int(sys.argv[2]) \
+        if len(sys.argv) > 2 and sys.argv[1] == '--downloads_limit' and sys.argv[2].isalnum() \
+        else sys.maxsize
 
     for rss_source in CONFIG:
         rss_source_name = rss_source['name']
@@ -143,7 +149,11 @@ if __name__ == '__main__':
 
         if missing_files_links:
             for rss_entry in reversed(missing_files_links):
+                if DOWNLOADS_LIMITS == 0:
+                    continue
+
                 log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
                 download_rss_entity_to_path(rss_source_path, rss_entry)
+                DOWNLOADS_LIMITS -= 1
         else:
             log('{}: Nothing new', rss_source_name)
