@@ -4,9 +4,9 @@ The Python script for downloading new mp3 from RSS channel.
 
 ## Script arguments
 
-The script accept fallowing command line arguments:
+The script accept following command line arguments:
 
-| Short version | Long name           | Fallowing parameter | Default   | Note |
+| Short version | Long name           | Parameter           | Default   | Note |
 |:--------------|:--------------------|:-------------------:|:---------:|:-----|
 |               | `--downloads_limit` | number              | inifinity | The maksimum number of downloaded mp3 files |
 
