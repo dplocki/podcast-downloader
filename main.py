@@ -5,10 +5,15 @@ import urllib
 import json
 
 from datetime import datetime
-from functools import partial
+from functools import partial, reduce
 from dataclasses import dataclass
 
 import feedparser
+
+# Utils
+
+def compose(*functions):
+    return reduce(lambda f, g: lambda x: f(g(x)), functions)
 
 
 # Logger
@@ -46,13 +51,13 @@ def get_downloaded_files(podcast_directory: str) -> [str]:
 def get_last_downloaded(podcast_directory: str):
     return next(get_downloaded_files(podcast_directory))
 
+
 # RSS
 
 @dataclass
 class RSSEntity():
     published_date: time.struct_time
     link: str
-
 
 @dataclass
 class RSSEntitySimpleName(RSSEntity):
@@ -67,66 +72,53 @@ class RSSEntityWithDate(RSSEntity):
         podcast_name = RSSEntitySimpleName.to_file_name(self)
         return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name}'
 
+def build_rss_entity(constructor, strip_rss_entry):
+    return constructor(strip_rss_entry[0], strip_rss_entry[1][0].href)
 
 def get_raw_rss_entries_from_web(rss_link: str) -> list:
     yield from feedparser.parse(rss_link).entries
 
+def is_audio(link: {}) -> bool:
+    return link.type == 'audio/mpeg'
 
-def get_rss_entities(build_rss_entity, get_raw_rss_entries):
+def only_audio(links: [{}]) -> bool:
+    return filter(is_audio, links)
 
-    def strip_data(raw_rss_entry: {}) -> ():
+def strip_data(raw_rss_entry: {}) -> ():
+    return (raw_rss_entry.published_parsed, list(only_audio(raw_rss_entry.links)))
 
-        def only_audio(link):
-            return link.type == 'audio/mpeg'
+def has_entry_podcast_link(strip_rss_entry: {}) -> bool:
+    return len(strip_rss_entry[1]) > 0
 
-        return (raw_rss_entry.published_parsed, list(filter(only_audio, raw_rss_entry.links)))
-
-    def has_entry_podcast_link(strip_rss_entry: {}) -> bool:
-        return len(strip_rss_entry[1]) > 0
-
-    return map(
-        build_rss_entity,
-        filter(
-            has_entry_podcast_link,
-            map(
-                strip_data,
-                get_raw_rss_entries())))
+prepare_rss_data_from = compose(
+    partial(filter, has_entry_podcast_link),
+    partial(map, strip_data),
+    get_raw_rss_entries_from_web)
 
 
 # Main script
 
-def only_new_entites(get_raw_rss_entries, get_last_downloaded_file) -> [RSSEntity]:
-    last_downloaded_file = get_last_downloaded_file()
-
+def only_new_entites(last_downloaded_file: str, raw_rss_entries: [RSSEntity]) -> [RSSEntity]:
     return itertools.takewhile(
         lambda rss_entity: rss_entity.to_file_name() != last_downloaded_file,
-        get_raw_rss_entries())
+        raw_rss_entries)
 
+def build_to_download_list(podcast_directory: str,
+                           rss_link: str,
+                           require_date: bool) -> [RSSEntity]:
+    rss_entiy_builder = partial(
+        build_rss_entity,
+        RSSEntityWithDate if require_date else RSSEntitySimpleName)
 
-def build_to_download_list(podcast_directory: str, rss_link: str, require_date: bool):
+    last_downloaded_file = get_last_downloaded(podcast_directory)
+    get_all_rss_entities = map(rss_entiy_builder, prepare_rss_data_from(rss_link))
 
-
-    def build_rss_entity(constructor, strip_rss_entry):
-        return constructor(strip_rss_entry[0], strip_rss_entry[1][0].href)
-
-
-    get_last_downloaded_file = partial(get_last_downloaded, podcast_directory)
-    get_all_rss_entities = partial(
-        get_rss_entities,
-        partial(
-            build_rss_entity,
-            RSSEntityWithDate if require_date else RSSEntitySimpleName
-        ),
-        partial(get_raw_rss_entries_from_web, rss_link))
-
-    return only_new_entites(get_all_rss_entities, get_last_downloaded_file)
-
+    return only_new_entites(last_downloaded_file, get_all_rss_entities)
 
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     return urllib.request.urlretrieve(
         rss_entity.link,
         os.path.join(path, rss_entity.to_file_name()))
-
 
 if __name__ == '__main__':
     import sys
