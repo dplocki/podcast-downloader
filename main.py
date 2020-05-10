@@ -103,18 +103,6 @@ def only_new_entites(last_downloaded_file: str, raw_rss_entries: [RSSEntity]) ->
         lambda rss_entity: rss_entity.to_file_name() != last_downloaded_file,
         raw_rss_entries)
 
-def build_to_download_list(podcast_directory: str,
-                           rss_link: str,
-                           require_date: bool) -> [RSSEntity]:
-    rss_entiy_builder = partial(
-        build_rss_entity,
-        RSSEntityWithDate if require_date else RSSEntitySimpleName)
-
-    last_downloaded_file = get_last_downloaded(podcast_directory)
-    get_all_rss_entities = map(rss_entiy_builder, prepare_rss_data_from(rss_link))
-
-    return only_new_entites(last_downloaded_file, get_all_rss_entities)
-
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     return urllib.request.urlretrieve(
         rss_entity.link,
@@ -143,10 +131,20 @@ if __name__ == '__main__':
             continue
 
         log('Checking "{}"', rss_source_name)
-        missing_files_links = list(build_to_download_list(
-            rss_source_path,
-            rss_source_link,
-            rss_require_date))
+
+        last_downloaded_file = get_last_downloaded(rss_source_path)
+        log('Last downloaded file "{}"', last_downloaded_file)
+
+        rss_entiy_builder = partial(
+            build_rss_entity,
+            RSSEntityWithDate if rss_require_date else RSSEntitySimpleName)
+
+        missing_files_links = compose(
+            list,
+            partial(only_new_entites, last_downloaded_file),
+            partial(map, rss_entiy_builder),
+            prepare_rss_data_from
+        )(rss_source_link)
 
         if missing_files_links:
             for rss_entry in reversed(missing_files_links):
@@ -158,3 +156,7 @@ if __name__ == '__main__':
                 DOWNLOADS_LIMITS -= 1
         else:
             log('{}: Nothing new', rss_source_name)
+
+        log('-' * 30)
+
+    log('Script finished')
