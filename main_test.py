@@ -43,16 +43,13 @@ class TestFindNewRSSEntites(unittest.TestCase):
         old_one_2 = RSSEntityWithDate(build_timestamp(2020, 1, 7), 'http://www.p.com/file0002.mp3')
         old_one_3 = RSSEntityWithDate(build_timestamp(2020, 1, 6), 'http://www.p.com/file0001.mp3')
 
-        def rss_entites():
-            return [new_one_1, new_one_2, old_one_1, old_one_2, old_one_3]
-
-        def last_downloaded_file():
-            return '[20200108] file0003.mp3'
+        rss_entites = [new_one_1, new_one_2, old_one_1, old_one_2, old_one_3]
+        last_downloaded_file = '[20200108] file0003.mp3'
 
         expected = [new_one_1, new_one_2]
 
         # Act
-        result = list(only_new_entites(rss_entites, last_downloaded_file))
+        result = list(only_new_entites(last_downloaded_file, rss_entites))
 
         # Assert
         self.assertSequenceEqual(
