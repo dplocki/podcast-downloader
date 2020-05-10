@@ -43,7 +43,7 @@ def strip_data(raw_rss_entry: {}) -> ():
 def has_entry_podcast_link(strip_rss_entry: {}) -> bool:
     return len(strip_rss_entry[1]) > 0
 
-prepare_rss_data_from = compose(
+prepare_rss_data_from = compose( # pylint: disable=invalid-name#it's a function
     partial(filter, has_entry_podcast_link),
     partial(map, strip_data),
     get_raw_rss_entries_from_web)
