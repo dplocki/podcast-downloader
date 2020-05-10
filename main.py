@@ -74,4 +74,4 @@ if __name__ == '__main__':
 
         log('-' * 30)
 
-    log('Script finished')
+    log('Finished')

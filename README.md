@@ -42,6 +42,8 @@ Using the [example above](#example), the result will be:
 [2020-03-29 11:24:30] Loading configuration (from file: "config.json")
 [2020-03-29 11:24:30] Checking "The Skeptic Guide"
 [2020-03-29 11:24:34] The Skeptic Guide: Downloading file: "https://media.libsyn.com/media/skepticsguide/skepticast2020-03-28.mp3"
+[2020-03-29 11:24:34] ------------------------------
+[2020-03-29 11:24:34] Finished
 ```
 
 ## Adding date to file name
