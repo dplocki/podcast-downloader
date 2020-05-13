@@ -3,9 +3,9 @@ import urllib
 import json
 
 from functools import partial
-from utils import log, compose
-from downloaded import get_last_downloaded
-from rss import RSSEntity,\
+from .utils import log, compose
+from .downloaded import get_last_downloaded
+from .rss import RSSEntity,\
         build_rss_entity,\
         RSSEntitySimpleName,\
         RSSEntityWithDate,\

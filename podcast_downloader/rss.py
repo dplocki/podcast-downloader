@@ -4,7 +4,7 @@ from functools import partial
 from itertools import takewhile
 
 import feedparser
-from utils import compose
+from .utils import compose
 
 
 @dataclass

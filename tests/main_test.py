@@ -1,6 +1,6 @@
 import unittest
 
-from main import\
+from podcast_downloader.rss import\
     RSSEntitySimpleName,\
     RSSEntityWithDate,\
     only_new_entites
