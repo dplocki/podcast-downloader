@@ -6,14 +6,15 @@ def read(fname):
 
 setup(
     name='podcast_downloader',
-    author="Dawid Plocki",
-    author_email="dawid.plocki@gmail.com",
+    author='Dawid Plocki',
+    author_email='dawid.plocki@gmail.com',
     version='0.1',
     description='The script for downloading the recent mp3 from given RSS channels',
     long_description_content_type='text/markdown',
     long_description=read('README.md'),
     packages=['podcast_downloader'],
     install_requires=['feedparser'],
+    url='https://github.com/dplocki/podcast-downloader',
     classifiers=[
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
