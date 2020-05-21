@@ -51,19 +51,3 @@ Using the [example above](#example), the result will be:
 ## Adding date to file name
 
 If RSS channel doesn't have single and constant name convention, script is able to adding the date on beginning of downloaded file name. Just set the `require_date` option to true.
-
-## Installing project
-
-The project is using [pipenv](https://github.com/pypa/pipenv).
-
-Install all dependencies for a project (including dev):
-
-```bash
-pipenv install --dev
-```
-
-Running script without entering the pipenv shell:
-
-```bash
-pipenv run python main.py
-```
