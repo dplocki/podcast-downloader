@@ -17,3 +17,10 @@ To install package from source control use the fallowing command:
 ```bash
 pip install -e .
 ```
+
+## Uploading the package into repository
+
+```bash
+python setup.py sdist bdist_wheel
+twine upload --repository pypi dist/*
+```
