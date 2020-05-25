@@ -14,6 +14,9 @@ from .rss import RSSEntity,\
 
 
 def load_configuration_file(file_path):
+    if not os.path.isfile(file_path):
+        raise Exception(f'Cannot read from configuration file "{file_path}"')
+
     with open(file_path) as json_file:
         return json.load(json_file)
 
@@ -22,11 +25,10 @@ def download_rss_entity_to_path(path, rss_entity: RSSEntity):
         rss_entity.link,
         os.path.join(path, rss_entity.to_file_name()))
 
-
 if __name__ == '__main__':
     import sys
 
-    CONFIG_FILE = 'config.json'
+    CONFIG_FILE = '~/.podcast_download_config.json'
     log('Loading configuration (from file: "{}")', CONFIG_FILE)
     CONFIG = load_configuration_file(CONFIG_FILE)
 
