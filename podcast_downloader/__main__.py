@@ -28,9 +28,9 @@ def download_rss_entity_to_path(path, rss_entity: RSSEntity):
 if __name__ == '__main__':
     import sys
 
-    CONFIG_FILE = '~/.podcast_download_config.json'
+    CONFIG_FILE = '~/.podcast_downloader_config.json'
     log('Loading configuration (from file: "{}")', CONFIG_FILE)
-    CONFIG = load_configuration_file(CONFIG_FILE)
+    CONFIG = load_configuration_file(os.path.expanduser(CONFIG_FILE))
 
     DOWNLOADS_LIMITS = int(sys.argv[2]) \
         if len(sys.argv) > 2 and sys.argv[1] == '--downloads_limit' and sys.argv[2].isalnum() \

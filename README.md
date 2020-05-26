@@ -13,7 +13,7 @@ The script accept following command line arguments:
 
 ## Configuration
 
-Provide a configuraiton file with name `config.json` ([JSON](https://en.wikipedia.org/wiki/JSON) format). It should contain an array of settings. Each setting per RSS channel.
+Provide a configuration file. Place the `.podcast_downloader_config.json` it your home directory ([JSON](https://en.wikipedia.org/wiki/JSON) format). It should contain an array of settings. Each setting per RSS channel.
 
 | Property       | Type    | Required | Default | Note |
 |:---------------|:-------:|:--------:|:-------:|:-----|
@@ -40,7 +40,7 @@ Provide a configuraiton file with name `config.json` ([JSON](https://en.wikipedi
 Using the [example above](#example), the result will be:
 
 ```log
-[2020-03-29 11:24:30] Loading configuration (from file: "config.json")
+[2020-03-29 11:24:30] Loading configuration (from file: "~/.podcast_downloader_config.json")
 [2020-03-29 11:24:30] Checking "The Skeptic Guide"
 [2020-03-29 11:24:30] Last downloaded file "skepticast2020-03-21.mp3"
 [2020-03-29 11:24:34] The Skeptic Guide: Downloading file: "https://media.libsyn.com/media/skepticsguide/skepticast2020-03-28.mp3"
