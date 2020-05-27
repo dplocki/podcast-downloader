@@ -15,6 +15,10 @@ The script accept following command line arguments:
 
 Provide a configuration file. Place the `.podcast_downloader_config.json` it your home directory ([JSON](https://en.wikipedia.org/wiki/JSON) format). It should contain an array of settings. Each setting per RSS channel.
 
+### Podcasts
+
+`Podcasts` is the part of configuration file where you provide the array of objects with fallowing content:
+
 | Property       | Type    | Required | Default | Note |
 |:---------------|:-------:|:--------:|:-------:|:-----|
 | `name`         | string  | yes      | -       | The name of channel (used in logger) |
@@ -23,16 +27,18 @@ Provide a configuration file. Place the `.podcast_downloader_config.json` it you
 | `require_date` | boolean | no       | `false` | Is date of podcast should be added into name of file |
 | `disable`      | boolean | no       | `false` | This podcast will be ignored |
 
-### Example
+An example:
 
 ```json
-[
-    {
-        "name": "The Skeptic Guide",
-        "rss_link": "http://www.theskepticsguide.org/feed/rss.aspx",
-        "path": "~/podcasts/SGTTU"
-    }
-]
+{
+    "podcasts": [
+        {
+            "name": "The Skeptic Guide",
+            "rss_link": "http://www.theskepticsguide.org/feed/rss.aspx",
+            "path": "~/podcasts/SGTTU"
+        }
+    ]
+}
 ```
 
 ## In action
