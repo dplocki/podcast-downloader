@@ -30,13 +30,13 @@ if __name__ == '__main__':
 
     CONFIG_FILE = '~/.podcast_downloader_config.json'
     log('Loading configuration (from file: "{}")', CONFIG_FILE)
-    CONFIG = load_configuration_file(os.path.expanduser(CONFIG_FILE))
-
+    CONFIGURATION = load_configuration_file(os.path.expanduser(CONFIG_FILE))
+    RSS_SOURCES = CONFIGURATION['podcasts']
     DOWNLOADS_LIMITS = int(sys.argv[2]) \
         if len(sys.argv) > 2 and sys.argv[1] == '--downloads_limit' and sys.argv[2].isalnum() \
         else sys.maxsize
 
-    for rss_source in CONFIG:
+    for rss_source in RSS_SOURCES:
         rss_source_name = rss_source['name']
         rss_source_path = rss_source['path']
         rss_source_link = rss_source['rss_link']
