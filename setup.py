@@ -1,11 +1,11 @@
 import os
 from setuptools import setup
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+def read(file_name):
+    return open(os.path.join(os.path.dirname(__file__), file_name)).read()
 
 setup(
-    version='0.1.1',
+    version=read('version'),
     name='podcast_downloader',
     author='Dawid Plocki',
     author_email='dawid.plocki@gmail.com',
