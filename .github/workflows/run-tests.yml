@@ -1,0 +1,29 @@
+name: Run Unit Tests
+
+on:
+  push
+
+jobs:
+
+  run_tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Get sources
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Installing dependencies
+        run: python -m pip install --upgrade pip
+
+      - name: Install module
+        run: pip install -e .
+
+      - name: Running tests
+        run: python3 tests/main_test.py
