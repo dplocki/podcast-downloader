@@ -1,6 +1,7 @@
 import os
 import urllib
 import json
+import argparse
 
 from functools import partial
 from .utils import log, compose
@@ -12,6 +13,16 @@ from .rss import RSSEntity,\
         prepare_rss_data_from,\
         only_new_entites
 
+def parse_argv(args=None):
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--downloads_limit",
+        required=False,
+        type=int,
+        help='The maximum number of mp3 files which script will download')
+
+    return parser.parse_args(args)
 
 def load_configuration_file(file_path):
     if not os.path.isfile(file_path):
@@ -19,6 +30,14 @@ def load_configuration_file(file_path):
 
     with open(file_path) as json_file:
         return json.load(json_file)
+
+def set_dafault_values(collection: dict, default_collection: dict) -> dict:
+    return {
+        key: (collection[key]
+              if key in collection
+              else default_collection[key])
+        for key, value in default_collection.items()
+    }
 
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     return urllib.request.urlretrieve(
@@ -28,13 +47,20 @@ def download_rss_entity_to_path(path, rss_entity: RSSEntity):
 if __name__ == '__main__':
     import sys
 
+    ARGS = parse_argv()
     CONFIG_FILE = '~/.podcast_downloader_config.json'
     log('Loading configuration (from file: "{}")', CONFIG_FILE)
 
-    CONFIGURATION = load_configuration_file(os.path.expanduser(CONFIG_FILE))
+    CONFIGURATION = set_dafault_values(
+        load_configuration_file(os.path.expanduser(CONFIG_FILE)),
+        {
+            'downloads_limit': sys.maxsize,
+            'podcasts': []
+        })
+
     RSS_SOURCES = CONFIGURATION['podcasts']
-    DOWNLOADS_LIMITS = int(sys.argv[2]) \
-        if len(sys.argv) > 2 and sys.argv[1] == '--downloads_limit' and sys.argv[2].isalnum() \
+    DOWNLOADS_LIMITS = ARGS.downloads_limit \
+        if ARGS.downloads_limit \
         else CONFIGURATION['downloads_limit'] or sys.maxsize
 
     for rss_source in RSS_SOURCES:
