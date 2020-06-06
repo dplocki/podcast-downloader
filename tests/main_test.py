@@ -54,7 +54,3 @@ class TestFindNewRSSEntites(unittest.TestCase):
         # Assert
         self.assertSequenceEqual(
             result, expected, "A both new entity should be return as result")
-
-
-if __name__ == '__main__':
-    unittest.main()
