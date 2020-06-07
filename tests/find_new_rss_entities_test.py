@@ -1,32 +1,8 @@
 import unittest
 
 from podcast_downloader.rss import\
-    RSSEntitySimpleName,\
     RSSEntityWithDate,\
     only_new_entites
-
-
-class TestLink2FileName(unittest.TestCase):
-
-    def test_entry_to_simple_file_name(self):
-        expected = 'file_name.mp3'
-        rss_entry = RSSEntitySimpleName(
-            (2020, 1, 2, 17, 3, 38, 1, 48, 0),
-            'http://www.podcast.com/podcast/something/fIlE_nAme.mp3')
-
-        result = rss_entry.to_file_name()
-
-        self.assertEqual(result, expected, f'File should be named "{expected}" not "{result}"')
-
-    def test_entry_to_file_name_with_date(self):
-        expected = '[20200102] file_name.mp3'
-        rss_entry = RSSEntityWithDate(
-            (2020, 1, 2, 17, 3, 38, 1, 48, 0),
-            'http://www.podcast.com/podcast/something/fIlE_nAme.mp3')
-
-        result = rss_entry.to_file_name()
-
-        self.assertEqual(result, expected, f'File should be named "{expected}" not "{result}"')
 
 
 def build_timestamp(year: int, month: int, day: int):
@@ -36,7 +12,7 @@ def build_timestamp(year: int, month: int, day: int):
 class TestFindNewRSSEntites(unittest.TestCase):
 
     def test_find_all_new_rss_entites(self):
-        # Assing
+        # Assign
         new_one_1 = RSSEntityWithDate(build_timestamp(2020, 1, 10), 'http://www.p.com/file0005.mp3')
         new_one_2 = RSSEntityWithDate(build_timestamp(2020, 1, 9), 'http://www.p.com/file0004.mp3')
         old_one_1 = RSSEntityWithDate(build_timestamp(2020, 1, 8), 'http://www.p.com/file0003.mp3')

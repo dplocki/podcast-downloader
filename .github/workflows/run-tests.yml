@@ -26,5 +26,4 @@ jobs:
         run: pip install -e .
 
       - name: Running tests
-        run: cd tests
-        run: python -m unittest discover -p '*_test.py'
+        run: python -m unittest discover -s tests -p *_test.py
