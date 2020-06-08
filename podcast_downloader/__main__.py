@@ -1,10 +1,11 @@
 import os
 import urllib
-import json
+import argparse
 
 from functools import partial
 from .utils import log, compose
 from .downloaded import get_last_downloaded
+from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import RSSEntity,\
         build_rss_entity,\
         RSSEntitySimpleName,\
@@ -12,29 +13,42 @@ from .rss import RSSEntity,\
         prepare_rss_data_from,\
         only_new_entites
 
-
-def load_configuration_file(file_path):
-    if not os.path.isfile(file_path):
-        raise Exception(f'Cannot read from configuration file "{file_path}"')
-
-    with open(file_path) as json_file:
-        return json.load(json_file)
-
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     return urllib.request.urlretrieve(
         rss_entity.link,
         os.path.join(path, rss_entity.to_file_name()))
 
+def build_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--downloads_limit",
+        required=False,
+        type=int,
+        help='The maximum number of mp3 files which script will download')
+
+    return parser
+
+
 if __name__ == '__main__':
     import sys
 
+    DEFAULT_CONFIGURATION = {
+        'downloads_limit': sys.maxsize,
+        'podcasts': []
+    }
+
     CONFIG_FILE = '~/.podcast_downloader_config.json'
     log('Loading configuration (from file: "{}")', CONFIG_FILE)
-    CONFIGURATION = load_configuration_file(os.path.expanduser(CONFIG_FILE))
+
+    CONFIGURATION = merge_parameters_collection(
+        DEFAULT_CONFIGURATION,
+        load_configuration_file(os.path.expanduser(CONFIG_FILE)),
+        parse_argv(build_parser())
+    )
+
     RSS_SOURCES = CONFIGURATION['podcasts']
-    DOWNLOADS_LIMITS = int(sys.argv[2]) \
-        if len(sys.argv) > 2 and sys.argv[1] == '--downloads_limit' and sys.argv[2].isalnum() \
-        else sys.maxsize
+    DOWNLOADS_LIMITS = CONFIGURATION['downloads_limit']
 
     for rss_source in RSS_SOURCES:
         rss_source_name = rss_source['name']

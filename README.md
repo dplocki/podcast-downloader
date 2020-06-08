@@ -9,7 +9,7 @@ The script accept following command line arguments:
 
 | Short version | Long name           | Parameter           | Default   | Note |
 |:--------------|:--------------------|:-------------------:|:---------:|:-----|
-|               | `--downloads_limit` | number              | inifinity | The maksimum number of downloaded mp3 files |
+|               | `--downloads_limit` | number              | inifinity | The maximum number of downloaded mp3 files |
 
 ## Configuration
 
