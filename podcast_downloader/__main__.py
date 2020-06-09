@@ -11,7 +11,8 @@ from .rss import RSSEntity,\
         RSSEntitySimpleName,\
         RSSEntityWithDate,\
         prepare_rss_data_from,\
-        only_new_entites
+        only_new_entites,\
+        only_last_entity
 
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     return urllib.request.urlretrieve(
@@ -64,7 +65,11 @@ if __name__ == '__main__':
         log('Checking "{}"', rss_source_name)
 
         last_downloaded_file = get_last_downloaded(rss_source_path)
-        log('Last downloaded file "{}"', last_downloaded_file)
+        log('Last downloaded file "{}"', last_downloaded_file or '<none>')
+
+        download_limiter_function = partial(only_new_entites, last_downloaded_file) \
+            if last_downloaded_file \
+            else only_last_entity
 
         rss_entiy_builder = partial(
             build_rss_entity,
@@ -72,7 +77,7 @@ if __name__ == '__main__':
 
         missing_files_links = compose(
             list,
-            partial(only_new_entites, last_downloaded_file),
+            download_limiter_function,
             partial(map, rss_entiy_builder),
             prepare_rss_data_from
         )(rss_source_link)

@@ -1,7 +1,7 @@
 import time
 from dataclasses import dataclass
 from functools import partial
-from itertools import takewhile
+from itertools import takewhile, islice
 
 import feedparser
 from .utils import compose
@@ -50,3 +50,6 @@ prepare_rss_data_from = compose( # pylint: disable=invalid-name#it's a function
 
 def only_new_entites(from_file: str, raw_rss_entries: [RSSEntity]) -> [RSSEntity]:
     return takewhile(lambda rss_entity: rss_entity.to_file_name() != from_file, raw_rss_entries)
+
+def only_last_entity(raw_rss_entries: [RSSEntity]) -> [RSSEntity]:
+    return islice(raw_rss_entries, 1)

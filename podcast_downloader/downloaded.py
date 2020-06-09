@@ -20,4 +20,4 @@ def get_downloaded_files(podcast_directory: str) -> [str]:
             if only_mp3(file) and is_directory_file(file))
 
 def get_last_downloaded(podcast_directory: str):
-    return next(get_downloaded_files(podcast_directory))
+    return next(get_downloaded_files(podcast_directory), None)
