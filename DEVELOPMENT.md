@@ -18,6 +18,14 @@ To install package from source control use the fallowing command:
 pip install -e .
 ```
 
+## Tests
+
+After installing the package you run tests
+
+```bash
+python -m unittest discover -s tests -p *_test.py
+```
+
 ## Uploading the package into repository
 
 ```bash
