@@ -53,3 +53,9 @@ def only_new_entites(from_file: str, raw_rss_entries: [RSSEntity]) -> [RSSEntity
 
 def only_last_entity(raw_rss_entries: [RSSEntity]) -> [RSSEntity]:
     return islice(raw_rss_entries, 1)
+
+def is_entity_newer(from_date: time.struct_time, entity: RSSEntity):
+    return entity.published_date[:3] >= from_date[:3]
+
+def get_n_age_date(day_number: int, from_date: time.struct_time):
+    return time.localtime(time.mktime(from_date) - day_number * 24 * 60 * 60)

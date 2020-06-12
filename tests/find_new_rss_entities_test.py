@@ -18,5 +18,4 @@ class TestFindNewRSSEntites(unittest.TestCase):
         result = list(only_new_entites(last_downloaded_file, rss_entites))
 
         # Assert
-        self.assertSequenceEqual(
-            result, expected, "A both new entity should be return as result")
+        self.assertSequenceEqual(result, expected, "A both new entity should be return as result")
