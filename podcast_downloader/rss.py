@@ -59,3 +59,6 @@ def is_entity_newer(from_date: time.struct_time, entity: RSSEntity):
 
 def get_n_age_date(day_number: int, from_date: time.struct_time):
     return time.localtime(time.mktime(from_date) - day_number * 24 * 60 * 60)
+
+def only_entites_from_date(from_date: time.struct_time):
+    return partial(filter, partial(is_entity_newer, from_date))

@@ -2,7 +2,7 @@ import unittest
 
 from time import strftime
 from copy import deepcopy
-from podcast_downloader.rss import is_entity_newer, get_n_age_date
+from podcast_downloader.rss import is_entity_newer, get_n_age_date, only_entites_from_date
 from commons import rss_entity_generator, build_timestamp
 
 
@@ -31,3 +31,12 @@ class TestAllEntitiesFromNDays(unittest.TestCase):
             strftime("%d %b %Y", get_n_age_date(3, build_timestamp(2020, 1, 1))),
             strftime("%d %b %Y", build_timestamp(2019, 12, 29)),
             "Date wasn't calculate correctly")
+
+    def test_should_return_empty_collection(self):
+        entity_1, entity_2, entity_3, entity_4, entity_5 = rss_entity_generator(day=10, limit=5)
+        entities = [entity_1, entity_2, entity_3, entity_4, entity_5]
+        from_date = build_timestamp(2020, 1, 11)
+
+        result = list(only_entites_from_date(from_date)(entities))
+
+        self.assertSequenceEqual(result, [], "The 'from date' was after all entites, the result should be empty")
