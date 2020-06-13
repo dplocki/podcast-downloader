@@ -1,6 +1,8 @@
 import os
 import urllib
 import argparse
+import re
+import time
 
 from functools import partial
 from .utils import log, compose
@@ -12,12 +14,16 @@ from .rss import RSSEntity,\
         RSSEntityWithDate,\
         prepare_rss_data_from,\
         only_new_entites,\
-        only_last_entity
+        only_last_entity,\
+        get_n_age_date,\
+        only_entites_from_date
+
 
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     return urllib.request.urlretrieve(
         rss_entity.link,
         os.path.join(path, rss_entity.to_file_name()))
+
 
 def build_parser():
     parser = argparse.ArgumentParser()
@@ -31,12 +37,25 @@ def build_parser():
     return parser
 
 
+def configuration_to_function(configuration: dict):
+    configuration_value = configuration['if_directory_empty']
+
+    if configuration_value == 'download_last':
+        return only_last_entity
+
+    from_n_day_match = re.match(r'^download_from_(\d+)_days$', configuration_value)
+    if from_n_day_match:
+        from_date = get_n_age_date(int(from_n_day_match[1]), time.localtime())
+        return only_entites_from_date(from_date)
+
+
 if __name__ == '__main__':
     import sys
 
     DEFAULT_CONFIGURATION = {
         'downloads_limit': sys.maxsize,
-        'podcasts': []
+        'if_directory_empty': 'download_last',
+        'podcasts': [],
     }
 
     CONFIG_FILE = '~/.podcast_downloader_config.json'
@@ -50,6 +69,8 @@ if __name__ == '__main__':
 
     RSS_SOURCES = CONFIGURATION['podcasts']
     DOWNLOADS_LIMITS = CONFIGURATION['downloads_limit']
+
+    on_directory_empty = configuration_to_function(CONFIGURATION)
 
     for rss_source in RSS_SOURCES:
         rss_source_name = rss_source['name']
@@ -69,7 +90,7 @@ if __name__ == '__main__':
 
         download_limiter_function = partial(only_new_entites, last_downloaded_file) \
             if last_downloaded_file \
-            else only_last_entity
+            else on_directory_empty
 
         rss_entiy_builder = partial(
             build_rss_entity,

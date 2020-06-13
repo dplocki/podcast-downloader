@@ -3,4 +3,6 @@ disable=
     missing-module-docstring,
     missing-class-docstring,
     missing-function-docstring,
-    missing-docstring
+    missing-docstring,
+
+    line-too-long
