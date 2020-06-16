@@ -5,17 +5,17 @@ It do not using database of any sort, but it require configuration file.
 
 ## Setup
 
-### Instalation from PyPi
+### Installation from PyPI
 
 ```bash
 pip install podcast_downloader
 ```
 
-## Configuration
+### Configuration
 
 Provide a configuration file. Place the `.podcast_downloader_config.json` it your home directory ([JSON](https://en.wikipedia.org/wiki/JSON) format). It should contain an array of settings. Each setting per RSS channel.
 
-## Usage
+### Usage
 
 ```bash
 python -m podcast_downloader
