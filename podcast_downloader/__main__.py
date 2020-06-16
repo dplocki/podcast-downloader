@@ -34,6 +34,13 @@ def build_parser():
         type=int,
         help='The maximum number of mp3 files which script will download')
 
+    parser.add_argument(
+        "--if_directory_empty",
+        required=False,
+        type=str,
+        help='The general approach on empty directory'
+    )
+
     return parser
 
 
@@ -47,6 +54,8 @@ def configuration_to_function(configuration: dict):
     if from_n_day_match:
         from_date = get_n_age_date(int(from_n_day_match[1]), time.localtime())
         return only_entites_from_date(from_date)
+
+    raise Exception(f"The value the '{configuration_value}' is not recognizable")
 
 
 if __name__ == '__main__':
