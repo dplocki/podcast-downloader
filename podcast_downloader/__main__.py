@@ -13,7 +13,7 @@ from .rss import RSSEntity,\
         RSSEntitySimpleName,\
         RSSEntityWithDate,\
         prepare_rss_data_from,\
-        only_new_entites,\
+        only_new_entities,\
         only_last_entity,\
         get_n_age_date,\
         only_entites_from_date
@@ -97,18 +97,18 @@ if __name__ == '__main__':
         last_downloaded_file = get_last_downloaded(rss_source_path)
         log('Last downloaded file "{}"', last_downloaded_file or '<none>')
 
-        download_limiter_function = partial(only_new_entites, last_downloaded_file) \
+        download_limiter_function = partial(only_new_entities, last_downloaded_file) \
             if last_downloaded_file \
             else on_directory_empty
 
-        rss_entiy_builder = partial(
+        rss_entity_builder = partial(
             build_rss_entity,
             RSSEntityWithDate if rss_require_date else RSSEntitySimpleName)
 
         missing_files_links = compose(
             list,
             download_limiter_function,
-            partial(map, rss_entiy_builder),
+            partial(map, rss_entity_builder),
             prepare_rss_data_from
         )(rss_source_link)
 
