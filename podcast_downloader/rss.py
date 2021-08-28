@@ -2,6 +2,7 @@ import time
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
+from typing import Dict, List, Tuple
 
 import feedparser
 from .utils import compose
@@ -31,16 +32,16 @@ def build_rss_entity(constructor, strip_rss_entry):
 def get_raw_rss_entries_from_web(rss_link: str) -> list:
     yield from feedparser.parse(rss_link).entries
 
-def is_audio(link: {}) -> bool:
+def is_audio(link: Dict[str, str]) -> bool:
     return link.type == 'audio/mpeg'
 
-def only_audio(links: [{}]) -> bool:
+def only_audio(links: List[Dict[str, str]]) -> bool:
     return filter(is_audio, links)
 
-def strip_data(raw_rss_entry: {}) -> ():
-    return (raw_rss_entry.published_parsed, list(only_audio(raw_rss_entry.links)))
+def strip_data(raw_rss_entry: dict) -> Tuple:
+    return raw_rss_entry.published_parsed, list(only_audio(raw_rss_entry.links))
 
-def has_entry_podcast_link(strip_rss_entry: {}) -> bool:
+def has_entry_podcast_link(strip_rss_entry: dict) -> bool:
     return len(strip_rss_entry[1]) > 0
 
 prepare_rss_data_from = compose( # pylint: disable=invalid-name#it's a function
@@ -48,10 +49,10 @@ prepare_rss_data_from = compose( # pylint: disable=invalid-name#it's a function
     partial(map, strip_data),
     get_raw_rss_entries_from_web)
 
-def only_new_entites(from_file: str, raw_rss_entries: [RSSEntity]) -> [RSSEntity]:
+def only_new_entities(from_file: str, raw_rss_entries: List[RSSEntity]) -> List[RSSEntity]:
     return takewhile(lambda rss_entity: rss_entity.to_file_name() != from_file, raw_rss_entries)
 
-def only_last_entity(raw_rss_entries: [RSSEntity]) -> [RSSEntity]:
+def only_last_entity(raw_rss_entries: List[RSSEntity]) -> List[RSSEntity]:
     return islice(raw_rss_entries, 1)
 
 def is_entity_newer(from_date: time.struct_time, entity: RSSEntity):
@@ -60,5 +61,5 @@ def is_entity_newer(from_date: time.struct_time, entity: RSSEntity):
 def get_n_age_date(day_number: int, from_date: time.struct_time):
     return time.localtime(time.mktime(from_date) - day_number * 24 * 60 * 60)
 
-def only_entites_from_date(from_date: time.struct_time):
+def only_entities_from_date(from_date: time.struct_time):
     return partial(filter, partial(is_entity_newer, from_date))

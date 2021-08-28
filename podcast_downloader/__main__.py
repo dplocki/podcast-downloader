@@ -16,7 +16,7 @@ from .rss import RSSEntity,\
         only_new_entities,\
         only_last_entity,\
         get_n_age_date,\
-        only_entites_from_date
+        only_entities_from_date
 
 
 def download_rss_entity_to_path(path, rss_entity: RSSEntity):
@@ -53,7 +53,7 @@ def configuration_to_function(configuration: dict):
     from_n_day_match = re.match(r'^download_from_(\d+)_days$', configuration_value)
     if from_n_day_match:
         from_date = get_n_age_date(int(from_n_day_match[1]), time.localtime())
-        return only_entites_from_date(from_date)
+        return only_entities_from_date(from_date)
 
     raise Exception(f"The value the '{configuration_value}' is not recognizable")
 

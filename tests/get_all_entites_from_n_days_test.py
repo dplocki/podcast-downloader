@@ -2,7 +2,7 @@ import unittest
 
 from time import strftime
 from copy import deepcopy
-from podcast_downloader.rss import is_entity_newer, get_n_age_date, only_entites_from_date
+from podcast_downloader.rss import is_entity_newer, get_n_age_date, only_entities_from_date
 from commons import rss_entity_generator, build_timestamp
 
 
@@ -37,7 +37,7 @@ class TestAllEntitiesFromNDays(unittest.TestCase):
         entities = [entity_1, entity_2, entity_3, entity_4, entity_5]
         from_date = build_timestamp(2020, 1, 11)
 
-        results = list(only_entites_from_date(from_date)(entities))
+        results = list(only_entities_from_date(from_date)(entities))
 
         self.assertSequenceEqual(results, [], "The 'from date' was after all entites, the result should be empty")
 
@@ -47,6 +47,6 @@ class TestAllEntitiesFromNDays(unittest.TestCase):
         expected = [entity_1, entity_2]
         from_date = build_timestamp(2020, 1, 9)
 
-        results = list(only_entites_from_date(from_date)(entities))
+        results = list(only_entities_from_date(from_date)(entities))
 
         self.assertSequenceEqual(results, expected, "The 'from date' was before two entites")
