@@ -10,11 +10,11 @@ class TestOnlyLastRSSEntity(unittest.TestCase):
         # Assign
         entity_1, entity_2, entity_3, entity_4, entity_5 = rss_entity_generator(limit=5)
 
-        rss_entites = [entity_1, entity_2, entity_3, entity_4, entity_5]
+        rss_entities = [entity_1, entity_2, entity_3, entity_4, entity_5]
         expected = [entity_1]
 
         # Act
-        result = list(only_last_entity(rss_entites))
+        result = list(only_last_entity(rss_entities))
 
         # Assert
         self.assertSequenceEqual(

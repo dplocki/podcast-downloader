@@ -39,7 +39,7 @@ class TestAllEntitiesFromNDays(unittest.TestCase):
 
         results = list(only_entities_from_date(from_date)(entities))
 
-        self.assertSequenceEqual(results, [], "The 'from date' was after all entites, the result should be empty")
+        self.assertSequenceEqual(results, [], "The 'from date' was after all entities, the result should be empty")
 
     def test_should_return_filtered_collection(self):
         entity_1, entity_2, entity_3, entity_4, entity_5 = rss_entity_generator(day=10, limit=5)
@@ -49,4 +49,4 @@ class TestAllEntitiesFromNDays(unittest.TestCase):
 
         results = list(only_entities_from_date(from_date)(entities))
 
-        self.assertSequenceEqual(results, expected, "The 'from date' was before two entites")
+        self.assertSequenceEqual(results, expected, "The 'from date' was before two entities")
