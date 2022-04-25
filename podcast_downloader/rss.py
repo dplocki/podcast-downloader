@@ -17,7 +17,10 @@ class RSSEntity():
 class RSSEntitySimpleName(RSSEntity):
 
     def to_file_name(self) -> str:
-        return self.link.rpartition('/')[-1].lower()
+        filename = self.link.rpartition('/')[-1].lower()
+        if filename.find("?") > 0:
+            filename = filename.rpartition('?')[0]
+        return filename
 
 @dataclass
 class RSSEntityWithDate(RSSEntity):
