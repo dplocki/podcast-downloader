@@ -5,7 +5,6 @@ from commons import rss_entity_generator
 
 
 class TestOnlyLastRSSEntity(unittest.TestCase):
-
     def test_get_only_last_rss_entity(self):
         # Assign
         entity_1, entity_2, entity_3, entity_4, entity_5 = rss_entity_generator(limit=5)
@@ -18,4 +17,5 @@ class TestOnlyLastRSSEntity(unittest.TestCase):
 
         # Assert
         self.assertSequenceEqual(
-            result, expected, "Only the last entity should be return as result")
+            result, expected, "Only the last entity should be return as result"
+        )
