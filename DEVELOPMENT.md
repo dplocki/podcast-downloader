@@ -1,5 +1,7 @@
 # Podcast downloader
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 ## Installing project
 
 The project is using [pipenv](https://github.com/pypa/pipenv).
@@ -37,4 +39,12 @@ python -m unittest discover -s tests -p *_test.py
 ```bash
 python setup.py sdist bdist_wheel
 twine upload --repository pypi dist/*
+```
+
+## Black
+
+Run code formatter: 
+
+```bash
+black .
 ```
