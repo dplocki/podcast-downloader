@@ -52,13 +52,14 @@ Those will be cover by all values given by command line.
 
 `Podcasts` is the part of configuration file where you provide the array of objects with fallowing content:
 
-| Property       | Type    | Required | Default | Note |
-|:---------------|:-------:|:--------:|:-------:|:-----|
-| `name`         | string  | yes      | -       | The name of channel (used in logger) |
-| `rss_link`     | string  | yes      | -       | The URL of RSS channel |
-| `path`         | string  | yes      | -       | The path to directory, for podcast files |
-| `require_date` | boolean | no       | `false` | Is date of podcast should be added into name of file |
-| `disable`      | boolean | no       | `false` | This podcast will be ignored |
+| Property       | Type      | Required | Default | Note |
+|:---------------|:---------:|:--------:|:-------:|:-----|
+| `name`         | string    | yes      | -       | The name of channel (used in logger) |
+| `rss_link`     | string    | yes      | -       | The URL of RSS channel |
+| `path`         | string    | yes      | -       | The path to directory, for podcast files |
+| `require_date` | boolean   | no       | `false` | Is date of podcast should be added into name of file |
+| `disable`      | boolean   | no       | `false` | This podcast will be ignored |
+| `podcasts`     | key-value | no       | `{".mp3": "audio/mpeg"}` | The file filter |
 
 An example:
 
@@ -78,6 +79,34 @@ An example:
 ## Adding date to file name
 
 If RSS channel doesn't have single and constant name convention, script is able to adding the date on beginning of downloaded file name. Just set the `require_date` option to true.
+
+## File types filter
+
+Podcasts are mostly stored as `*.mp3` files. By default Podcast Downloader will look just for them.
+
+If your podcast support other types of media files, you can precised your own podcast file filter, by providing extension for the file (like `.mp3`), and type of link in RSS feed itself (for `mp3` it is `audio/mpeg`).
+
+
+If you don't know the type of the file, you can check the RSS file. Seek for `enclosure` tags, should looks like this:
+
+```xml
+    <enclosure
+        url="https://an.apple.supporter.page/podcast/episode23.m4a"
+        length="14527149"
+        type="audio/x-m4a" />
+```
+
+
+Notes: the dot on the file extension is require.
+
+### Example
+
+```json
+ {
+    ".mp3": "audio/mpeg",
+    ".m4a": "audio/x-m4a"
+ }
+```
 
 ## In case of empty directory
 
