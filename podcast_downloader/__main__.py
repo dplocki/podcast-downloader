@@ -6,14 +6,16 @@ import time
 
 from functools import partial
 from .utils import log, compose
-from .downloaded import get_last_downloaded
+from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
     RSSEntity,
+    build_only_allowed_filter_for_link_data,
     build_rss_entity,
     RSSEntitySimpleName,
     RSSEntityWithDate,
-    prepare_rss_data_from,
+    flatten_rss_links_data,
+    get_raw_rss_entries_from_web,
     only_new_entities,
     only_last_entity,
     get_n_age_date,
@@ -67,6 +69,7 @@ if __name__ == "__main__":
     DEFAULT_CONFIGURATION = {
         "downloads_limit": sys.maxsize,
         "if_directory_empty": "download_last",
+        "podcast_extensions": {".mp3": "audio/mpeg"},
         "podcasts": [],
     }
 
@@ -90,6 +93,9 @@ if __name__ == "__main__":
         rss_source_link = rss_source["rss_link"]
         rss_require_date = rss_source.get("require_date", False)
         rss_disable = rss_source.get("disable", False)
+        rss_podcast_extensions = rss_source.get(
+            "podcast_extensions", CONFIGURATION["podcast_extensions"]
+        )
 
         if rss_disable:
             log('Skipping the "{}"', rss_source_name)
@@ -97,7 +103,10 @@ if __name__ == "__main__":
 
         log('Checking "{}"', rss_source_name)
 
-        last_downloaded_file = get_last_downloaded(rss_source_path)
+        last_downloaded_file = get_last_downloaded(
+            get_extensions_checker(rss_podcast_extensions), rss_source_path
+        )
+
         log('Last downloaded file "{}"', last_downloaded_file or "<none>")
 
         download_limiter_function = (
@@ -111,11 +120,14 @@ if __name__ == "__main__":
             RSSEntityWithDate if rss_require_date else RSSEntitySimpleName,
         )
 
+        allow_link_types = list(set(rss_podcast_extensions.values()))
         missing_files_links = compose(
             list,
             download_limiter_function,
             partial(map, rss_entity_builder),
-            prepare_rss_data_from,
+            partial(filter, build_only_allowed_filter_for_link_data(allow_link_types)),
+            flatten_rss_links_data,
+            get_raw_rss_entries_from_web,
         )(rss_source_link)
 
         if missing_files_links:
