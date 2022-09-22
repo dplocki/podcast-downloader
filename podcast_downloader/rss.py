@@ -1,11 +1,11 @@
+from datetime import datetime
 import time
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
-from typing import Dict, List, Tuple
+from typing import Callable, Generator, List, Tuple
 
 import feedparser
-from .utils import compose
 
 
 @dataclass
@@ -30,35 +30,31 @@ class RSSEntityWithDate(RSSEntity):
         return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name}'
 
 
-def build_rss_entity(constructor, strip_rss_entry):
-    return constructor(strip_rss_entry[0], strip_rss_entry[1][0].href)
+def build_rss_entity(
+    constructor: Callable[[datetime.date, str], RSSEntity],
+    link_data: Tuple[datetime.date, str, str],
+) -> RSSEntity:
+    return constructor(link_data[0], link_data[2])
 
 
-def get_raw_rss_entries_from_web(rss_link: str) -> list:
+def get_raw_rss_entries_from_web(
+    rss_link: str,
+) -> Generator[feedparser.FeedParserDict, None, None]:
     yield from feedparser.parse(rss_link).entries
 
 
-def is_audio(link: Dict[str, str]) -> bool:
-    return link.type == "audio/mpeg"
+def flatten_rss_links_data(
+    source: Generator[feedparser.FeedParserDict, None, None]
+) -> Generator[Tuple[datetime.date, str, str], None, None]:
+    for rss_entry in source:
+        for link in rss_entry.links:
+            yield rss_entry.published_parsed, link.type, link.href
 
 
-def only_audio(links: List[Dict[str, str]]) -> bool:
-    return filter(is_audio, links)
-
-
-def strip_data(raw_rss_entry: dict) -> Tuple:
-    return raw_rss_entry.published_parsed, list(only_audio(raw_rss_entry.links))
-
-
-def has_entry_podcast_link(strip_rss_entry: dict) -> bool:
-    return len(strip_rss_entry[1]) > 0
-
-
-prepare_rss_data_from = compose(  # pylint: disable=invalid-name#it's a function
-    partial(filter, has_entry_podcast_link),
-    partial(map, strip_data),
-    get_raw_rss_entries_from_web,
-)
+def build_only_allowed_filter_for_link_data(
+    allowed_types: List[str],
+) -> Callable[[Tuple[datetime.date, str, str]], bool]:
+    return lambda link_data: link_data[1] in allowed_types
 
 
 def only_new_entities(
