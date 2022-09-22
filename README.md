@@ -3,8 +3,8 @@
 The Python module for downloading files from given RSS feeds.
 It is not using database of any sort. It require configuration file.
 
-The script is analyzing the dictionary where it put the previously downloaded files.
-It is compering the last added file with the podcast feed, finding the missing, and downloading them.
+The script is analyzing the directory where it put the previously downloaded files.
+It is compering the last added file with the rss feed, finding the missing ones, and downloading them.
 
 As name suggested, the script is designed for podcasts. The files searched by default are mp3.
 
@@ -41,7 +41,10 @@ Using the [example above](#example), the result will be:
 
 ### The configuration file
 
-The configuration file is placed in home directory. The name: `.podcast_downloader_config.json`.
+The configuration file is placed in home directory.
+
+The name: `.podcast_downloader_config.json`.
+
 The format is: [JSON](https://en.wikipedia.org/wiki/JSON).
 
 ### The settings hierarchy
@@ -145,3 +148,7 @@ Set by `download_last`.
 
 The script will download all episodes which appear in last *n* days. I can be use when you are downloading on regular schedule.
 The *n* number is given within the setup value: `download_from_n_days`. For example: `download_from_3_days` means download all episodes from last 3 days.
+
+## The analyze of the RSS feed
+
+The script is look through all the `items` nodes in RSS file. The `item` node can contain the `enclosure` node. Those nodes are used to passing the files. According to the convention the single `item` should contain only one `enclosure`, but script (as [the library used](https://pypi.org/project/feedparser/) under it) can handle the multiple files attached into podcast `item`.
