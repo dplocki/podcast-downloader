@@ -5,6 +5,9 @@ import re
 import time
 
 from functools import partial
+from . import configuration
+
+from podcast_downloader.configuration import configuration_verification
 from .utils import log, compose
 from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
@@ -29,7 +32,7 @@ def download_rss_entity_to_path(path, rss_entity: RSSEntity):
     )
 
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -49,8 +52,8 @@ def build_parser():
     return parser
 
 
-def configuration_to_function(configuration: dict):
-    configuration_value = configuration["if_directory_empty"]
+def configuration_to_function(config: dict):
+    configuration_value = config[configuration.CONFIG_IF_DIRECTORY_EMPTY]
 
     if configuration_value == "download_last":
         return only_last_entity
@@ -67,10 +70,10 @@ if __name__ == "__main__":
     import sys
 
     DEFAULT_CONFIGURATION = {
-        "downloads_limit": sys.maxsize,
-        "if_directory_empty": "download_last",
-        "podcast_extensions": {".mp3": "audio/mpeg"},
-        "podcasts": [],
+        configuration.CONFIG_DOWNLOADS_LIMIT: sys.maxsize,
+        configuration.CONFIG_IF_DIRECTORY_EMPTY: "download_last",
+        configuration.CONFIG_PODCAST_EXTENSIONS: {".mp3": "audio/mpeg"},
+        configuration.CONFIG_PODCASTS: [],
     }
 
     CONFIG_FILE = "~/.podcast_downloader_config.json"
@@ -82,19 +85,27 @@ if __name__ == "__main__":
         parse_argv(build_parser()),
     )
 
-    RSS_SOURCES = CONFIGURATION["podcasts"]
-    DOWNLOADS_LIMITS = CONFIGURATION["downloads_limit"]
+    is_valid, error = configuration_verification(CONFIGURATION)
+    if is_valid:
+        log("There is a problem with configuration file: {}", error)
+        exit(1)
+
+    RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
+    DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
 
     on_directory_empty = configuration_to_function(CONFIGURATION)
 
     for rss_source in RSS_SOURCES:
-        rss_source_name = rss_source["name"]
-        rss_source_path = rss_source["path"]
-        rss_source_link = rss_source["rss_link"]
-        rss_require_date = rss_source.get("require_date", False)
-        rss_disable = rss_source.get("disable", False)
+        rss_source_name = rss_source[configuration.CONFIG_PODCASTS_NAME]
+        rss_source_path = rss_source[configuration.CONFIG_PODCASTS_PATH]
+        rss_source_link = rss_source[configuration.CONFIG_PODCASTS_RSS_LINK]
+        rss_require_date = rss_source.get(
+            configuration.CONFIG_PODCASTS_REQUIRE_DATE, False
+        )
+        rss_disable = rss_source.get(configuration.CONFIG_PODCASTS_DISABLE, False)
         rss_podcast_extensions = rss_source.get(
-            "podcast_extensions", CONFIGURATION["podcast_extensions"]
+            configuration.CONFIG_PODCAST_EXTENSIONS,
+            CONFIGURATION[configuration.CONFIG_PODCAST_EXTENSIONS],
         )
 
         if rss_disable:
