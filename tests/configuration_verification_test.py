@@ -54,3 +54,26 @@ class TestConfigurationVerification(unittest.TestCase):
             "Validator should notice missing 'rss_link' field in podcast",
         )
         self.assertIsNotNone(message, "The validator should return message")
+
+    def test_check_for_valid_configuration(self):
+        # Assign
+        config = {
+            configuration.CONFIG_PODCASTS: [
+                {
+                    configuration.CONFIG_PODCASTS_NAME: "missing path",
+                    configuration.CONFIG_PODCASTS_PATH: "/podcast/directory",
+                    configuration.CONFIG_PODCASTS_RSS_LINK: "https://podcasts/mine",
+                }
+            ]
+        }
+
+        # Act
+        is_valid_result, message = configuration.configuration_verification(config)
+
+        # Assert
+        self.assertTrue(
+            is_valid_result,
+            "Validator should pass the fine configuration",
+        )
+
+        self.assertIsNone(message, "The validator should not return any message")

@@ -86,7 +86,7 @@ if __name__ == "__main__":
     )
 
     is_valid, error = configuration_verification(CONFIGURATION)
-    if is_valid:
+    if not is_valid:
         log("There is a problem with configuration file: {}", error)
         exit(1)
 

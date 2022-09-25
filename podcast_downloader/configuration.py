@@ -29,4 +29,4 @@ def configuration_verification(config: dict) -> Tuple[bool, List[str]]:
                 f"There is no RSS link for podcast {podcast[CONFIG_PODCASTS_NAME]}",
             )
 
-    return True
+    return True, None
