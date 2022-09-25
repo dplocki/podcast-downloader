@@ -44,7 +44,7 @@ class TestMergeParametersCollection(unittest.TestCase):
         # Assert
         self.assertDictEqual(result, expected, "Should return merged directory")
 
-    def test_should_collection_be_written_by_themself(self):
+    def test_should_collection_be_written_by_themselves(self):
         # Assign
         default = {"a": 1, "b": 2, "c": 3, "d": 4}
 

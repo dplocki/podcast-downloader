@@ -3,14 +3,18 @@ import time
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
-from typing import Callable, Generator, List, Tuple
+from typing import Callable, Generator, List
 
 import feedparser
+
+
+SECONDS_IN_DAY = 24 * 60 * 60
 
 
 @dataclass
 class RSSEntity:
     published_date: time.struct_time
+    type: str
     link: str
 
 
@@ -30,31 +34,29 @@ class RSSEntityWithDate(RSSEntity):
         return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name}'
 
 
-def build_rss_entity(
-    constructor: Callable[[datetime.date, str], RSSEntity],
-    link_data: Tuple[datetime.date, str, str],
-) -> RSSEntity:
-    return constructor(link_data[0], link_data[2])
-
-
 def get_raw_rss_entries_from_web(
     rss_link: str,
 ) -> Generator[feedparser.FeedParserDict, None, None]:
     yield from feedparser.parse(rss_link).entries
 
 
-def flatten_rss_links_data(
-    source: Generator[feedparser.FeedParserDict, None, None]
-) -> Generator[Tuple[datetime.date, str, str], None, None]:
-    for rss_entry in source:
-        for link in rss_entry.links:
-            yield rss_entry.published_parsed, link.type, link.href
+def build_flatten_rss_links_data(
+    constructor: Callable[[datetime.date, str, str], RSSEntity]
+) -> Callable[[], Generator[RSSEntity, None, None]]:
+    def internal(
+        source: Generator[feedparser.FeedParserDict, None, None]
+    ) -> Generator[RSSEntity, None, None]:
+        for rss_entry in source:
+            for link in rss_entry.links:
+                yield constructor(rss_entry.published_parsed, link.type, link.href)
+
+    return internal
 
 
 def build_only_allowed_filter_for_link_data(
     allowed_types: List[str],
-) -> Callable[[Tuple[datetime.date, str, str]], bool]:
-    return lambda link_data: link_data[1] in allowed_types
+) -> Callable[[RSSEntity], bool]:
+    return lambda link_data: link_data.type in allowed_types
 
 
 def only_new_entities(
@@ -74,7 +76,7 @@ def is_entity_newer(from_date: time.struct_time, entity: RSSEntity):
 
 
 def get_n_age_date(day_number: int, from_date: time.struct_time):
-    return time.localtime(time.mktime(from_date) - day_number * 24 * 60 * 60)
+    return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)
 
 
 def only_entities_from_date(from_date: time.struct_time):

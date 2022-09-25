@@ -13,11 +13,10 @@ from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
     RSSEntity,
+    build_flatten_rss_links_data,
     build_only_allowed_filter_for_link_data,
-    build_rss_entity,
     RSSEntitySimpleName,
     RSSEntityWithDate,
-    flatten_rss_links_data,
     get_raw_rss_entries_from_web,
     only_new_entities,
     only_last_entity,
@@ -126,18 +125,14 @@ if __name__ == "__main__":
             else on_directory_empty
         )
 
-        rss_entity_builder = partial(
-            build_rss_entity,
-            RSSEntityWithDate if rss_require_date else RSSEntitySimpleName,
-        )
-
         allow_link_types = list(set(rss_podcast_extensions.values()))
         missing_files_links = compose(
             list,
             download_limiter_function,
-            partial(map, rss_entity_builder),
             partial(filter, build_only_allowed_filter_for_link_data(allow_link_types)),
-            flatten_rss_links_data,
+            build_flatten_rss_links_data(
+                RSSEntityWithDate if rss_require_date else RSSEntitySimpleName
+            ),
             get_raw_rss_entries_from_web,
         )(rss_source_link)
 

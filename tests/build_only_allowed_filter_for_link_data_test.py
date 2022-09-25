@@ -2,11 +2,14 @@ from datetime import datetime
 from typing import Tuple
 import unittest
 
-from podcast_downloader.rss import build_only_allowed_filter_for_link_data
+from podcast_downloader.rss import (
+    RSSEntity,
+    build_only_allowed_filter_for_link_data,
+)
 
 
 def build_test_link_data(type: str) -> Tuple[datetime.date, str, str]:
-    return (None, type, None)
+    return RSSEntity(None, type, None)
 
 
 class TestBuildOnlyAllowedFilterForLinkData(unittest.TestCase):
