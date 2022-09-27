@@ -43,14 +43,12 @@ def get_raw_rss_entries_from_web(
 def build_flatten_rss_links_data(
     constructor: Callable[[datetime.date, str, str], RSSEntity]
 ) -> Callable[[], Generator[RSSEntity, None, None]]:
-    def internal(
-        source: Generator[feedparser.FeedParserDict, None, None]
-    ) -> Generator[RSSEntity, None, None]:
-        for rss_entry in source:
-            for link in rss_entry.links:
-                yield constructor(rss_entry.published_parsed, link.type, link.href)
 
-    return internal
+    return lambda source: (
+        constructor(rss_entry.published_parsed, link.type, link.href)
+        for rss_entry in source
+        for link in rss_entry.links
+    )
 
 
 def build_only_allowed_filter_for_link_data(
