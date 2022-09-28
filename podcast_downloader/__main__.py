@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 import urllib
 import argparse
 import re
@@ -13,21 +14,23 @@ from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
     RSSEntity,
-    build_flatten_rss_links_data,
     build_only_allowed_filter_for_link_data,
-    RSSEntitySimpleName,
-    RSSEntityWithDate,
+    build_only_new_entities,
+    flatten_rss_links_data,
     get_raw_rss_entries_from_web,
-    only_new_entities,
     only_last_entity,
     get_n_age_date,
     only_entities_from_date,
+    to_name_with_date_name,
+    to_plain_file_name,
 )
 
 
-def download_rss_entity_to_path(path, rss_entity: RSSEntity):
+def download_rss_entity_to_path(
+    to_file_name_function: Callable[[RSSEntity], str], path: str, rss_entity: RSSEntity
+):
     return urllib.request.urlretrieve(
-        rss_entity.link, os.path.join(path, rss_entity.to_file_name())
+        rss_entity.link, os.path.join(path, to_file_name_function(rss_entity))
     )
 
 
@@ -98,13 +101,15 @@ if __name__ == "__main__":
         rss_source_name = rss_source[configuration.CONFIG_PODCASTS_NAME]
         rss_source_path = rss_source[configuration.CONFIG_PODCASTS_PATH]
         rss_source_link = rss_source[configuration.CONFIG_PODCASTS_RSS_LINK]
-        rss_require_date = rss_source.get(
-            configuration.CONFIG_PODCASTS_REQUIRE_DATE, False
-        )
         rss_disable = rss_source.get(configuration.CONFIG_PODCASTS_DISABLE, False)
         rss_podcast_extensions = rss_source.get(
             configuration.CONFIG_PODCAST_EXTENSIONS,
             CONFIGURATION[configuration.CONFIG_PODCAST_EXTENSIONS],
+        )
+        to_name_function = (
+            to_name_with_date_name
+            if rss_source.get(configuration.CONFIG_PODCASTS_REQUIRE_DATE, False)
+            else to_plain_file_name
         )
 
         if rss_disable:
@@ -120,7 +125,7 @@ if __name__ == "__main__":
         log('Last downloaded file "{}"', last_downloaded_file or "<none>")
 
         download_limiter_function = (
-            partial(only_new_entities, last_downloaded_file)
+            partial(build_only_new_entities(to_name_function), last_downloaded_file)
             if last_downloaded_file
             else on_directory_empty
         )
@@ -130,19 +135,19 @@ if __name__ == "__main__":
             list,
             download_limiter_function,
             partial(filter, build_only_allowed_filter_for_link_data(allow_link_types)),
-            build_flatten_rss_links_data(
-                RSSEntityWithDate if rss_require_date else RSSEntitySimpleName
-            ),
+            flatten_rss_links_data,
             get_raw_rss_entries_from_web,
         )(rss_source_link)
 
         if missing_files_links:
+            download_files = partial(download_rss_entity_to_path, to_name_function)
+
             for rss_entry in reversed(missing_files_links):
                 if DOWNLOADS_LIMITS == 0:
                     continue
 
                 log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
-                download_rss_entity_to_path(rss_source_path, rss_entry)
+                download_files(rss_source_path, rss_entry)
                 DOWNLOADS_LIMITS -= 1
         else:
             log("{}: Nothing new", rss_source_name)

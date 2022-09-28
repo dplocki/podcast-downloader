@@ -1,7 +1,7 @@
 import unittest
 
-from podcast_downloader.rss import only_new_entities
 from commons import rss_entity_generator
+from podcast_downloader.rss import build_only_new_entities, to_name_with_date_name
 
 
 class TestFindNewRSSEntities(unittest.TestCase):
@@ -11,12 +11,16 @@ class TestFindNewRSSEntities(unittest.TestCase):
             limit=5
         )
         rss_entities = [new_one_1, new_one_2, old_one_1, old_one_2, old_one_3]
-        last_downloaded_file = "[20200108] file0003.mp3"
+        last_downloaded_file = to_name_with_date_name(old_one_1)
 
         expected = [new_one_1, new_one_2]
 
         # Act
-        result = list(only_new_entities(last_downloaded_file, rss_entities))
+        result = list(
+            build_only_new_entities(to_name_with_date_name)(
+                last_downloaded_file, rss_entities
+            )
+        )
 
         # Assert
         self.assertSequenceEqual(

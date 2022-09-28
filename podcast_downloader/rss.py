@@ -18,20 +18,17 @@ class RSSEntity:
     link: str
 
 
-@dataclass
-class RSSEntitySimpleName(RSSEntity):
-    def to_file_name(self) -> str:
-        filename = self.link.rpartition("/")[-1].lower()
-        if filename.find("?") > 0:
-            filename = filename.rpartition("?")[0]
-        return filename
+def to_plain_file_name(entity: RSSEntity) -> str:
+    filename = entity.link.rpartition("/")[-1].lower()
+    if filename.find("?") > 0:
+        filename = filename.rpartition("?")[0]
+
+    return filename
 
 
-@dataclass
-class RSSEntityWithDate(RSSEntity):
-    def to_file_name(self) -> str:
-        podcast_name = RSSEntitySimpleName.to_file_name(self)
-        return f'[{time.strftime("%Y%m%d", self.published_date)}] {podcast_name}'
+def to_name_with_date_name(entity: RSSEntity) -> str:
+    podcast_name = to_plain_file_name(entity)
+    return f'[{time.strftime("%Y%m%d", entity.published_date)}] {podcast_name}'
 
 
 def get_raw_rss_entries_from_web(
@@ -40,12 +37,9 @@ def get_raw_rss_entries_from_web(
     yield from feedparser.parse(rss_link).entries
 
 
-def build_flatten_rss_links_data(
-    constructor: Callable[[datetime.date, str, str], RSSEntity]
-) -> Callable[[], Generator[RSSEntity, None, None]]:
-
-    return lambda source: (
-        constructor(rss_entry.published_parsed, link.type, link.href)
+def flatten_rss_links_data(source):
+    return (
+        RSSEntity(rss_entry.published_parsed, link.type, link.href)
         for rss_entry in source
         for link in rss_entry.links
     )
@@ -57,11 +51,11 @@ def build_only_allowed_filter_for_link_data(
     return lambda link_data: link_data.type in allowed_types
 
 
-def only_new_entities(
-    from_file: str, raw_rss_entries: List[RSSEntity]
-) -> List[RSSEntity]:
-    return takewhile(
-        lambda rss_entity: rss_entity.to_file_name() != from_file, raw_rss_entries
+def build_only_new_entities(
+    to_name_function: Callable[[RSSEntity], str]
+) -> Callable[[str, List[RSSEntity]], Generator[RSSEntity, None, None]]:
+    return lambda from_file, raw_rss_entries: takewhile(
+        lambda rss_entity: to_name_function(rss_entity) != from_file, raw_rss_entries
     )
 
 

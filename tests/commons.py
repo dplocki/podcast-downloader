@@ -1,5 +1,5 @@
 from typing import Generator, Tuple
-from podcast_downloader.rss import RSSEntityWithDate
+from podcast_downloader.rss import RSSEntity
 
 
 def build_timestamp(
@@ -10,9 +10,9 @@ def build_timestamp(
 
 def rss_entity_generator(
     day: int = 10, file_number: int = 5, limit: int = 5
-) -> Generator[RSSEntityWithDate, None, None]:
+) -> Generator[RSSEntity, None, None]:
     while limit:
-        yield RSSEntityWithDate(
+        yield RSSEntity(
             build_timestamp(2020, 1, day),
             "audio/mp3",
             f"http://www.p.com/file{file_number:0>4}.mp3",
