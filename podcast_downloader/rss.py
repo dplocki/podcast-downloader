@@ -1,4 +1,3 @@
-from datetime import datetime
 import time
 from dataclasses import dataclass
 from functools import partial
@@ -37,7 +36,9 @@ def get_raw_rss_entries_from_web(
     yield from feedparser.parse(rss_link).entries
 
 
-def flatten_rss_links_data(source):
+def flatten_rss_links_data(
+    source: Generator[feedparser.FeedParserDict, None, None]
+) -> Generator[RSSEntity, None, None]:
     return (
         RSSEntity(rss_entry.published_parsed, link.type, link.href)
         for rss_entry in source
@@ -63,13 +64,13 @@ def only_last_entity(raw_rss_entries: List[RSSEntity]) -> List[RSSEntity]:
     return islice(raw_rss_entries, 1)
 
 
-def is_entity_newer(from_date: time.struct_time, entity: RSSEntity):
+def is_entity_newer(from_date: time.struct_time, entity: RSSEntity) -> bool:
     return entity.published_date[:3] >= from_date[:3]
 
 
-def get_n_age_date(day_number: int, from_date: time.struct_time):
+def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_time:
     return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)
 
 
-def only_entities_from_date(from_date: time.struct_time):
+def only_entities_from_date(from_date: time.struct_time) -> Callable[[RSSEntity], bool]:
     return partial(filter, partial(is_entity_newer, from_date))
