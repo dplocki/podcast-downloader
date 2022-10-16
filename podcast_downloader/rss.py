@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
-from typing import Callable, Generator, List
+from typing import Callable, Generator, Iterator, List
 
 import feedparser
 
@@ -60,7 +60,7 @@ def build_only_new_entities(
     )
 
 
-def only_last_entity(raw_rss_entries: List[RSSEntity]) -> List[RSSEntity]:
+def only_last_entity(raw_rss_entries: Iterator[RSSEntity]) -> Iterator[RSSEntity]:
     return islice(raw_rss_entries, 1)
 
 

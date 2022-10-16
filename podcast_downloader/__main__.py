@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Iterable
 import urllib
 import argparse
 import re
@@ -54,9 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def configuration_to_function(config: dict):
-    configuration_value = config[configuration.CONFIG_IF_DIRECTORY_EMPTY]
-
+def configuration_to_function(configuration_value: str) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
         return only_last_entity
 
@@ -98,7 +96,7 @@ if __name__ == "__main__":
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
 
-    on_directory_empty = configuration_to_function(CONFIGURATION)
+    on_directory_empty = configuration_to_function(CONFIGURATION[configuration.CONFIG_IF_DIRECTORY_EMPTY])
 
     for rss_source in RSS_SOURCES:
         rss_source_name = rss_source[configuration.CONFIG_PODCASTS_NAME]
