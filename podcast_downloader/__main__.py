@@ -60,6 +60,9 @@ def configuration_to_function(config: dict):
     if configuration_value == "download_last":
         return only_last_entity
 
+    if configuration_value == "download_all_from_feed":
+        return lambda source: source
+
     from_n_day_match = re.match(r"^download_from_(\d+)_days$", configuration_value)
     if from_n_day_match:
         from_date = get_n_age_date(int(from_n_day_match[1]), time.localtime())

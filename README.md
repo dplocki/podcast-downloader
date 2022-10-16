@@ -149,6 +149,12 @@ Set by `download_last`.
 The script will download all episodes which appear in last *n* days. I can be use when you are downloading on regular schedule.
 The *n* number is given within the setup value: `download_from_n_days`. For example: `download_from_3_days` means download all episodes from last 3 days.
 
+### Download all from feed
+
+The script will download all episodes from the feed.
+
+Set by `download_all_from_feed`.
+
 ## The analyze of the RSS feed
 
 The script is look through all the `items` nodes in RSS file. The `item` node can contain the `enclosure` node. Those nodes are used to passing the files. According to the convention the single `item` should contain only one `enclosure`, but script (as [the library used](https://pypi.org/project/feedparser/) under it) can handle the multiple files attached into podcast `item`.
