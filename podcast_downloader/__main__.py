@@ -54,7 +54,9 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def configuration_to_function(configuration_value: str) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
+def configuration_to_function(
+    configuration_value: str,
+) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
         return only_last_entity
 
@@ -96,21 +98,18 @@ if __name__ == "__main__":
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
 
-    on_directory_empty = configuration_to_function(CONFIGURATION[configuration.CONFIG_IF_DIRECTORY_EMPTY])
-
     for rss_source in RSS_SOURCES:
         rss_source_name = rss_source[configuration.CONFIG_PODCASTS_NAME]
         rss_source_path = rss_source[configuration.CONFIG_PODCASTS_PATH]
         rss_source_link = rss_source[configuration.CONFIG_PODCASTS_RSS_LINK]
         rss_disable = rss_source.get(configuration.CONFIG_PODCASTS_DISABLE, False)
+        rss_if_directory_empty = rss_source.get(
+            configuration.CONFIG_IF_DIRECTORY_EMPTY,
+            CONFIGURATION[configuration.CONFIG_IF_DIRECTORY_EMPTY],
+        )
         rss_podcast_extensions = rss_source.get(
             configuration.CONFIG_PODCAST_EXTENSIONS,
             CONFIGURATION[configuration.CONFIG_PODCAST_EXTENSIONS],
-        )
-        to_name_function = (
-            to_name_with_date_name
-            if rss_source.get(configuration.CONFIG_PODCASTS_REQUIRE_DATE, False)
-            else to_plain_file_name
         )
 
         if rss_disable:
@@ -119,11 +118,17 @@ if __name__ == "__main__":
 
         log('Checking "{}"', rss_source_name)
 
+        to_name_function = (
+            to_name_with_date_name
+            if rss_source.get(configuration.CONFIG_PODCASTS_REQUIRE_DATE, False)
+            else to_plain_file_name
+        )
+
+        on_directory_empty = configuration_to_function(rss_if_directory_empty)
+
         last_downloaded_file = get_last_downloaded(
             get_extensions_checker(rss_podcast_extensions), rss_source_path
         )
-
-        log('Last downloaded file "{}"', last_downloaded_file or "<none>")
 
         download_limiter_function = (
             partial(build_only_new_entities(to_name_function), last_downloaded_file)
@@ -139,6 +144,8 @@ if __name__ == "__main__":
             flatten_rss_links_data,
             get_raw_rss_entries_from_web,
         )(rss_source_link)
+
+        log('Last downloaded file "{}"', last_downloaded_file or "<none>")
 
         if missing_files_links:
             download_files = partial(download_rss_entity_to_path, to_name_function)
