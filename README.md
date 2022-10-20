@@ -72,6 +72,7 @@ Those will be cover by all values given by command line.
 | `require_date`       | boolean   | no       | `false`                  | Is date of podcast should be added into name of file |
 | `disable`            | boolean   | no       | `false`                  | This podcast will be ignored |
 | `podcast_extensions` | key-value | no       | `{".mp3": "audio/mpeg"}` | The file filter |
+| `if_directory_empty` | string    | no       | download_last            | See [In case of empty directory](#in-case-of-empty-directory) |
 
 ### An example of configuration file
 
