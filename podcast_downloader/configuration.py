@@ -1,4 +1,7 @@
 from typing import List, Tuple
+import time
+
+SECONDS_IN_DAY = 24 * 60 * 60
 
 CONFIG_IF_DIRECTORY_EMPTY = "if_directory_empty"
 CONFIG_DOWNLOADS_LIMIT = "downloads_limit"
@@ -30,3 +33,7 @@ def configuration_verification(config: dict) -> Tuple[bool, List[str]]:
             )
 
     return True, None
+
+
+def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_time:
+    return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)

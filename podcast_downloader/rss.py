@@ -7,9 +7,6 @@ from typing import Callable, Generator, Iterator, List
 import feedparser
 
 
-SECONDS_IN_DAY = 24 * 60 * 60
-
-
 @dataclass
 class RSSEntity:
     published_date: time.struct_time
@@ -66,10 +63,6 @@ def only_last_entity(raw_rss_entries: Iterator[RSSEntity]) -> Iterator[RSSEntity
 
 def is_entity_newer(from_date: time.struct_time, entity: RSSEntity) -> bool:
     return entity.published_date[:3] >= from_date[:3]
-
-
-def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_time:
-    return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)
 
 
 def only_entities_from_date(from_date: time.struct_time) -> Callable[[RSSEntity], bool]:

@@ -8,7 +8,7 @@ import time
 from functools import partial
 from . import configuration
 
-from podcast_downloader.configuration import configuration_verification
+from podcast_downloader.configuration import configuration_verification, get_n_age_date
 from .utils import log, compose
 from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
@@ -19,7 +19,6 @@ from .rss import (
     flatten_rss_links_data,
     get_raw_rss_entries_from_web,
     only_last_entity,
-    get_n_age_date,
     only_entities_from_date,
     to_name_with_date_name,
     to_plain_file_name,
