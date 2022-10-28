@@ -2,13 +2,12 @@ import unittest
 
 from time import strftime
 from copy import deepcopy
+from podcast_downloader.configuration import get_n_age_date
 from podcast_downloader.rss import (
     is_entity_newer,
-    get_n_age_date,
     only_entities_from_date,
 )
 from commons import rss_entity_generator, build_timestamp
-
 
 class TestAllEntitiesFromNDays(unittest.TestCase):
     def test_of_filter_function(self):
