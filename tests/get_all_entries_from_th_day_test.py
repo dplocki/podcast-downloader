@@ -1,3 +1,4 @@
+from time import strptime
 import unittest
 
 from podcast_downloader.configuration import (
@@ -9,7 +10,7 @@ from podcast_downloader.configuration import (
 )
 
 
-class TestGetNthDay(unittest.TestCase):
+class TestParseDayLabel(unittest.TestCase):
     def test_parse_day_label_correct_values(self):
         test_parameters = {
             "Monday": "Monday",
@@ -35,8 +36,32 @@ class TestGetNthDay(unittest.TestCase):
     def test_get_label_to_date_correct_values(self):
         for week_day in WEEK_DAYS:
             result = get_label_to_date(week_day)
-            self.assertEqual(result, get_week_day)
+            self.assertEqual(result.func, get_week_day)
 
         for day_number in range(1, 32):
             result = get_label_to_date(day_number)
-            self.assertEqual(result, get_nth_day)
+            self.assertEqual(result.func, get_nth_day)
+
+
+class TestGetWeekDay(unittest.TestCase):
+    def test_for_day_before(self):
+        # Assign
+        current_date = strptime("29.10.2022", "%d.%m.%Y")
+        last_monday = strptime("24.10.2022", "%d.%m.%Y")
+
+        # Act
+        result = get_week_day(WEEK_DAYS[0], current_date)  # Monday
+
+        # Assert
+        self.assertEqual(result, last_monday, "Expected first Monday before the date")
+
+    def test_for_day_in_the_day(self):
+        # Assign
+        current_date = strptime("26.10.2022", "%d.%m.%Y")
+        last_monday = strptime("26.10.2022", "%d.%m.%Y")
+
+        # Act
+        result = get_week_day(WEEK_DAYS[2], current_date)  # Wednesday
+
+        # Assert
+        self.assertEqual(result, last_monday, "Expected return the same Wednesday")

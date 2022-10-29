@@ -1,4 +1,6 @@
+from functools import partial
 from typing import List, Tuple
+from datetime import datetime, timedelta
 import time
 
 SECONDS_IN_DAY = 24 * 60 * 60
@@ -49,15 +51,20 @@ def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_
     return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)
 
 
-def get_label_to_date(day_label: str) -> time.struct_time:
+def get_label_to_date(day_label: str) -> partial:
     if day_label in WEEK_DAYS:
-        return get_week_day
+        return partial(get_week_day, day_label)
 
-    return get_nth_day
+    return partial(get_nth_day, int(day_label))
 
 
 def get_week_day(weekday_label: str, from_date: time.struct_time) -> time.struct_time:
-    pass
+    from_datetime = datetime(*from_date[:6])
+
+    return (
+        from_datetime
+        - timedelta(from_datetime.weekday() - WEEK_DAYS.index(weekday_label))
+    ).timetuple()
 
 
 def get_nth_day(day: int, from_date: time.struct_time) -> time.struct_time:
