@@ -81,3 +81,35 @@ class TestGetNthDay(unittest.TestCase):
         self.assertEqual(
             result, expected_date, f"Expected return the {nth_day} of the same month"
         )
+
+    def test_for_day_month_before(self):
+        # Assign
+        nth_day = 17
+        current_date = strptime("4.10.2022", "%d.%m.%Y")
+        expected_date = strptime(f"{nth_day}.09.2022", "%d.%m.%Y")
+
+        # Act
+        result = get_nth_day(nth_day, current_date)
+
+        # Assert
+        self.assertEqual(
+            result,
+            expected_date,
+            f"Expected return the {nth_day} of the previous month",
+        )
+
+    def test_for_day_month_before_january(self):
+        # Assign
+        nth_day = 17
+        current_date = strptime("4.01.2022", "%d.%m.%Y")
+        expected_date = strptime(f"{nth_day}.12.2021", "%d.%m.%Y")
+
+        # Act
+        result = get_nth_day(nth_day, current_date)
+
+        # Assert
+        self.assertEqual(
+            result,
+            expected_date,
+            f"Expected return the {nth_day} of the December",
+        )
