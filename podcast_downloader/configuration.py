@@ -68,7 +68,9 @@ def get_week_day(weekday_label: str, from_date: time.struct_time) -> time.struct
 
 
 def get_nth_day(day: int, from_date: time.struct_time) -> time.struct_time:
-    pass
+    from_datetime = datetime(*from_date[:6])
+
+    return (from_datetime - timedelta(from_date[2] - day)).timetuple()
 
 
 def parse_day_label(raw_label: str) -> str:

@@ -58,10 +58,26 @@ class TestGetWeekDay(unittest.TestCase):
     def test_for_day_in_the_day(self):
         # Assign
         current_date = strptime("26.10.2022", "%d.%m.%Y")
-        last_monday = strptime("26.10.2022", "%d.%m.%Y")
+        wanted_wednesday = strptime("26.10.2022", "%d.%m.%Y")
 
         # Act
         result = get_week_day(WEEK_DAYS[2], current_date)  # Wednesday
 
         # Assert
-        self.assertEqual(result, last_monday, "Expected return the same Wednesday")
+        self.assertEqual(result, wanted_wednesday, "Expected return the same Wednesday")
+
+
+class TestGetNthDay(unittest.TestCase):
+    def test_for_day_inside_the_month(self):
+        # Assign
+        nth_day = 2
+        current_date = strptime("23.10.2022", "%d.%m.%Y")
+        expected_date = strptime(f"{nth_day}.10.2022", "%d.%m.%Y")
+
+        # Act
+        result = get_nth_day(nth_day, current_date)
+
+        # Assert
+        self.assertEqual(
+            result, expected_date, f"Expected return the {nth_day} of the same month"
+        )
