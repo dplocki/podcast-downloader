@@ -9,6 +9,7 @@ from podcast_downloader.rss import (
 )
 from commons import rss_entity_generator, build_timestamp
 
+
 class TestAllEntitiesFromNDays(unittest.TestCase):
     def test_of_filter_function(self):
         # Assign
