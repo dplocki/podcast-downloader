@@ -1,6 +1,12 @@
 import unittest
 
-from podcast_downloader.configuration import parse_day_label
+from podcast_downloader.configuration import (
+    WEEK_DAYS,
+    get_label_to_date,
+    get_nth_day,
+    get_week_day,
+    parse_day_label,
+)
 
 
 class TestGetNthDay(unittest.TestCase):
@@ -25,3 +31,12 @@ class TestGetNthDay(unittest.TestCase):
 
     def test_parse_day_label_incorrect_values(self):
         self.assertRaises(Exception, parse_day_label, "abcde")
+
+    def test_get_label_to_date_correct_values(self):
+        for week_day in WEEK_DAYS:
+            result = get_label_to_date(week_day)
+            self.assertEqual(result, get_week_day)
+
+        for day_number in range(1, 32):
+            result = get_label_to_date(day_number)
+            self.assertEqual(result, get_nth_day)

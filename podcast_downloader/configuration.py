@@ -50,10 +50,10 @@ def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_
 
 
 def get_label_to_date(day_label: str) -> time.struct_time:
-    if day_label.to_lower() in WEEK_DAYS:
+    if day_label in WEEK_DAYS:
         return get_week_day
-    else:
-        return get_nth_day
+
+    return get_nth_day
 
 
 def get_week_day(weekday_label: str, from_date: time.struct_time) -> time.struct_time:
