@@ -11,6 +11,12 @@ class TestGetNthDay(unittest.TestCase):
             "wednesday": "Wednesday",
             "fRIDay": "Friday",
             "saturday": "Saturday",
+            "1st": 1,
+            "2nd": 2,
+            "3rd": 3,
+            "4th": 4,
+            "6": 6,
+            "25th": 25,
         }
 
         for test_value, expected_value in test_parameters.items():

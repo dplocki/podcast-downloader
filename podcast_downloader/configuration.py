@@ -1,4 +1,3 @@
-from calendar import weekday
 from typing import List, Tuple
 import time
 
@@ -66,14 +65,27 @@ def get_nth_day(day: int, from_date: time.struct_time) -> time.struct_time:
 
 
 def parse_day_label(raw_label: str) -> str:
-    capitalize_raw_label = raw_label.capitalize()
+    if raw_label.isnumeric():
+        return int(raw_label)
 
+    if raw_label == "1st":
+        return 1
+
+    if raw_label == "2nd":
+        return 2
+
+    if raw_label == "3rd":
+        return 3
+
+    if raw_label[-2:] == "th":
+        return int(raw_label[:-2])
+
+    capitalize_raw_label = raw_label.capitalize()
     if capitalize_raw_label in WEEK_DAYS:
         return capitalize_raw_label
 
     short_weekdays = ("Mon", "Tues", "Weds", "Thurs", "Fri", "Sat", "Sun")
-    index = short_weekdays.index(capitalize_raw_label)
-    if index >= 0:
-        return WEEK_DAYS[index]
+    if capitalize_raw_label in short_weekdays:
+        return WEEK_DAYS[short_weekdays.index(capitalize_raw_label)]
 
     raise Exception(f"Cannot read weekday name '{raw_label}'")
