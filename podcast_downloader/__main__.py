@@ -8,7 +8,12 @@ import time
 from functools import partial
 from . import configuration
 
-from podcast_downloader.configuration import configuration_verification, get_n_age_date
+from podcast_downloader.configuration import (
+    configuration_verification,
+    get_label_to_date,
+    get_n_age_date,
+    parse_day_label,
+)
 from .utils import log, compose
 from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
@@ -62,10 +67,18 @@ def configuration_to_function(
     if configuration_value == "download_all_from_feed":
         return lambda source: source
 
+    local_time = time.localtime()
+
     from_n_day_match = re.match(r"^download_from_(\d+)_days$", configuration_value)
     if from_n_day_match:
-        from_date = get_n_age_date(int(from_n_day_match[1]), time.localtime())
+        from_date = get_n_age_date(int(from_n_day_match[1]), local_time)
         return only_entities_from_date(from_date)
+
+    from_nth_day_match = re.match(r"^download_from_(.*)", configuration_value)
+    if from_nth_day_match:
+        day_label = parse_day_label(from_nth_day_match[1])
+
+        return only_entities_from_date(get_label_to_date(day_label)(local_time))
 
     raise Exception(f"The value the '{configuration_value}' is not recognizable")
 

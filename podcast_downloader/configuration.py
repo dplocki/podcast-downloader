@@ -1,5 +1,5 @@
 from functools import partial
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from datetime import datetime, timedelta
 import time
 
@@ -51,7 +51,7 @@ def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_
     return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)
 
 
-def get_label_to_date(day_label: str) -> partial:
+def get_label_to_date(day_label: Union[str, int]) -> partial:
     if day_label in WEEK_DAYS:
         return partial(get_week_day, day_label)
 
@@ -70,17 +70,17 @@ def get_week_day(weekday_label: str, from_date: time.struct_time) -> time.struct
 def get_nth_day(day: int, from_date: time.struct_time) -> time.struct_time:
     from_datetime = datetime(*from_date[:6])
 
-    day_diffrence = from_date[2] - day
+    day_difference = from_date[2] - day
     datetime_result = (
-        from_datetime - timedelta(days=day_diffrence)
-        if day_diffrence > 0
+        from_datetime - timedelta(days=day_difference)
+        if day_difference > 0
         else (from_datetime.replace(day=1) - timedelta(days=28)).replace(day=day)
     )
 
     return datetime_result.timetuple()
 
 
-def parse_day_label(raw_label: str) -> str:
+def parse_day_label(raw_label: str) -> Union[str, int]:
     if raw_label.isnumeric():
         return int(raw_label)
 
