@@ -44,27 +44,38 @@ class TestParseDayLabel(unittest.TestCase):
 
 
 class TestGetWeekDay(unittest.TestCase):
+    """Used in examples:
+
+    Mo Tu We Th Fr Sa Su
+    17 18 19 20 21 22 23
+    24 25 26 27 28 29 30
+    """
+
     def test_for_day_before(self):
         # Assign
         current_date = strptime("29.10.2022", "%d.%m.%Y")
-        last_monday = strptime("24.10.2022", "%d.%m.%Y")
+        day_after_last_monday = strptime("25.10.2022", "%d.%m.%Y")
 
         # Act
         result = get_week_day(WEEK_DAYS[0], current_date)  # Monday
 
         # Assert
-        self.assertEqual(result, last_monday, "Expected first Monday before the date")
+        self.assertEqual(
+            result, day_after_last_monday, "Expected first Tuesday before the date"
+        )
 
     def test_for_day_in_the_day(self):
         # Assign
         current_date = strptime("26.10.2022", "%d.%m.%Y")
-        wanted_wednesday = strptime("26.10.2022", "%d.%m.%Y")
+        day_after_last_wednesday = strptime("20.10.2022", "%d.%m.%Y")
 
         # Act
         result = get_week_day(WEEK_DAYS[2], current_date)  # Wednesday
 
         # Assert
-        self.assertEqual(result, wanted_wednesday, "Expected return the same Wednesday")
+        self.assertEqual(
+            result, day_after_last_wednesday, "Expected first Thursday before the date"
+        )
 
 
 class TestGetNthDay(unittest.TestCase):
@@ -72,21 +83,23 @@ class TestGetNthDay(unittest.TestCase):
         # Assign
         nth_day = 2
         current_date = strptime("23.10.2022", "%d.%m.%Y")
-        expected_date = strptime(f"{nth_day}.10.2022", "%d.%m.%Y")
+        expected_date = strptime(f"{nth_day + 1}.10.2022", "%d.%m.%Y")
 
         # Act
         result = get_nth_day(nth_day, current_date)
 
         # Assert
         self.assertEqual(
-            result, expected_date, f"Expected return the {nth_day} of the same month"
+            result,
+            expected_date,
+            f"Expected return the {nth_day + 1} of the same month",
         )
 
     def test_for_day_month_before(self):
         # Assign
         nth_day = 17
         current_date = strptime("4.10.2022", "%d.%m.%Y")
-        expected_date = strptime(f"{nth_day}.09.2022", "%d.%m.%Y")
+        expected_date = strptime(f"{nth_day + 1}.09.2022", "%d.%m.%Y")
 
         # Act
         result = get_nth_day(nth_day, current_date)
@@ -102,7 +115,7 @@ class TestGetNthDay(unittest.TestCase):
         # Assign
         nth_day = 17
         current_date = strptime("4.01.2022", "%d.%m.%Y")
-        expected_date = strptime(f"{nth_day}.12.2021", "%d.%m.%Y")
+        expected_date = strptime(f"{nth_day + 1}.12.2021", "%d.%m.%Y")
 
         # Act
         result = get_nth_day(nth_day, current_date)
