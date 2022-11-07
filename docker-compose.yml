@@ -1,8 +1,7 @@
 version: '3.9'
 services:
-  app:
+  tests:
     build:
       context: .
     volumes:
       - .:/app/
-  
