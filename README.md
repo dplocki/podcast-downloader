@@ -43,22 +43,25 @@ Using the [example above](#example), the result will be:
 
 The configuration file is placed in home directory.
 
-The name: `.podcast_downloader_config.json`.
-
-The format is: [JSON](https://en.wikipedia.org/wiki/JSON).
+The name: `.podcast_downloader_config.json`. The file is format in [JSON](https://en.wikipedia.org/wiki/JSON).
 
 ### The settings hierarchy
 
 The script will replace default values by read from configuration file.
 Those will be cover by all values given by command line.
 
+```
+ command line parameters > configuration file > default values
+```
+
 ### The main options
 
-| Property             | Type      | Required | Default                  | Note |
-|:---------------------|:---------:|:--------:|:------------------------:|:-----|
-| `downloads_limit`    | number    | no       | infinity                 |      |
-| `if_directory_empty` | string    | no       | download_last            | See [In case of empty directory](#in-case-of-empty-directory) |
-| `podcast_extensions` | key-value | no       | `{".mp3": "audio/mpeg"}` | The file filter |
+| Property             | Type       | Required | Default                  | Note |
+|:---------------------|:----------:|:--------:|:------------------------:|:-----|
+| `downloads_limit`    | number     | no       | infinity                 |      |
+| `if_directory_empty` | string     | no       | download_last            | See [In case of empty directory](#in-case-of-empty-directory) |
+| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}` | The file filter |
+| `podcasts`           | subsection | yes      | `[]`                     | See [Podcasts sub category](#podcasts-sub-category) |
 
 ### Podcasts sub category
 
@@ -134,8 +137,16 @@ Notes: the dot on the file extension is require.
 
 If a directory for podcast is empty, the script needs to recognize what to do. Due to lack of database, you can:
 
-* download only the last episode
-* download all new episode from last n days
+* [download all episodes from feed](#download-all-from-feed)
+* [download only the last episode](#only-last)
+* [download all new episode from last n days](#download-all-from-n-days)
+* [download all new episode since day after, the last episode should appear](#download-all-episode-since-last-excepted)
+
+### Download all from feed
+
+The script will download all episodes from the feed.
+
+Set by `download_all_from_feed`.
 
 ### Only last
 
@@ -150,11 +161,34 @@ Set by `download_last`.
 The script will download all episodes which appear in last *n* days. I can be use when you are downloading on regular schedule.
 The *n* number is given within the setup value: `download_from_n_days`. For example: `download_from_3_days` means download all episodes from last 3 days.
 
-### Download all from feed
+### Download all episode since last excepted
 
-The script will download all episodes from the feed.
+The script will download all episodes which appear after the day of release of last episode.
 
-Set by `download_all_from_feed`.
+The *n* number is the day of the normal episode.
+You can provide here week days as word (size of the letters is ignored)
+
+| Full week day | Shorten name |
+|:--------------|:-------------|
+| Monday        | Mon          |
+| Tuesday       | Tues         |
+| Wednesday     | Weds         |
+| Thursday      | Thurs        |
+| Friday        | Fri          |
+| Saturday      | Sat          |
+| Sunday        | Sun          |
+
+You can provide the number, it will means the day of the month. The script accepts only number from 1 to 28.
+
+Set by `download_from_`.
+
+Examples:
+
+| Example value          | Meaning |
+|------------------------|---------|
+| `download_from_monday` | New episodes appear in Monday. The script will download all episodes since last Tuesday (including it) |
+| `download_from_Fri`    | New episodes appear in Friday. The script will download all episodes since last Saturday (including it) |
+| `download_from_12`     | New episodes appear each 12th of month. The script will download all episodes since 13 month before |
 
 ## The analyze of the RSS feed
 
