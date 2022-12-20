@@ -26,6 +26,17 @@ def link_to_file_name(link: str) -> str:
     return link
 
 
+def link_to_extension(link: str) -> str:
+    if link.find("?") > 0:
+        link = link.rpartition("?")[0]
+
+    link = link.rpartition("/")[-1].lower()
+    if link.find(".") > 0:
+        return link.rpartition(".")[-1]
+    else:
+        return ""
+
+
 def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
     return name_template \
         .replace('%file_name%', link_to_file_name(entity.link)) \
