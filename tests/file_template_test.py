@@ -55,3 +55,23 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
             self.assertEqual(
                 result, expected_file_name, f'File extension should be named "{expected_file_name}" not "{result}"'
             )
+
+    def test_file_template_to_file_name(self):
+        test_parameters = [
+            ('http://www.podcast.com/podcast/something/fIlE_nAme.mp3', "%file_name%.%file_extension%", "file_name.mp3"),
+            ('http://www.podcast.com/podcast/something/fIlE_nAme.mp3', "[%publish_date%] %file_name%.%file_extension%", "[20200102] file_name.mp3"),
+            ('http://www.podcast.com/podcast/something/fIlE_nAme.mp3', "%title%.%file_extension%", "The fancy title.mp3"),
+            ('http://www.podcast.com/podcast/something/fIlE_nAme.mp3', "[%publish_date%] %title%.%file_extension%", "[20200102] The fancy title.mp3"),
+        ]
+
+        for url, template_file_name, expected_file_name in test_parameters:
+            # Assign
+            rss_entry = build_test_link_data(link=url)
+
+            # Act
+            result = file_template_to_file_name(template_file_name, rss_entry)
+
+            # Assert
+            self.assertEqual(
+                result, expected_file_name, f'File should be named "{expected_file_name}" not "{result}"'
+            )

@@ -41,6 +41,7 @@ def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
     return name_template \
         .replace('%file_name%', link_to_file_name(entity.link)) \
         .replace('%publish_date%', time.strftime("%Y%m%d", entity.published_date)) \
+        .replace('%file_extension%', link_to_extension(entity.link)) \
         .replace('%title%', entity.title)
 
 
