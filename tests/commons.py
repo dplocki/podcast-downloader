@@ -14,6 +14,7 @@ def rss_entity_generator(
     for index in range(limit):
         yield RSSEntity(
             build_timestamp(2020, 1, day - index),
+            "Title",
             "audio/mp3",
             f"http://www.p.com/file{(file_number - index):0>4}.mp3",
         )

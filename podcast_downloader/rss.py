@@ -10,6 +10,7 @@ import feedparser
 @dataclass
 class RSSEntity:
     published_date: time.struct_time
+    title: str
     type: str
     link: str
 
@@ -37,7 +38,7 @@ def flatten_rss_links_data(
     source: Generator[feedparser.FeedParserDict, None, None]
 ) -> Generator[RSSEntity, None, None]:
     return (
-        RSSEntity(rss_entry.published_parsed, link.type, link.href)
+        RSSEntity(rss_entry.published_parsed, rss_entry.title, link.type, link.href)
         for rss_entry in source
         for link in rss_entry.links
     )

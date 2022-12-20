@@ -7,7 +7,7 @@ from tests.commons import build_timestamp
 
 
 def build_test_link_data(link: str) -> Tuple[datetime.date, str, str]:
-    return RSSEntity(build_timestamp(2020, 1, 2), "audio/mp3", "The fancy title", link)
+    return RSSEntity(build_timestamp(2020, 1, 2), "The fancy title", "audio/mp3", link)
 
 
 class TestLink2FileName(unittest.TestCase):
