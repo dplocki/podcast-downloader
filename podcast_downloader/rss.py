@@ -15,17 +15,22 @@ class RSSEntity:
     link: str
 
 
-def to_plain_file_name(entity: RSSEntity) -> str:
-    filename = entity.link.rpartition("/")[-1].lower()
-    if filename.find("?") > 0:
-        filename = filename.rpartition("?")[0]
+def link_to_file_name(link: str) -> str:
+    if link.find("?") > 0:
+        link = link.rpartition("?")[0]
 
-    return filename
+    link = link.rpartition("/")[-1].lower()
+    if link.find(".") > 0:
+        link = link.rpartition(".")[0]
+
+    return link
 
 
-def to_name_with_date_name(entity: RSSEntity) -> str:
-    podcast_name = to_plain_file_name(entity)
-    return f'[{time.strftime("%Y%m%d", entity.published_date)}] {podcast_name}'
+def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
+    return name_template \
+        .replace('%file_name%', link_to_file_name(entity.link)) \
+        .replace('%publish_date%', time.strftime("%Y%m%d", entity.published_date)) \
+        .replace('%title%', entity.title)
 
 
 def get_raw_rss_entries_from_web(
