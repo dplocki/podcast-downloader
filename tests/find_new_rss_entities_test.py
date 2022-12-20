@@ -1,7 +1,11 @@
+from functools import partial
 import unittest
 
 from commons import rss_entity_generator
-from podcast_downloader.rss import build_only_new_entities, to_name_with_date_name
+from podcast_downloader.rss import build_only_new_entities, file_template_to_file_name
+
+
+to_name_with_date_name = partial(file_template_to_file_name, "%file_name%")
 
 
 class TestFindNewRSSEntities(unittest.TestCase):
