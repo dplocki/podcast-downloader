@@ -15,11 +15,15 @@ class RSSEntity:
     link: str
 
 
-def link_to_file_name(link: str) -> str:
+def link_to_file_name_with_extension(link: str) -> str:
     if link.find("?") > 0:
         link = link.rpartition("?")[0]
 
-    link = link.rpartition("/")[-1].lower()
+    return link.rpartition("/")[-1].lower()
+
+
+def link_to_file_name(link: str) -> str:
+    link = link_to_file_name_with_extension(link)
     if link.find(".") > 0:
         link = link.rpartition(".")[0]
 
@@ -27,10 +31,7 @@ def link_to_file_name(link: str) -> str:
 
 
 def link_to_extension(link: str) -> str:
-    if link.find("?") > 0:
-        link = link.rpartition("?")[0]
-
-    link = link.rpartition("/")[-1].lower()
+    link = link_to_file_name_with_extension(link)
     if link.find(".") > 0:
         return link.rpartition(".")[-1]
     else:
