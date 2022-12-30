@@ -106,7 +106,7 @@ The script accept following command line arguments:
 
 If RSS channel doesn't have single and constant name convention, it may causing the script to working incorrectly. The solution is force files to have common and meaningful prefix. The script is able to adding the date on beginning of downloaded file name.
 
-How to turn on: set the `require_date` option to true.
+Use [File name template](#file-name-template) and option `%publish_date%`.
 
 ## File name template
 
