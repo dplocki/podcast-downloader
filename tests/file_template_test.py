@@ -6,15 +6,19 @@ from podcast_downloader.rss import (
     file_template_to_file_name,
     link_to_extension,
     link_to_file_name,
+    str_to_filename,
 )
 
 from tests.commons import build_timestamp
 
 
 def build_test_link_data(
-    link: str,
+    link: str = None, title: str = None
 ) -> Tuple[datetime.date, str, str]:
-    return RSSEntity(build_timestamp(2020, 1, 2), "The fancy title", "audio/mp3", link)
+    link = link or "http://www.podcast.com/podcast/something/abc.mp3"
+    title = title or "The fancy title"
+
+    return RSSEntity(build_timestamp(2020, 1, 2), title, "audio/mp3", link)
 
 
 class TestFileTemplateToFileNameConverter(unittest.TestCase):
@@ -83,34 +87,74 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
                 f'File extension should be named "{expected_file_name}" not "{result}"',
             )
 
+    def test_str_to_filename(self):
+        test_parameters = [
+            ("Ala ma kota", "Ala ma kota"),
+            (" abcdefg hijk ", "abcdefg hijk"),
+            ("12345" * 60, "12345" * 51),
+            (
+                'AEE 226: How to "80/20" Your English to Make More Friends with italki Teacher Nick Vance',
+                'AEE 226  How to "80 20" Your English to Make More Friends with italki Teacher Nick Vance',
+            ),
+            (
+                "【Audio Book/朗読】『浦島太郎（うらしまたろう） 』Urashima Taro /Japanese folktales",
+                "【Audio Book 朗読】『浦島太郎(うらしまたろう) 』Urashima Taro  Japanese folktales",
+            ),
+        ]
+
+        for entry_title, expected_file_name in test_parameters:
+            # Act
+            result = str_to_filename(entry_title)
+
+            # Assert
+            self.assertEqual(
+                result,
+                expected_file_name,
+                f'File should be named "{expected_file_name}" not "{result}"',
+            )
+
     def test_file_template_to_file_name(self):
         test_parameters = [
             (
-                "http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3"
+                ),
                 "%file_name%.%file_extension%",
                 "file_name.mp3",
             ),
             (
-                "http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3"
+                ),
                 "[%publish_date%] %file_name%.%file_extension%",
                 "[20200102] file_name.mp3",
             ),
             (
-                "http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3"
+                ),
                 "%title%.%file_extension%",
                 "The fancy title.mp3",
             ),
             (
-                "http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                    title="The fancy title",
+                ),
                 "[%publish_date%] %title%.%file_extension%",
                 "[20200102] The fancy title.mp3",
             ),
+            (
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                    title="   abc/def   ",
+                ),
+                "[%publish_date%] %title%.%file_extension%",
+                "[20200102] abc def.mp3",
+            ),
         ]
 
-        for url, template_file_name, expected_file_name in test_parameters:
-            # Assign
-            rss_entry = build_test_link_data(link=url)
-
+        for rss_entry, template_file_name, expected_file_name in test_parameters:
             # Act
             result = file_template_to_file_name(template_file_name, rss_entry)
 
