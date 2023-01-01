@@ -192,7 +192,13 @@ if __name__ == "__main__":
                 if DOWNLOADS_LIMITS == 0:
                     continue
 
-                log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
+                log(
+                    '{}: Downloading file: "{}" saved as "{}"',
+                    rss_source_name,
+                    rss_entry.link,
+                    to_name_function(rss_entry),
+                )
+
                 download_files(rss_source_path, rss_entry)
                 DOWNLOADS_LIMITS -= 1
         else:
