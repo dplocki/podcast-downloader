@@ -9,7 +9,7 @@ from podcast_downloader.rss import (
 
 
 def build_test_link_data(type: str) -> Tuple[datetime.date, str, str]:
-    return RSSEntity(None, type, None)
+    return RSSEntity(None, None, type, None)
 
 
 class TestBuildOnlyAllowedFilterForLinkData(unittest.TestCase):

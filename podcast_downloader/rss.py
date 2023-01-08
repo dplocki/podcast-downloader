@@ -1,30 +1,62 @@
+import re
 import time
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
 from typing import Callable, Generator, Iterator, List
+import unicodedata
 
 import feedparser
+
+
+FILE_NAME_CHARACTER_LIMIT = 255
 
 
 @dataclass
 class RSSEntity:
     published_date: time.struct_time
+    title: str
     type: str
     link: str
 
 
-def to_plain_file_name(entity: RSSEntity) -> str:
-    filename = entity.link.rpartition("/")[-1].lower()
-    if filename.find("?") > 0:
-        filename = filename.rpartition("?")[0]
+def link_to_file_name_with_extension(link: str) -> str:
+    if link.find("?") > 0:
+        link = link.rpartition("?")[0]
 
-    return filename
+    return link.rpartition("/")[-1].lower()
 
 
-def to_name_with_date_name(entity: RSSEntity) -> str:
-    podcast_name = to_plain_file_name(entity)
-    return f'[{time.strftime("%Y%m%d", entity.published_date)}] {podcast_name}'
+def link_to_file_name(link: str) -> str:
+    link = link_to_file_name_with_extension(link)
+    if link.find(".") > 0:
+        link = link.rpartition(".")[0]
+
+    return link
+
+
+def link_to_extension(link: str) -> str:
+    link = link_to_file_name_with_extension(link)
+    if link.find(".") > 0:
+        return link.rpartition(".")[-1]
+
+    return ""
+
+
+def str_to_filename(value: str) -> str:
+    value = unicodedata.normalize("NFKC", value)
+    value = re.sub(r"[\u0000-\u001F\u007F\*/:<>\?\\\|]", " ", value)
+
+    return value.strip()[:FILE_NAME_CHARACTER_LIMIT]
+
+
+def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
+    return (
+        name_template.replace("%file_name%", link_to_file_name(entity.link))
+        .replace("%publish_date%", time.strftime("%Y%m%d", entity.published_date))
+        .replace("%file_extension%", link_to_extension(entity.link))
+        .replace("%title%", str_to_filename(entity.title))
+    )
 
 
 def get_raw_rss_entries_from_web(
@@ -37,7 +69,7 @@ def flatten_rss_links_data(
     source: Generator[feedparser.FeedParserDict, None, None]
 ) -> Generator[RSSEntity, None, None]:
     return (
-        RSSEntity(rss_entry.published_parsed, link.type, link.href)
+        RSSEntity(rss_entry.published_parsed, rss_entry.title, link.type, link.href)
         for rss_entry in source
         for link in rss_entry.links
     )

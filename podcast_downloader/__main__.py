@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Iterable
+from typing import Callable, Dict, Iterable
 import urllib
 import argparse
 import re
@@ -14,19 +14,18 @@ from podcast_downloader.configuration import (
     get_n_age_date,
     parse_day_label,
 )
-from .utils import log, compose
+from .utils import log, compose, warning
 from .downloaded import get_extensions_checker, get_last_downloaded
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
     RSSEntity,
     build_only_allowed_filter_for_link_data,
     build_only_new_entities,
+    file_template_to_file_name,
     flatten_rss_links_data,
     get_raw_rss_entries_from_web,
     only_last_entity,
     only_entities_from_date,
-    to_name_with_date_name,
-    to_plain_file_name,
 )
 
 
@@ -58,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def configuration_to_function(
+def configuration_to_function_on_empty_directory(
     configuration_value: str,
 ) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
@@ -83,6 +82,30 @@ def configuration_to_function(
     raise Exception(f"The value the '{configuration_value}' is not recognizable")
 
 
+def configuration_to_function_rss_to_name(
+    configuration_value: str, sub_configuration: Dict[str, str]
+) -> Callable[[RSSEntity], str]:
+    if (
+        configuration.CONFIG_PODCASTS_REQUIRE_DATE in sub_configuration
+        and configuration.CONFIG_FILE_NAME_TEMPLATE not in sub_configuration
+    ):
+        default_file_name_template_with_date = (
+            "[%publish_date%] %file_name%.%file_extension%"
+        )
+
+        if sub_configuration[configuration.CONFIG_PODCASTS_REQUIRE_DATE]:
+            configuration_value = default_file_name_template_with_date
+
+        warning(
+            'The option {} is deprecated, please replace use of it with the {} option: "{}"',
+            configuration.CONFIG_PODCASTS_REQUIRE_DATE,
+            configuration.CONFIG_FILE_NAME_TEMPLATE,
+            default_file_name_template_with_date,
+        )
+
+    return partial(file_template_to_file_name, configuration_value)
+
+
 if __name__ == "__main__":
     import sys
 
@@ -90,6 +113,7 @@ if __name__ == "__main__":
         configuration.CONFIG_DOWNLOADS_LIMIT: sys.maxsize,
         configuration.CONFIG_IF_DIRECTORY_EMPTY: "download_last",
         configuration.CONFIG_PODCAST_EXTENSIONS: {".mp3": "audio/mpeg"},
+        configuration.CONFIG_FILE_NAME_TEMPLATE: "%file_name%.%file_extension%",
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -115,6 +139,10 @@ if __name__ == "__main__":
         rss_source_path = rss_source[configuration.CONFIG_PODCASTS_PATH]
         rss_source_link = rss_source[configuration.CONFIG_PODCASTS_RSS_LINK]
         rss_disable = rss_source.get(configuration.CONFIG_PODCASTS_DISABLE, False)
+        rss_file_name_template_value = rss_source.get(
+            configuration.CONFIG_FILE_NAME_TEMPLATE,
+            CONFIGURATION[configuration.CONFIG_FILE_NAME_TEMPLATE],
+        )
         rss_if_directory_empty = rss_source.get(
             configuration.CONFIG_IF_DIRECTORY_EMPTY,
             CONFIGURATION[configuration.CONFIG_IF_DIRECTORY_EMPTY],
@@ -130,14 +158,12 @@ if __name__ == "__main__":
 
         log('Checking "{}"', rss_source_name)
 
-        to_name_function = (
-            to_name_with_date_name
-            if rss_source.get(configuration.CONFIG_PODCASTS_REQUIRE_DATE, False)
-            else to_plain_file_name
+        to_name_function = configuration_to_function_rss_to_name(
+            rss_file_name_template_value, rss_source
         )
-
-        on_directory_empty = configuration_to_function(rss_if_directory_empty)
-
+        on_directory_empty = configuration_to_function_on_empty_directory(
+            rss_if_directory_empty
+        )
         last_downloaded_file = get_last_downloaded(
             get_extensions_checker(rss_podcast_extensions), rss_source_path
         )
@@ -166,7 +192,13 @@ if __name__ == "__main__":
                 if DOWNLOADS_LIMITS == 0:
                     continue
 
-                log('{}: Downloading file: "{}"', rss_source_name, rss_entry.link)
+                log(
+                    '{}: Downloading file: "{}" saved as "{}"',
+                    rss_source_name,
+                    rss_entry.link,
+                    to_name_function(rss_entry),
+                )
+
                 download_files(rss_source_path, rss_entry)
                 DOWNLOADS_LIMITS -= 1
         else:

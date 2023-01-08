@@ -67,15 +67,16 @@ Those will be cover by all values given by command line.
 
 `Podcasts` is the part of configuration file where you provide the array of objects with fallowing content:
 
-| Property             | Type      | Required | Default                  | Note |
-|:---------------------|:---------:|:--------:|:------------------------:|:-----|
-| `name`               | string    | yes      | -                        | The name of channel (used in logger) |
-| `rss_link`           | string    | yes      | -                        | The URL of RSS channel |
-| `path`               | string    | yes      | -                        | The path to directory, for podcast files |
-| `require_date`       | boolean   | no       | `false`                  | Is date of podcast should be added into name of file |
-| `disable`            | boolean   | no       | `false`                  | This podcast will be ignored |
-| `podcast_extensions` | key-value | no       | `{".mp3": "audio/mpeg"}` | The file filter |
-| `if_directory_empty` | string    | no       | download_last            | See [In case of empty directory](#in-case-of-empty-directory) |
+| Property             | Type      | Required | Default                        | Note |
+|:---------------------|:---------:|:--------:|:------------------------------:|:-----|
+| `name`               | string    | yes      | -                              | The name of channel (used in logger) |
+| `rss_link`           | string    | yes      | -                              | The URL of RSS channel |
+| `path`               | string    | yes      | -                              | The path to directory, for podcast files |
+| `file_name_template` | string    | no       | `%file_name%.%file_extension%` | The template for the downloaded files, more 
+| `disable`            | boolean   | no       | `false`                        | This podcast will be ignored |
+| `podcast_extensions` | key-value | no       | `{".mp3": "audio/mpeg"}`       | The file filter |
+| `if_directory_empty` | string    | no       | `download_last`                | See [In case of empty directory](#in-case-of-empty-directory) |
+| `require_date`       | boolean   | no       | `false`                        | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
 
 ### An example of configuration file
 
@@ -105,7 +106,27 @@ The script accept following command line arguments:
 
 If RSS channel doesn't have single and constant name convention, it may causing the script to working incorrectly. The solution is force files to have common and meaningful prefix. The script is able to adding the date on beginning of downloaded file name.
 
-How to turn on: set the `require_date` option to true.
+Use [File name template](#file-name-template) and option `%publish_date%`.
+
+## File name template
+
+Use to change the name of downloaded file after its downloading.
+
+Default value (the `%file_name%.%file_extension%`) will simple save up the file as it was uploaded by original creator. The file name and its extension is taken from the link to podcast file.
+
+Template values:
+
+| Name               | Notes |
+|:-------------------|:------|
+| `%file_name%`      | The file name taken from link, without extension |
+| `%file_extension%` | The extension for the file, taken from link |
+| `%publish_date%`   | The publish date of the RSS entry, in format `YEARMMDD` |
+| `%title%`          | The title of the RSS entry |
+
+Examples:
+
+* `[%publish_date%] %file_name%.%file_extension%`
+* `[%publish_date%] %title%.%file_extension%`
 
 ## File types filter
 

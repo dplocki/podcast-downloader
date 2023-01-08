@@ -15,7 +15,10 @@ def is_file(directory_path: str, file_name: str) -> bool:
 
 
 def get_files_from(directory_path: str) -> List[str]:
-    return sorted(os.listdir(directory_path), reverse=True)
+    sort_key_function = lambda file_name: os.path.getctime(
+        os.path.join(directory_path, file_name)
+    )
+    return sorted(os.listdir(directory_path), key=sort_key_function, reverse=True)
 
 
 def get_downloaded_files(
