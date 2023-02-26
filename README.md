@@ -1,5 +1,9 @@
 # Podcast Downloader
 
+![GitHub](https://img.shields.io/github/license/dplocki/podcast-downloader)
+![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fdplocki%2Fpodcast-downloader%2Fbadge%3Fref%3Dmaster&style=flat)
+![PyPI](https://img.shields.io/pypi/v/podcast-downloader)
+
 The Python module for downloading files from given RSS feeds.
 It is not using database of any sort. It require configuration file.
 
