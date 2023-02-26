@@ -15,7 +15,7 @@ from podcast_downloader.configuration import (
     parse_day_label,
 )
 from .utils import log, compose, warning
-from .downloaded import get_extensions_checker, get_last_downloaded
+from .downloaded import get_downloaded_files, get_extensions_checker
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
     RSSEntity,
@@ -164,9 +164,13 @@ if __name__ == "__main__":
         on_directory_empty = configuration_to_function_on_empty_directory(
             rss_if_directory_empty
         )
-        last_downloaded_file = get_last_downloaded(
-            get_extensions_checker(rss_podcast_extensions), rss_source_path
+
+        downloaded_files = list(
+            get_downloaded_files(
+                get_extensions_checker(rss_podcast_extensions), rss_source_path
+            )
         )
+        last_downloaded_file = downloaded_files[0] if downloaded_files else None
 
         download_limiter_function = (
             partial(build_only_new_entities(to_name_function), last_downloaded_file)
@@ -189,6 +193,9 @@ if __name__ == "__main__":
             download_files = partial(download_rss_entity_to_path, to_name_function)
 
             for rss_entry in reversed(missing_files_links):
+                if to_name_function(rss_entry)(rss_entry) in downloaded_files:
+                    continue
+
                 if DOWNLOADS_LIMITS == 0:
                     continue
 
