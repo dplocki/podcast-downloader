@@ -136,7 +136,9 @@ if __name__ == "__main__":
 
     for rss_source in RSS_SOURCES:
         rss_source_name = rss_source[configuration.CONFIG_PODCASTS_NAME]
-        rss_source_path = rss_source[configuration.CONFIG_PODCASTS_PATH]
+        rss_source_path = os.path.expanduser(
+            rss_source[configuration.CONFIG_PODCASTS_PATH]
+        )
         rss_source_link = rss_source[configuration.CONFIG_PODCASTS_RSS_LINK]
         rss_disable = rss_source.get(configuration.CONFIG_PODCASTS_DISABLE, False)
         rss_file_name_template_value = rss_source.get(
