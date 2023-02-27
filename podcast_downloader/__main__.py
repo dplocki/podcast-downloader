@@ -193,7 +193,7 @@ if __name__ == "__main__":
             download_files = partial(download_rss_entity_to_path, to_name_function)
 
             for rss_entry in reversed(missing_files_links):
-                if to_name_function(rss_entry)(rss_entry) in downloaded_files:
+                if to_name_function(rss_entry) in downloaded_files:
                     continue
 
                 if DOWNLOADS_LIMITS == 0:
