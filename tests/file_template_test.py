@@ -91,7 +91,6 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
         test_parameters = [
             ("Ala ma kota", "Ala ma kota"),
             (" abcdefg hijk ", "abcdefg hijk"),
-            ("12345" * 60, "12345" * 51),
             (
                 'AEE 226: How to "80/20" Your English to Make More Friends with italki Teacher Nick Vance',
                 'AEE 226  How to "80 20" Your English to Make More Friends with italki Teacher Nick Vance',
@@ -151,6 +150,14 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
                 ),
                 "[%publish_date%] %title%.%file_extension%",
                 "[20200102] abc def.mp3",
+            ),
+            (
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/file-name.mp3",
+                    title="12345" * 60,
+                ),
+                "[%publish_date%] %title%.%file_extension%",
+                "[20200102] " + ("12345" * 48) + "1234",
             ),
         ]
 

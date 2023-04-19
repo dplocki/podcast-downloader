@@ -47,7 +47,7 @@ def str_to_filename(value: str) -> str:
     value = unicodedata.normalize("NFKC", value)
     value = re.sub(r"[\u0000-\u001F\u007F\*/:<>\?\\\|]", " ", value)
 
-    return value.strip()[:FILE_NAME_CHARACTER_LIMIT]
+    return value.strip()
 
 
 def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
@@ -55,7 +55,7 @@ def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
         name_template.replace("%file_name%", link_to_file_name(entity.link))
         .replace("%publish_date%", time.strftime("%Y%m%d", entity.published_date))
         .replace("%file_extension%", link_to_extension(entity.link))
-        .replace("%title%", str_to_filename(entity.title))
+        .replace("%title%", str_to_filename(entity.title))[:FILE_NAME_CHARACTER_LIMIT]
     )
 
 
