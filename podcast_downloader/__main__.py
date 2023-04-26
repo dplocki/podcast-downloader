@@ -15,7 +15,7 @@ from podcast_downloader.configuration import (
     get_n_age_date,
     parse_day_label,
 )
-from .utils import log, compose, warning
+from .utils import log, compose, log_error, warning
 from .downloaded import get_downloaded_files, get_extensions_checker
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
@@ -34,9 +34,17 @@ from .rss import (
 def download_rss_entity_to_path(
     to_file_name_function: Callable[[RSSEntity], str], path: str, rss_entity: RSSEntity
 ):
-    return urllib.request.urlretrieve(
-        rss_entity.link, os.path.join(path, to_file_name_function(rss_entity))
-    )
+    path_to_file = os.path.join(path, to_file_name_function(rss_entity))
+
+    try:
+        return urllib.request.urlretrieve(rss_entity.link, path_to_file)
+    except Exception as exception:
+        log_error(
+            'The podcast file "{}" could not be saved to disk "{}" due to the following error:\n{}',
+            rss_entity.link,
+            path_to_file,
+            exception,
+        )
 
 
 def build_parser() -> argparse.ArgumentParser:

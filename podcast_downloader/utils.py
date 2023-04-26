@@ -22,5 +22,11 @@ def warning(message, *parameters):
     )
 
 
+def log_error(message, *parameters):
+    print(
+        f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] \033[31mError:\033[0m {mark_parameters_in_message(message, *parameters)}"
+    )
+
+
 def compose(*functions):
     return reduce(lambda f, g: lambda x: f(g(x)), functions)
