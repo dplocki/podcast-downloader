@@ -4,6 +4,7 @@ import unittest
 from podcast_downloader.rss import (
     RSSEntity,
     file_template_to_file_name,
+    limit_file_name,
     link_to_extension,
     link_to_file_name,
     str_to_filename,
@@ -91,7 +92,6 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
         test_parameters = [
             ("Ala ma kota", "Ala ma kota"),
             (" abcdefg hijk ", "abcdefg hijk"),
-            ("12345" * 60, "12345" * 51),
             (
                 'AEE 226: How to "80/20" Your English to Make More Friends with italki Teacher Nick Vance',
                 'AEE 226  How to "80 20" Your English to Make More Friends with italki Teacher Nick Vance',
@@ -157,6 +157,28 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
         for rss_entry, template_file_name, expected_file_name in test_parameters:
             # Act
             result = file_template_to_file_name(template_file_name, rss_entry)
+
+            # Assert
+            self.assertEqual(
+                result,
+                expected_file_name,
+                f'File should be named "{expected_file_name}" not "{result}"',
+            )
+
+    def test_limit_file_name(self):
+        test_parameters = [
+            (30, "123456789012345.mp3", "123456789012345.mp3"),
+            (10, "123456789012345.mp3", "123456.mp3"),
+            (10, "123456789012345.ab", "1234567.ab"),
+            (30, "123456789012", "123456789012"),
+            (10, "1234567890", "1234567890"),
+            (10, "123456789012345", "1234567890"),
+            (5, "1234.mp3", "1.mp3"),
+        ]
+
+        for maximum_length, given_file_name, expected_file_name in test_parameters:
+            # Act
+            result = limit_file_name(maximum_length, given_file_name)
 
             # Assert
             self.assertEqual(

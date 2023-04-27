@@ -1,4 +1,5 @@
-from typing import Generator, Tuple
+import os
+from typing import Callable, Generator, Tuple
 from podcast_downloader.rss import RSSEntity
 
 
@@ -18,3 +19,10 @@ def rss_entity_generator(
             "audio/mp3",
             f"http://www.p.com/file{(file_number - index):0>4}.mp3",
         )
+
+
+def mock_download_rss_entity_to_path(
+    to_file_name_function: Callable[[RSSEntity], str], path: str, rss_entity: RSSEntity
+):
+    with open(os.path.join(path, to_file_name_function(rss_entity)), "w") as file:
+        file.write(rss_entity.link)
