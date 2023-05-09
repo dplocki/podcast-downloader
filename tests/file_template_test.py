@@ -93,13 +93,14 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
             ("Ala ma kota", "Ala ma kota"),
             (" abcdefg hijk ", "abcdefg hijk"),
             (
-                'AEE 226: How to "80/20" Your English to Make More Friends with italki Teacher Nick Vance',
-                'AEE 226  How to "80 20" Your English to Make More Friends with italki Teacher Nick Vance',
+                "AEE 226: How to 80/20 Your English to Make More Friends with italki Teacher Nick Vance",
+                "AEE 226  How to 80 20 Your English to Make More Friends with italki Teacher Nick Vance",
             ),
             (
                 "【Audio Book/朗読】『浦島太郎（うらしまたろう） 』Urashima Taro /Japanese folktales",
                 "【Audio Book 朗読】『浦島太郎(うらしまたろう) 』Urashima Taro  Japanese folktales",
             ),
+            ('abc\\/:*?"<>|abc', "abc         abc"),
         ]
 
         for entry_title, expected_file_name in test_parameters:
