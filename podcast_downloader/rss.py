@@ -45,7 +45,7 @@ def link_to_extension(link: str) -> str:
 
 def str_to_filename(value: str) -> str:
     value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[\u0000-\u001F\u007F\*/:<>\?\\\|]", " ", value)
+    value = re.sub(r"[\u0000-\u001F\u007F\*/:<>\"\?\\\|]", " ", value)
 
     return value.strip()
 
