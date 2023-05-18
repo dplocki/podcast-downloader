@@ -125,6 +125,12 @@ def configuration_to_function_rss_to_name(
     return partial(file_template_to_file_name, configuration_value)
 
 
+def setup_http_headers():
+    opener = urllib.request.build_opener()
+    opener.addheaders = [("User-Agent", "podcast-downloader")]
+    urllib.request.install_opener(opener)
+
+
 if __name__ == "__main__":
     import sys
 
@@ -149,6 +155,8 @@ if __name__ == "__main__":
     if not is_valid:
         log("There is a problem with configuration file: {}", error)
         exit(1)
+
+    setup_http_headers()
 
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
