@@ -125,9 +125,9 @@ def configuration_to_function_rss_to_name(
     return partial(file_template_to_file_name, configuration_value)
 
 
-def setup_http_headers():
+def setup_http_headers(configuration: Dict[str, str]) -> None:
     opener = urllib.request.build_opener()
-    opener.addheaders = [("User-Agent", "podcast-downloader")]
+    opener.addheaders = list(map(tuple, configuration.items()))
     urllib.request.install_opener(opener)
 
 
@@ -139,6 +139,7 @@ if __name__ == "__main__":
         configuration.CONFIG_IF_DIRECTORY_EMPTY: "download_last",
         configuration.CONFIG_PODCAST_EXTENSIONS: {".mp3": "audio/mpeg"},
         configuration.CONFIG_FILE_NAME_TEMPLATE: "%file_name%.%file_extension%",
+        configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -156,7 +157,7 @@ if __name__ == "__main__":
         log("There is a problem with configuration file: {}", error)
         exit(1)
 
-    setup_http_headers()
+    setup_http_headers(CONFIGURATION[configuration.CONFIG_HTTP_HEADER])
 
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
