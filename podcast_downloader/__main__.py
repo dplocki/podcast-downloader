@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Dict, Iterable
+from typing import Callable, Dict, Iterable, List, Tuple
 import urllib
 import argparse
 import re
@@ -32,12 +32,20 @@ from .rss import (
 
 
 def download_rss_entity_to_path(
-    to_file_name_function: Callable[[RSSEntity], str], path: str, rss_entity: RSSEntity
+    headers: List[Tuple[str, str]],
+    to_file_name_function: Callable[[RSSEntity], str],
+    path: str,
+    rss_entity: RSSEntity,
 ):
     path_to_file = os.path.join(path, to_file_name_function(rss_entity))
 
     try:
-        return urllib.request.urlretrieve(rss_entity.link, path_to_file)
+        request = urllib.request.Request(rss_entity.link, headers=headers)
+
+        with urllib.request.urlopen(request) as response:
+            with open(path_to_file, "wb") as file:
+                file.write(response.read())
+
     except Exception as exception:
         log_error(
             'The podcast file "{}" could not be saved to disk "{}" due to the following error:\n{}',
@@ -125,12 +133,6 @@ def configuration_to_function_rss_to_name(
     return partial(file_template_to_file_name, configuration_value)
 
 
-def setup_http_headers(configuration: Dict[str, str]) -> None:
-    opener = urllib.request.build_opener()
-    opener.addheaders = list(map(tuple, configuration.items()))
-    urllib.request.install_opener(opener)
-
-
 if __name__ == "__main__":
     import sys
 
@@ -157,8 +159,6 @@ if __name__ == "__main__":
         log("There is a problem with configuration file: {}", error)
         exit(1)
 
-    setup_http_headers(CONFIGURATION[configuration.CONFIG_HTTP_HEADER])
-
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
 
@@ -181,6 +181,10 @@ if __name__ == "__main__":
         rss_podcast_extensions = rss_source.get(
             configuration.CONFIG_PODCAST_EXTENSIONS,
             CONFIGURATION[configuration.CONFIG_PODCAST_EXTENSIONS],
+        )
+        rss_https_header = merge_parameters_collection(
+            CONFIGURATION[configuration.CONFIG_HTTP_HEADER],
+            rss_source.get(configuration.CONFIG_HTTP_HEADER, {}),
         )
 
         if rss_disable:
@@ -226,8 +230,11 @@ if __name__ == "__main__":
             )
 
             download_podcast = partial(
-                download_rss_entity_to_path, to_real_podcast_file_name
+                download_rss_entity_to_path,
+                rss_https_header,
+                to_real_podcast_file_name,
             )
+
             for rss_entry in reversed(missing_files_links):
                 wanted_podcast_file_name = to_name_function(rss_entry)
                 if wanted_podcast_file_name in downloaded_files:
