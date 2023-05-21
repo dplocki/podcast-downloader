@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Dict, Iterable
+from typing import Callable, Dict, Iterable, List, Tuple
 import urllib
 import argparse
 import re
@@ -32,12 +32,20 @@ from .rss import (
 
 
 def download_rss_entity_to_path(
-    to_file_name_function: Callable[[RSSEntity], str], path: str, rss_entity: RSSEntity
+    headers: List[Tuple[str, str]],
+    to_file_name_function: Callable[[RSSEntity], str],
+    path: str,
+    rss_entity: RSSEntity,
 ):
     path_to_file = os.path.join(path, to_file_name_function(rss_entity))
 
     try:
-        return urllib.request.urlretrieve(rss_entity.link, path_to_file)
+        request = urllib.request.Request(rss_entity.link, headers=headers)
+
+        with urllib.request.urlopen(request) as response:
+            with open(path_to_file, "wb") as file:
+                file.write(response.read())
+
     except Exception as exception:
         log_error(
             'The podcast file "{}" could not be saved to disk "{}" due to the following error:\n{}',
@@ -133,6 +141,7 @@ if __name__ == "__main__":
         configuration.CONFIG_IF_DIRECTORY_EMPTY: "download_last",
         configuration.CONFIG_PODCAST_EXTENSIONS: {".mp3": "audio/mpeg"},
         configuration.CONFIG_FILE_NAME_TEMPLATE: "%file_name%.%file_extension%",
+        configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -172,6 +181,10 @@ if __name__ == "__main__":
         rss_podcast_extensions = rss_source.get(
             configuration.CONFIG_PODCAST_EXTENSIONS,
             CONFIGURATION[configuration.CONFIG_PODCAST_EXTENSIONS],
+        )
+        rss_https_header = merge_parameters_collection(
+            CONFIGURATION[configuration.CONFIG_HTTP_HEADER],
+            rss_source.get(configuration.CONFIG_HTTP_HEADER, {}),
         )
 
         if rss_disable:
@@ -217,8 +230,11 @@ if __name__ == "__main__":
             )
 
             download_podcast = partial(
-                download_rss_entity_to_path, to_real_podcast_file_name
+                download_rss_entity_to_path,
+                rss_https_header,
+                to_real_podcast_file_name,
             )
+
             for rss_entry in reversed(missing_files_links):
                 wanted_podcast_file_name = to_name_function(rss_entry)
                 if wanted_podcast_file_name in downloaded_files:
