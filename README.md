@@ -60,40 +60,77 @@ Those will be cover by all values given by command line.
 
 ### The main options
 
-| Property             | Type       | Required | Default                  | Note |
-|:---------------------|:----------:|:--------:|:------------------------:|:-----|
-| `downloads_limit`    | number     | no       | infinity                 |      |
-| `if_directory_empty` | string     | no       | download_last            | See [In case of empty directory](#in-case-of-empty-directory) |
-| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}` | The file filter |
-| `podcasts`           | subsection | yes      | `[]`                     | See [Podcasts sub category](#podcasts-sub-category) |
+| Property             | Type       | Required | Default                                | Note |
+|:---------------------|:----------:|:--------:|:--------------------------------------:|:-----|
+| `downloads_limit`    | number     | no       | infinity                               |      |
+| `if_directory_empty` | string     | no       | download_last                          | See [In case of empty directory](#in-case-of-empty-directory) |
+| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | The file filter |
+| `podcasts`           | subsection | yes      | `[]`                                   | See [Podcasts sub category](#podcasts-sub-category) |
+| `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 
 ### Podcasts sub category
 
 `Podcasts` is the part of configuration file where you provide the array of objects with fallowing content:
 
-| Property             | Type      | Required | Default                        | Note |
-|:---------------------|:---------:|:--------:|:------------------------------:|:-----|
-| `name`               | string    | yes      | -                              | The name of channel (used in logger) |
-| `rss_link`           | string    | yes      | -                              | The URL of RSS channel |
-| `path`               | string    | yes      | -                              | The path to directory, for podcast files |
-| `file_name_template` | string    | no       | `%file_name%.%file_extension%` | The template for the downloaded files, more 
-| `disable`            | boolean   | no       | `false`                        | This podcast will be ignored |
-| `podcast_extensions` | key-value | no       | `{".mp3": "audio/mpeg"}`       | The file filter |
-| `if_directory_empty` | string    | no       | `download_last`                | See [In case of empty directory](#in-case-of-empty-directory) |
-| `require_date`       | boolean   | no       | `false`                        | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
+| Property             | Type       | Required | Default                                | Note |
+|:---------------------|:----------:|:--------:|:--------------------------------------:|:-----|
+| `name`               | string     | yes      | -                                      | The name of channel (used in logger) |
+| `rss_link`           | string     | yes      | -                                      | The URL of RSS channel |
+| `path`               | string     | yes      | -                                      | The path to directory, for podcast files |
+| `file_name_template` | string     | no       | `%file_name%.%file_extension%`         | The template for the downloaded files, more 
+| `disable`            | boolean    | no       | `false`                                | This podcast will be ignored |
+| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | The file filter |
+| `if_directory_empty` | string     | no       | `download_last`                        | See [In case of empty directory](#in-case-of-empty-directory) |
+| `require_date`       | boolean    | no       | `false`                                | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
+| `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` |      |
 
 ### An example of configuration file
 
 ```json
 {
-    "if_directory_empty": "download_from_4_days",
-    "podcasts": [
-        {
-            "name": "The Skeptic Guide",
-            "rss_link": "http://www.theskepticsguide.org/feed/rss.aspx",
-            "path": "~/podcasts/SGTTU"
-        }
-    ]
+  "if_directory_empty": "download_from_4_days",
+  "podcasts": [
+    {
+      "name": "Python for dummies",
+      "rss_link": "http://python-for-dummies/atom.rss",
+      "path": "~/podcasts/PythonForDummies"
+    },
+    {
+      "name": "The Skeptic Guide",
+      "rss_link": "https://feed.theskepticsguide.org/feed/rss.aspx",
+      "path": "~/podcasts/SGTTU"
+    }
+  ]
+}
+```
+
+### HTTP request headers
+
+There is an option to specify HTTP headers when downloading files.
+You can provide them using the `http_headers` value in the configuration file.
+The option value should be a dictionary where each header is presented as a key-value pair, with the key being the header title and the value being the header value.
+
+Default value: `{"User-Agent": "podcast-downloader"}`. Providing any value for `http_headers` will override the default value.
+
+Podcast `http_headers` will be merged with the global `http_headers`. In case of a conflict (same key name), the vale from podcast sub-configuration will override the global one.
+
+Example:
+
+```json
+{
+  "http_headers": {
+    "User-Agent": "podcast-downloader"
+  },
+  "podcasts": [
+    {
+      "name": "Unu Podcast",
+      "rss_link": "http://www.unupodcast.org/feed.rss",
+      "path": "~/podcasts/unu_podcast",
+      "https_headers": {
+        "User-Agent": "User-Agent: Mozilla/5.0",
+      }
+    }
+  ]
 }
 ```
 
@@ -141,10 +178,10 @@ If your podcast support other types of media files, you can precised your own po
 If you don't know the type of the file, you can check the RSS file. Seek for `enclosure` tags, should looks like this:
 
 ```xml
-    <enclosure
-        url="https://an.apple.supporter.page/podcast/episode23.m4a"
-        length="14527149"
-        type="audio/x-m4a" />
+  <enclosure
+    url="https://an.apple.supporter.page/podcast/episode23.m4a"
+    length="14527149"
+    type="audio/x-m4a" />
 ```
 
 Notes: the dot on the file extension is require.
