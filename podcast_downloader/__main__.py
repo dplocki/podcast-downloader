@@ -46,12 +46,11 @@ def download_rss_entity_to_path(
             with open(path_to_file, "wb") as file:
                 file.write(response.read())
 
-    except Exception as exception:
-        logger.warning(
-            'The podcast file "{}" could not be saved to disk "{}" due to the following error:\n{}',
+    except Exception:
+        logger.exception(
+            'The podcast file "%s" could not be saved to disk "%s" due to the following error',
             rss_entity.link,
             path_to_file,
-            exception,
         )
 
 
@@ -267,7 +266,5 @@ if __name__ == "__main__":
                 DOWNLOADS_LIMITS -= 1
         else:
             logger.info("%s: Nothing new", rss_source_name)
-
-        logger.info("-" * 30)
 
     logger.info("Finished")

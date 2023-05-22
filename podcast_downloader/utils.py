@@ -19,7 +19,20 @@ class ConsoleOutputFormatter(Formatter):
         )
         level = self.COLORS[record.levelno] if record.levelno in self.COLORS else ""
 
-        return f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m]{level} {record.getMessage()}"
+        message = f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m]{level} {record.getMessage()}"
+
+        if record.exc_info and not record.exc_text:
+            record.exc_text = self.formatException(record.exc_info)
+        if record.exc_text:
+            if message[-1:] != "\n":
+                message = message + "\n"
+            message = message + record.exc_text
+        if record.stack_info:
+            if message[-1:] != "\n":
+                message = message + "\n"
+            message = message + self.formatStack(record.stack_info)
+
+        return message
 
 
 def compose(*functions):
