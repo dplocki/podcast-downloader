@@ -1,38 +1,29 @@
 from functools import reduce
-from datetime import datetime
 from logging import Formatter, WARNING, ERROR
 
 
 class ConsoleOutputFormatter(Formatter):
     COLORS = {
-        WARNING: " \033[33mWarning:\033[0m",
-        ERROR: " \033[31mError:\033[0m",
+        WARNING: "\033[33mWarning:\033[0m",
+        ERROR: "\033[31mError:\033[0m",
     }
 
+    def __init__(self) -> None:
+        super().__init__("[\033[2m%(asctime)s\033[0m] %(message)s")
+
+    def formatTime(self, record, _):
+        return super().formatTime(record, "%Y-%m-%d %H:%M:%S")
+
     def format(self, record):
-        record.msg = (
-            record.msg.replace("%s", "\033[97m%s\033[0m").replace(
+        if record.args:
+            record.msg = record.msg.replace("%s", "\033[97m%s\033[0m").replace(
                 "%d", "\033[97m%d\033[0m"
             )
-            if record.args
-            else record.msg
-        )
-        level = self.COLORS[record.levelno] if record.levelno in self.COLORS else ""
 
-        message = f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m]{level} {record.getMessage()}"
+        if record.levelno in self.COLORS:
+            record.msg = f"{self.COLORS[record.levelno]} {record.msg}"
 
-        if record.exc_info and not record.exc_text:
-            record.exc_text = self.formatException(record.exc_info)
-        if record.exc_text:
-            if message[-1:] != "\n":
-                message = message + "\n"
-            message = message + record.exc_text
-        if record.stack_info:
-            if message[-1:] != "\n":
-                message = message + "\n"
-            message = message + self.formatStack(record.stack_info)
-
-        return message
+        return super().format(record)
 
 
 def compose(*functions):
