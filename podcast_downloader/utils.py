@@ -9,10 +9,7 @@ class ConsoleOutputFormatter(Formatter):
     }
 
     def __init__(self) -> None:
-        super().__init__("[\033[2m%(asctime)s\033[0m] %(message)s")
-
-    def formatTime(self, record, _):
-        return super().formatTime(record, "%Y-%m-%d %H:%M:%S")
+        super().__init__("[\033[2m%(asctime)s\033[0m] %(message)s", "%Y-%m-%d %H:%M:%S")
 
     def format(self, record):
         if record.args:
