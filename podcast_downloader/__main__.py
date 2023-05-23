@@ -15,7 +15,7 @@ from podcast_downloader.configuration import (
     get_n_age_date,
     parse_day_label,
 )
-from .utils import log, compose, log_error, warning
+from .utils import ConsoleOutputFormatter, compose
 from .downloaded import get_downloaded_files, get_extensions_checker
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
@@ -46,12 +46,11 @@ def download_rss_entity_to_path(
             with open(path_to_file, "wb") as file:
                 file.write(response.read())
 
-    except Exception as exception:
-        log_error(
-            'The podcast file "{}" could not be saved to disk "{}" due to the following error:\n{}',
+    except Exception:
+        logger.exception(
+            'The podcast file "%s" could not be saved to disk "%s" due to the following error',
             rss_entity.link,
             path_to_file,
-            exception,
         )
 
 
@@ -123,8 +122,8 @@ def configuration_to_function_rss_to_name(
         if sub_configuration[configuration.CONFIG_PODCASTS_REQUIRE_DATE]:
             configuration_value = default_file_name_template_with_date
 
-        warning(
-            'The option {} is deprecated, please replace use of it with the {} option: "{}"',
+        logger.warning(
+            'The option %s is deprecated, please replace use of it with the %s option: "%s"',
             configuration.CONFIG_PODCASTS_REQUIRE_DATE,
             configuration.CONFIG_FILE_NAME_TEMPLATE,
             default_file_name_template_with_date,
@@ -135,6 +134,13 @@ def configuration_to_function_rss_to_name(
 
 if __name__ == "__main__":
     import sys
+    from logging import getLogger, StreamHandler, INFO
+
+    logger = getLogger(__name__)
+    logger.setLevel(INFO)
+    stdout_handler = StreamHandler()
+    stdout_handler.setFormatter(ConsoleOutputFormatter())
+    logger.addHandler(stdout_handler)
 
     DEFAULT_CONFIGURATION = {
         configuration.CONFIG_DOWNLOADS_LIMIT: sys.maxsize,
@@ -146,7 +152,7 @@ if __name__ == "__main__":
     }
 
     CONFIG_FILE = "~/.podcast_downloader_config.json"
-    log('Loading configuration (from file: "{}")', CONFIG_FILE)
+    logger.info('Loading configuration (from file: "%s")', CONFIG_FILE)
 
     CONFIGURATION = merge_parameters_collection(
         DEFAULT_CONFIGURATION,
@@ -156,7 +162,7 @@ if __name__ == "__main__":
 
     is_valid, error = configuration_verification(CONFIGURATION)
     if not is_valid:
-        log("There is a problem with configuration file: {}", error)
+        logger.info("There is a problem with configuration file: %s", error)
         exit(1)
 
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
@@ -188,10 +194,10 @@ if __name__ == "__main__":
         )
 
         if rss_disable:
-            log('Skipping the "{}"', rss_source_name)
+            logger.info('Skipping the "%s"', rss_source_name)
             continue
 
-        log('Checking "{}"', rss_source_name)
+        logger.info('Checking "%s"', rss_source_name)
 
         to_name_function = configuration_to_function_rss_to_name(
             rss_file_name_template_value, rss_source
@@ -222,7 +228,7 @@ if __name__ == "__main__":
             get_raw_rss_entries_from_web,
         )(rss_source_link)
 
-        log('Last downloaded file "{}"', last_downloaded_file or "<none>")
+        logger.info('Last downloaded file "%s"', last_downloaded_file or "<none>")
 
         if missing_files_links:
             to_real_podcast_file_name = compose(
@@ -244,13 +250,13 @@ if __name__ == "__main__":
                     continue
 
                 if len(wanted_podcast_file_name) > file_length_limit:
-                    warning(
-                        'Your system cannot support the full podcast file name "{}". The name will be shortened',
+                    logger.info(
+                        'Your system cannot support the full podcast file name "%s". The name will be shortened',
                         wanted_podcast_file_name,
                     )
 
-                log(
-                    '{}: Downloading file: "{}" saved as "{}"',
+                logger.info(
+                    '%s: Downloading file: "%s" saved as "%s"',
                     rss_source_name,
                     rss_entry.link,
                     to_real_podcast_file_name(rss_entry),
@@ -259,8 +265,6 @@ if __name__ == "__main__":
                 download_podcast(rss_source_path, rss_entry)
                 DOWNLOADS_LIMITS -= 1
         else:
-            log("{}: Nothing new", rss_source_name)
+            logger.info("%s: Nothing new", rss_source_name)
 
-        log("-" * 30)
-
-    log("Finished")
+    logger.info("Finished")

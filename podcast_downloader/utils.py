@@ -1,31 +1,26 @@
 from functools import reduce
-from datetime import datetime
+from logging import Formatter, WARNING, ERROR
 
 
-def mark_parameters_in_message(message: str, *parameters) -> str:
-    return (
-        message.replace("{}", "\033[97m{}\033[0m").format(*parameters)
-        if parameters
-        else message
-    )
+class ConsoleOutputFormatter(Formatter):
+    COLORS = {
+        WARNING: "\033[33mWarning:\033[0m",
+        ERROR: "\033[31mError:\033[0m",
+    }
 
+    def __init__(self) -> None:
+        super().__init__("[\033[2m%(asctime)s\033[0m] %(message)s", "%Y-%m-%d %H:%M:%S")
 
-def log(message, *parameters):
-    print(
-        f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] {mark_parameters_in_message(message, *parameters)}"
-    )
+    def format(self, record):
+        if record.args:
+            record.msg = record.msg.replace("%s", "\033[97m%s\033[0m").replace(
+                "%d", "\033[97m%d\033[0m"
+            )
 
+        if record.levelno in self.COLORS:
+            record.msg = f"{self.COLORS[record.levelno]} {record.msg}"
 
-def warning(message, *parameters):
-    print(
-        f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] \033[33mWarning:\033[0m {mark_parameters_in_message(message, *parameters)}"
-    )
-
-
-def log_error(message, *parameters):
-    print(
-        f"[\033[2m{datetime.now():%Y-%m-%d %H:%M:%S}\033[0m] \033[31mError:\033[0m {mark_parameters_in_message(message, *parameters)}"
-    )
+        return super().format(record)
 
 
 def compose(*functions):
