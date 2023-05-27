@@ -17,7 +17,7 @@ def load_configuration_file(file_path: str) -> dict:
     if not os.path.isfile(file_path):
         raise Exception(f'Cannot read from configuration file "{file_path}"')
 
-    with open(file_path) as json_file:
+    with open(file_path, mode="r", encoding="utf-8") as json_file:
         return json.load(json_file)
 
 
