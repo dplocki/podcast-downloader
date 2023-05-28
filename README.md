@@ -48,7 +48,7 @@ Using the [example above](#example), the result will be:
 
 The configuration file is placed in home directory.
 
-The name: `.podcast_downloader_config.json`. The file is format in [JSON](https://en.wikipedia.org/wiki/JSON).
+The name: `.podcast_downloader_config.json`. The file is format in [JSON](https://en.wikipedia.org/wiki/JSON). The expected encoding is [utf-8](https://en.wikipedia.org/wiki/UTF-8).
 
 ### The settings hierarchy
 
