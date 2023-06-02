@@ -15,7 +15,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=read("README.md"),
     packages=["podcast_downloader"],
-    install_requires=["feedparser"],
+    install_requires=["feedparser", "colorama"],
     url="https://github.com/dplocki/podcast-downloader",
     classifiers=[
         "Environment :: Console",
