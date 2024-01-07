@@ -85,7 +85,7 @@ def flatten_rss_links_data(
     source: Generator[feedparser.FeedParserDict, None, None]
 ) -> Generator[RSSEntity, None, None]:
     return (
-        RSSEntity(rss_entry.published_parsed, rss_entry.title, link.type, link.href)
+        RSSEntity(rss_entry.published_parsed, rss_entry.title, link.type, link.get('href', None))
         for rss_entry in source
         for link in rss_entry.links
     )
