@@ -34,6 +34,14 @@ After installing the package you run tests
 python -m unittest discover -s tests -p *_test.py
 ```
 
+## E2e tests
+
+Running:
+
+```bash
+pytest e2e
+```
+
 ## Uploading the package into repository
 
 ```bash
@@ -43,7 +51,7 @@ twine upload --repository pypi dist/*
 
 ## Black
 
-Run code formatter: 
+Run code formatter:
 
 ```bash
 black .
