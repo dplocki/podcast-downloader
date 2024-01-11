@@ -1,9 +1,11 @@
+import datetime
 import os
 import subprocess
 import sys
 import tempfile
 import pytest
 import json
+from feedgen.feed import FeedGenerator
 
 
 @pytest.fixture()
@@ -30,8 +32,32 @@ def create_temporary_directory():
         yield tmp_dirname
 
 
-def build_server():
-    pass
+class FeedBuilder():
+
+    def __init__(self) -> None:
+        self.fg = FeedGenerator()
+        self.fg.title('Some Testfeed')
+        self.fg.author( {'name':'John Doe','email':'john@example.de'} )
+        self.fg.subtitle('This is a cool feed!')
+        self.fg.link( href='http://example.com', rel='alternate' )
+
+
+    def add_entry(self):
+        fe = self.fg.add_entry()
+        fe.id('http://lernfunk.de/media/654321/1/file.mp3')
+        fe.title('The First Episode')
+        fe.description('Enjoy our first episode.')
+        fe.enclosure('http://lernfunk.de/media/654321/1/file.mp3', 0, 'audio/mpeg')
+        fe.published(datetime.datetime(2014, 7, 10, 2, 43, 55, 230107, tzinfo=datetime.timezone.utc))
+
+        return self
+
+
+    def build(self):
+        rss_file_name = 'podcast.xml'
+        self.fg.rss_file(rss_file_name)
+
+        return rss_file_name
 
 
 def build_config(config_path, config_object):
@@ -40,7 +66,6 @@ def build_config(config_path, config_object):
 
 
 def run_podcast_downloader():
-    os.system("cat ~/.podcast_downloader_config.json")
     subprocess.check_call([sys.executable, "-m", "podcast_downloader"])
 
 
@@ -49,7 +74,8 @@ def check_the_download_directory():
 
 
 def test_answer(secure_config_file, create_temporary_directory):
-    build_server()
+    rss_file = FeedBuilder().add_entry().add_entry().build()
+
     build_config(
         secure_config_file,
         {
@@ -57,7 +83,7 @@ def test_answer(secure_config_file, create_temporary_directory):
                 {
                     "name": "test",
                     "path": create_temporary_directory,
-                    "rss_link": "feed",
+                    "rss_link": rss_file,
                 }
             ]
         },
