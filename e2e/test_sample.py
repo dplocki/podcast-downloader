@@ -72,10 +72,10 @@ class FeedBuilder:
         return self
 
     def build(self):
-        rss_file_name = "podcast.xml"
-        self.fg.rss_file(rss_file_name)
+        path_to_file = os.path.join(self.feed_source, "podcast.xml")
+        self.fg.rss_file(path_to_file)
 
-        return rss_file_name
+        return path_to_file
 
     def __add_file_in_source(self, file_name):
         path_to_file = os.path.join(self.feed_source, file_name)
