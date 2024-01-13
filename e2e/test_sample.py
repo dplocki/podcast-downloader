@@ -3,6 +3,7 @@ import os
 import subprocess
 import sys
 import tempfile
+from typing import Iterator
 import pytest
 import json
 from feedgen.feed import FeedGenerator
@@ -27,21 +28,21 @@ def secure_config_file():
 
 
 @pytest.fixture()
-def create_temporary_directory():
+def temporary_directory():
     with tempfile.TemporaryDirectory() as tmp_dirname:
         yield tmp_dirname
 
 
 @pytest.fixture()
-def create_origin_feed_directory(create_temporary_directory):
-    feed_source_path = os.path.join(create_temporary_directory, "feed_source")
+def origin_feed_directory(temporary_directory):
+    feed_source_path = os.path.join(temporary_directory, "feed_source")
     os.makedirs(feed_source_path)
     yield feed_source_path
 
 
 @pytest.fixture()
-def create_download_destination_directory(create_temporary_directory):
-    feed_destination_path = os.path.join(create_temporary_directory, "destination")
+def download_destination_directory(temporary_directory):
+    feed_destination_path = os.path.join(temporary_directory, "destination")
     os.makedirs(feed_destination_path)
     yield feed_destination_path
 
@@ -84,8 +85,8 @@ class FeedBuilder:
 
 
 @pytest.fixture()
-def feed_builder(create_origin_feed_directory):
-    yield FeedBuilder(create_origin_feed_directory)
+def feed_builder(origin_feed_directory):
+    yield FeedBuilder(origin_feed_directory)
 
 
 def build_config(config_path, config_object):
@@ -97,12 +98,12 @@ def run_podcast_downloader():
     subprocess.check_call([sys.executable, "-m", "podcast_downloader"])
 
 
-def check_the_download_directory():
-    pass
+def check_the_download_directory(download_destination_directory) -> Iterator[str]:
+    return list(os.listdir(download_destination_directory))
 
 
 def test_answer(
-    secure_config_file, feed_builder, create_download_destination_directory
+    secure_config_file, feed_builder, download_destination_directory
 ):
     rss_file = feed_builder.add_entry().add_entry().build()
     build_config(
@@ -111,7 +112,7 @@ def test_answer(
             "podcasts": [
                 {
                     "name": "test",
-                    "path": create_download_destination_directory,
+                    "path": download_destination_directory,
                     "rss_link": rss_file,
                 }
             ]
@@ -120,4 +121,4 @@ def test_answer(
 
     run_podcast_downloader()
 
-    check_the_download_directory()
+    check_the_download_directory(download_destination_directory)
