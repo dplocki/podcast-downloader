@@ -1,5 +1,7 @@
 import datetime
 import os
+import random
+import string
 import subprocess
 import sys
 import tempfile
@@ -7,6 +9,21 @@ from typing import Iterator
 import pytest
 import json
 from feedgen.feed import FeedGenerator
+
+
+def generate_random_string(length: int) -> str:
+    letters = string.ascii_letters
+    random_string = "".join(random.choice(letters) for _ in range(length))
+    return random_string
+
+
+def generate_random_sentence(word_count: int) -> str:
+    return (
+        " ".join(
+            generate_random_string(random.randrange(4, 7)) for _ in range(word_count)
+        ).capitalize()
+        + "."
+    )
 
 
 @pytest.fixture()
@@ -56,19 +73,35 @@ class FeedBuilder:
         self.fg.subtitle("This is a cool feed!")
         self.fg.link(href="http://example.com", rel="alternate")
 
-    def add_entry(self):
-        fe = self.fg.add_entry()
-        fe.id("http://lernfunk.de/media/654321/1/file.mp3")
-        fe.title("The First Episode")
-        fe.description("Enjoy our first episode.")
-        fe.enclosure(f"file:///{self.feed_source}/file.mp3", 0, "audio/mpeg")
-        fe.published(
-            datetime.datetime(
+    def add_entry(
+        self,
+        file_name: str = None,
+        published_date: datetime = None,
+        title: str = None,
+        description: str = None,
+    ):
+        if file_name == None:
+            file_name = generate_random_string(7) + ".mp3"
+
+        if published_date == None:
+            published_date = datetime.datetime(
                 2014, 7, 10, 2, 43, 55, 230107, tzinfo=datetime.timezone.utc
             )
-        )
 
-        self.__add_file_in_source("file.mp3")
+        if title == None:
+            title = generate_random_sentence(4)
+
+        if description == None:
+            description = generate_random_sentence(6)
+
+        fe = self.fg.add_entry()
+        fe.id("http://lernfunk.de/media/654321/1/file.mp3")
+        fe.title(title)
+        fe.description(description)
+        fe.enclosure(f"file:///{self.feed_source}/{file_name}", 0, "audio/mpeg")
+        fe.published(published_date)
+
+        self.__add_file_in_source(file_name)
 
         return self
 
@@ -102,10 +135,8 @@ def check_the_download_directory(download_destination_directory) -> Iterator[str
     return list(os.listdir(download_destination_directory))
 
 
-def test_answer(
-    secure_config_file, feed_builder, download_destination_directory
-):
-    rss_file = feed_builder.add_entry().add_entry().build()
+def test_answer(secure_config_file, feed_builder, download_destination_directory):
+    feed_builder = feed_builder.add_entry().add_entry()
     build_config(
         secure_config_file,
         {
@@ -113,7 +144,7 @@ def test_answer(
                 {
                     "name": "test",
                     "path": download_destination_directory,
-                    "rss_link": rss_file,
+                    "rss_link": feed_builder.build(),
                 }
             ]
         },
