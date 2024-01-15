@@ -65,13 +65,9 @@ def download_destination_directory(temporary_directory):
 
 
 class FeedBuilder:
-    def __init__(self, feed_source) -> None:
-        self.feed_source = feed_source
-        self.fg = FeedGenerator()
-        self.fg.title("Some Testfeed")
-        self.fg.author({"name": "John Doe", "email": "john@example.de"})
-        self.fg.subtitle("This is a cool feed!")
-        self.fg.link(href="http://example.com", rel="alternate")
+    def __init__(self, origin_feed_directory) -> None:
+        self.metadata = []
+        self.origin_feed_directory = origin_feed_directory
 
     def add_entry(
         self,
@@ -83,36 +79,58 @@ class FeedBuilder:
         if file_name == None:
             file_name = generate_random_string(7) + ".mp3"
 
-        if published_date == None:
-            published_date = datetime.datetime(
-                2014, 7, 10, 2, 43, 55, 230107, tzinfo=datetime.timezone.utc
-            )
-
         if title == None:
             title = generate_random_sentence(4)
 
         if description == None:
             description = generate_random_sentence(6)
 
-        fe = self.fg.add_entry()
-        fe.id("http://lernfunk.de/media/654321/1/file.mp3")
-        fe.title(title)
-        fe.description(description)
-        fe.enclosure(f"file:///{self.feed_source}/{file_name}", 0, "audio/mpeg")
-        fe.published(published_date)
-
-        self.__add_file_in_source(file_name)
+        self.metadata.append((file_name, title, description, published_date))
 
         return self
 
+    def __fill_up_dates(self):
+        self.metadata = [
+            (
+                file_name,
+                title,
+                description,
+                datetime.datetime(
+                    2014, 7, 10, 2, 43, 55, 230107, tzinfo=datetime.timezone.utc
+                )
+                if published_date == None
+                else published_date,
+            )
+            for file_name, title, description, published_date in self.metadata
+        ]
+
     def build(self):
-        path_to_file = os.path.join(self.feed_source, "podcast.xml")
-        self.fg.rss_file(path_to_file)
+        self.__fill_up_dates()
+
+        fg = FeedGenerator()
+        fg.title("Some Testfeed")
+        fg.author({"name": "John Doe", "email": "john@example.de"})
+        fg.subtitle("This is a cool feed!")
+        fg.link(href="http://example.com", rel="alternate")
+
+        for file_name, title, description, published_date in self.metadata:
+            fe = fg.add_entry()
+            fe.title(title)
+            fe.description(description)
+            fe.enclosure(
+                f"file:///{self.origin_feed_directory}/{file_name}", 0, "audio/mpeg"
+            )
+            fe.published(published_date)
+
+            self.__add_file_in_source(file_name)
+
+        path_to_file = os.path.join(self.origin_feed_directory, "podcast.xml")
+        fg.rss_file(path_to_file)
 
         return path_to_file
 
     def __add_file_in_source(self, file_name):
-        path_to_file = os.path.join(self.feed_source, file_name)
+        path_to_file = os.path.join(self.origin_feed_directory, file_name)
         with open(path_to_file, "w") as file:
             file.write("test")
 
