@@ -90,19 +90,17 @@ class FeedBuilder:
         return self
 
     def __fill_up_dates(self):
-        self.metadata = [
-            (
-                file_name,
-                title,
-                description,
-                datetime.datetime(
-                    2014, 7, 10, 2, 43, 55, 230107, tzinfo=datetime.timezone.utc
-                )
-                if published_date == None
-                else published_date,
-            )
-            for file_name, title, description, published_date in self.metadata
-        ]
+        result = []
+        previous = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            days=random.randrange(3, 5)
+        )
+
+        while self.metadata:
+            metadatum = self.metadata.pop()
+            previous -= datetime.timedelta(days=random.randrange(2, 6))
+            result.append((metadatum[0], metadatum[1], metadatum[2], previous))
+
+        self.metadata = reversed(result)
 
     def build(self):
         self.__fill_up_dates()
