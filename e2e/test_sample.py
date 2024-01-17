@@ -9,6 +9,7 @@ from typing import Iterator
 import pytest
 import json
 from feedgen.feed import FeedGenerator
+from pathlib import Path
 
 
 def generate_random_string(length: int) -> str:
@@ -51,21 +52,22 @@ def temporary_directory():
 
 
 @pytest.fixture()
-def origin_feed_directory(temporary_directory):
-    feed_source_path = os.path.join(temporary_directory, "feed_source")
-    os.makedirs(feed_source_path)
+def origin_feed_directory(tmp_path):
+    feed_source_path = tmp_path / "feed_source"
+    feed_source_path.mkdir()
     yield feed_source_path
 
 
 @pytest.fixture()
-def download_destination_directory(temporary_directory):
-    feed_destination_path = os.path.join(temporary_directory, "destination")
-    os.makedirs(feed_destination_path)
+def download_destination_directory(tmp_path) -> Path:
+    feed_destination_path = tmp_path / "destination"
+    feed_destination_path.mkdir()
+
     yield feed_destination_path
 
 
 class FeedBuilder:
-    def __init__(self, origin_feed_directory) -> None:
+    def __init__(self, origin_feed_directory: Path) -> None:
         self.metadata = []
         self.origin_feed_directory = origin_feed_directory
 
@@ -122,7 +124,7 @@ class FeedBuilder:
 
             self.__add_file_in_source(file_name)
 
-        path_to_file = os.path.join(self.origin_feed_directory, "podcast.xml")
+        path_to_file = str(self.origin_feed_directory / "podcast.xml")
         fg.rss_file(path_to_file)
 
         return path_to_file
@@ -147,8 +149,8 @@ def run_podcast_downloader():
     subprocess.check_call([sys.executable, "-m", "podcast_downloader"])
 
 
-def check_the_download_directory(download_destination_directory) -> Iterator[str]:
-    return list(os.listdir(download_destination_directory))
+def check_the_download_directory(download_destination_directory: Path) -> Iterator[str]:
+    return list(download_destination_directory.iterdir())
 
 
 def test_answer(secure_config_file, feed_builder, download_destination_directory):
@@ -159,7 +161,7 @@ def test_answer(secure_config_file, feed_builder, download_destination_directory
             "podcasts": [
                 {
                     "name": "test",
-                    "path": download_destination_directory,
+                    "path": str(download_destination_directory),
                     "rss_link": feed_builder.build(),
                 }
             ]
