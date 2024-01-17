@@ -4,7 +4,6 @@ import random
 import string
 import subprocess
 import sys
-import tempfile
 from typing import Iterator
 import pytest
 import json
@@ -43,12 +42,6 @@ def secure_config_file():
     if os.path.exists(backup_config_file_name):
         os.remove(config_file_name)
         os.rename(backup_config_file_name, config_file_name)
-
-
-@pytest.fixture()
-def temporary_directory():
-    with tempfile.TemporaryDirectory() as tmp_dirname:
-        yield tmp_dirname
 
 
 @pytest.fixture()
@@ -153,7 +146,11 @@ def check_the_download_directory(download_destination_directory: Path) -> Iterat
     return list(download_destination_directory.iterdir())
 
 
-def test_answer(secure_config_file, feed_builder, download_destination_directory):
+def test_answer(
+    secure_config_file: Path,
+    feed_builder: FeedBuilder,
+    download_destination_directory: Path,
+):
     feed_builder = feed_builder.add_entry().add_entry()
     build_config(
         secure_config_file,
