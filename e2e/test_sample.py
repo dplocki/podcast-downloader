@@ -1,5 +1,4 @@
 import datetime
-import os
 import random
 import string
 import subprocess
@@ -28,20 +27,20 @@ def generate_random_sentence(word_count: int) -> str:
 
 @pytest.fixture()
 def secure_config_file():
-    home_directory = os.path.expanduser("~")
-    config_file_name = os.path.join(home_directory, ".podcast_downloader_config.json")
-    backup_config_file_name = os.path.join(
-        home_directory, ".safe_copy_podcast_downloader_config.json"
+    home_directory = Path.home()
+    config_file_name = home_directory / ".podcast_downloader_config.json"
+    backup_config_file_name = (
+        home_directory / ".safe_copy_podcast_downloader_config.json"
     )
 
-    if os.path.exists(config_file_name):
-        os.rename(config_file_name, backup_config_file_name)
+    if config_file_name.exists():
+        config_file_name.rename(backup_config_file_name)
 
     yield config_file_name
 
-    if os.path.exists(backup_config_file_name):
-        os.remove(config_file_name)
-        os.rename(backup_config_file_name, config_file_name)
+    if backup_config_file_name.exists():
+        config_file_name.unlink()
+        backup_config_file_name.rename(config_file_name)
 
 
 @pytest.fixture()
@@ -62,7 +61,7 @@ def download_destination_directory(tmp_path) -> Path:
 class FeedBuilder:
     def __init__(self, origin_feed_directory: Path) -> None:
         self.metadata = []
-        self.origin_feed_directory = origin_feed_directory
+        self.origin_feed_directory: Path = origin_feed_directory
 
     def add_entry(
         self,
@@ -123,9 +122,8 @@ class FeedBuilder:
         return path_to_file
 
     def __add_file_in_source(self, file_name):
-        path_to_file = os.path.join(self.origin_feed_directory, file_name)
-        with open(path_to_file, "w") as file:
-            file.write("test")
+        path_to_file = self.origin_feed_directory / file_name
+        path_to_file.write_text("text")
 
 
 @pytest.fixture()
@@ -133,9 +131,8 @@ def feed_builder(origin_feed_directory):
     yield FeedBuilder(origin_feed_directory)
 
 
-def build_config(config_path, config_object):
-    with open(config_path, "w") as file:
-        file.write(json.dumps(config_object))
+def build_config(config_path: Path, config_object):
+    config_path.write_text(json.dumps(config_object))
 
 
 def run_podcast_downloader():
