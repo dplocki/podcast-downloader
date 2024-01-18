@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 
-def generate_random_string(length: int) -> str:
+def generate_random_string(length: int = 7) -> str:
     letters = string.ascii_letters
     random_string = "".join(random.choice(letters) for _ in range(length))
     return random_string
@@ -126,9 +126,31 @@ class FeedBuilder:
         path_to_file.write_text("text")
 
 
+class PodcastDirectoryBuilder():
+
+    def __init__(self, download_destination_directory: Path) -> None:
+        self.download_destination_directory = download_destination_directory
+
+    def add_file(self, file_name: str, create_datetime: str):
+        return self
+
+    def must_contain(self, file_name: str):
+        requested_file = self.download_destination_directory / file_name
+        assert requested_file.exists() and requested_file.is_file()
+        return self
+
+    def path(self):
+        return str(self.download_destination_directory)
+
+
 @pytest.fixture()
 def feed_builder(origin_feed_directory):
     yield FeedBuilder(origin_feed_directory)
+
+
+@pytest.fixture()
+def podcast_directory_builder(download_destination_directory):
+    yield PodcastDirectoryBuilder(download_destination_directory)
 
 
 def build_config(config_path: Path, config_object):
@@ -146,22 +168,30 @@ def check_the_download_directory(download_destination_directory: Path) -> Iterat
 def test_default_behavior_on_empty_directory(
     secure_config_file: Path,
     feed_builder: FeedBuilder,
-    download_destination_directory: Path,
+    podcast_directory_builder: PodcastDirectoryBuilder,
 ):
-    feed_builder = feed_builder.add_entry().add_entry()
+    # Arrange
+    last_file_name = generate_random_string() + '.mp3'
+
+    feed_builder.add_entry()
+    feed_builder.add_entry()
+    feed_builder.add_entry(file_name=last_file_name)
+
     build_config(
         secure_config_file,
         {
             "podcasts": [
                 {
                     "name": "test",
-                    "path": str(download_destination_directory),
+                    "path": podcast_directory_builder.path(),
                     "rss_link": feed_builder.build(),
                 }
             ]
         },
     )
 
+    # Act
     run_podcast_downloader()
 
-    print(check_the_download_directory(download_destination_directory))
+    # Assert
+    podcast_directory_builder.must_contain(last_file_name)
