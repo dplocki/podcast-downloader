@@ -1,13 +1,13 @@
+from feedgen.feed import FeedGenerator
+from pathlib import Path
+from typing import Iterator
 import datetime
+import json
+import pytest
 import random
 import string
 import subprocess
 import sys
-from typing import Iterator
-import pytest
-import json
-from feedgen.feed import FeedGenerator
-from pathlib import Path
 
 
 def generate_random_string(length: int) -> str:
@@ -143,7 +143,7 @@ def check_the_download_directory(download_destination_directory: Path) -> Iterat
     return list(download_destination_directory.iterdir())
 
 
-def test_answer(
+def test_default_behavior_on_empty_directory(
     secure_config_file: Path,
     feed_builder: FeedBuilder,
     download_destination_directory: Path,
@@ -164,4 +164,4 @@ def test_answer(
 
     run_podcast_downloader()
 
-    check_the_download_directory(download_destination_directory)
+    print(check_the_download_directory(download_destination_directory))
