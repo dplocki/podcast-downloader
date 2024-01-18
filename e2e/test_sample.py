@@ -134,10 +134,18 @@ class PodcastDirectory():
     def add_file(self, file_name: str, create_datetime: str):
         return self
 
-    def must_contain(self, file_name: str):
+    def is_containing(self, file_name: str):
         requested_file = self.download_destination_directory / file_name
         assert requested_file.exists() and requested_file.is_file()
         return self
+
+    def is_containing_n_files(self, n: int):
+        file_number = sum(1 for _ in self.download_destination_directory.iterdir())
+        assert file_number == n
+        return self
+
+    def is_containing_single_file(self):
+        return self.is_containing_n_files(1)
 
     def path(self):
         return str(self.download_destination_directory)
@@ -182,7 +190,7 @@ def test_default_behavior_on_empty_directory(
         {
             "podcasts": [
                 {
-                    "name": "test",
+                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed_builder.build(),
                 }
@@ -194,4 +202,5 @@ def test_default_behavior_on_empty_directory(
     run_podcast_downloader()
 
     # Assert
-    podcast_directory.must_contain(last_file_name.lower())
+    podcast_directory.is_containing(last_file_name.lower())
+    podcast_directory.is_containing_single_file()
