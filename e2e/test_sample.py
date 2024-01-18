@@ -126,8 +126,7 @@ class FeedBuilder:
         path_to_file.write_text("text")
 
 
-class PodcastDirectory():
-
+class PodcastDirectory:
     def __init__(self, download_destination_directory: Path) -> None:
         self.download_destination_directory = download_destination_directory
 
@@ -179,7 +178,7 @@ def test_default_behavior_on_empty_directory(
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
-    last_file_name = generate_random_string() + '.mp3'
+    last_file_name = generate_random_string() + ".mp3"
 
     feed_builder.add_entry()
     feed_builder.add_entry()
