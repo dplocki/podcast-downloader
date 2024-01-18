@@ -26,7 +26,7 @@ def generate_random_sentence(word_count: int) -> str:
 
 
 @pytest.fixture()
-def secure_config_file():
+def config_file_location():
     home_directory = Path.home()
     config_file_name = home_directory / ".podcast_downloader_config.json"
     backup_config_file_name = (
@@ -126,7 +126,7 @@ class FeedBuilder:
         path_to_file.write_text("text")
 
 
-class PodcastDirectoryBuilder():
+class PodcastDirectory():
 
     def __init__(self, download_destination_directory: Path) -> None:
         self.download_destination_directory = download_destination_directory
@@ -149,8 +149,8 @@ def feed_builder(origin_feed_directory):
 
 
 @pytest.fixture()
-def podcast_directory_builder(download_destination_directory):
-    yield PodcastDirectoryBuilder(download_destination_directory)
+def podcast_directory(download_destination_directory):
+    yield PodcastDirectory(download_destination_directory)
 
 
 def build_config(config_path: Path, config_object):
@@ -166,9 +166,9 @@ def check_the_download_directory(download_destination_directory: Path) -> Iterat
 
 
 def test_default_behavior_on_empty_directory(
-    secure_config_file: Path,
+    config_file_location: Path,
     feed_builder: FeedBuilder,
-    podcast_directory_builder: PodcastDirectoryBuilder,
+    podcast_directory: PodcastDirectory,
 ):
     # Arrange
     last_file_name = generate_random_string() + '.mp3'
@@ -178,12 +178,12 @@ def test_default_behavior_on_empty_directory(
     feed_builder.add_entry(file_name=last_file_name)
 
     build_config(
-        secure_config_file,
+        config_file_location,
         {
             "podcasts": [
                 {
                     "name": "test",
-                    "path": podcast_directory_builder.path(),
+                    "path": podcast_directory.path(),
                     "rss_link": feed_builder.build(),
                 }
             ]
@@ -194,4 +194,4 @@ def test_default_behavior_on_empty_directory(
     run_podcast_downloader()
 
     # Assert
-    podcast_directory_builder.must_contain(last_file_name)
+    podcast_directory.must_contain(last_file_name.lower())
