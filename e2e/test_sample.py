@@ -1,6 +1,7 @@
 from feedgen.feed import FeedGenerator
 from pathlib import Path
-from typing import Iterator
+from pytest_httpserver import HTTPServer
+from typing import Callable, Dict, Iterator, List
 import datetime
 import json
 import pytest
@@ -8,8 +9,6 @@ import random
 import string
 import subprocess
 import sys
-
-from pytest_httpserver import HTTPServer
 
 
 def generate_random_string(length: int = 7) -> str:
@@ -25,24 +24,6 @@ def generate_random_sentence(word_count: int) -> str:
         ).capitalize()
         + "."
     )
-
-
-@pytest.fixture()
-def config_file_location():
-    home_directory = Path.home()
-    config_file_name = home_directory / ".podcast_downloader_config.json"
-    backup_config_file_name = (
-        home_directory / ".safe_copy_podcast_downloader_config.json"
-    )
-
-    if config_file_name.exists():
-        config_file_name.rename(backup_config_file_name)
-
-    yield config_file_name
-
-    if backup_config_file_name.exists():
-        config_file_name.unlink()
-        backup_config_file_name.rename(config_file_name)
 
 
 @pytest.fixture()
@@ -129,6 +110,9 @@ class PodcastDirectory:
     def add_file(self, file_name: str, create_datetime: str):
         return self
 
+    def is_looking_like(self, files: List[str]) -> bool:
+        pass
+
     def is_containing(self, file_name: str):
         requested_file = self.download_destination_directory / file_name
         assert requested_file.exists() and requested_file.is_file()
@@ -156,8 +140,25 @@ def podcast_directory(download_destination_directory):
     yield PodcastDirectory(download_destination_directory)
 
 
-def build_config(config_path: Path, config_object):
-    config_path.write_text(json.dumps(config_object))
+@pytest.fixture
+def use_config():
+    def internal(config_object: Dict):
+        config_file_name.write_text(json.dumps(config_object))
+
+    home_directory = Path.home()
+    config_file_name = home_directory / ".podcast_downloader_config.json"
+    backup_config_file_name = (
+        home_directory / ".safe_copy_podcast_downloader_config.json"
+    )
+
+    if config_file_name.exists():
+        config_file_name.rename(backup_config_file_name)
+
+    yield internal
+
+    if backup_config_file_name.exists():
+        config_file_name.unlink()
+        backup_config_file_name.rename(config_file_name)
 
 
 def run_podcast_downloader():
@@ -169,8 +170,8 @@ def check_the_download_directory(download_destination_directory: Path) -> Iterat
 
 
 def test_default_behavior_on_empty_directory(
-    config_file_location: Path,
     feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -180,8 +181,7 @@ def test_default_behavior_on_empty_directory(
     feed.add_entry()
     feed.add_entry(file_name=last_file_name)
 
-    build_config(
-        config_file_location,
+    use_config(
         {
             "podcasts": [
                 {
@@ -190,7 +190,7 @@ def test_default_behavior_on_empty_directory(
                     "rss_link": feed.get_feed_url(),
                 }
             ]
-        },
+        }
     )
 
     # Act
