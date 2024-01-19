@@ -9,6 +9,8 @@ import string
 import subprocess
 import sys
 
+from pytest_httpserver import HTTPServer
+
 
 def generate_random_string(length: int = 7) -> str:
     letters = string.ascii_letters
@@ -44,13 +46,6 @@ def config_file_location():
 
 
 @pytest.fixture()
-def origin_feed_directory(tmp_path):
-    feed_source_path = tmp_path / "feed_source"
-    feed_source_path.mkdir()
-    yield feed_source_path
-
-
-@pytest.fixture()
 def download_destination_directory(tmp_path) -> Path:
     feed_destination_path = tmp_path / "destination"
     feed_destination_path.mkdir()
@@ -59,9 +54,11 @@ def download_destination_directory(tmp_path) -> Path:
 
 
 class FeedBuilder:
-    def __init__(self, origin_feed_directory: Path) -> None:
+    FEED_RSS_FILE_NAME = "/rss_feed.xml"
+
+    def __init__(self, httpserver: HTTPServer) -> None:
         self.metadata = []
-        self.origin_feed_directory: Path = origin_feed_directory
+        self.httpserver = httpserver
 
     def add_entry(
         self,
@@ -96,9 +93,7 @@ class FeedBuilder:
 
         self.metadata = reversed(result)
 
-    def build(self):
-        self.__fill_up_dates()
-
+    def __build_rss(self):
         fg = FeedGenerator()
         fg.title("Some Testfeed")
         fg.author({"name": "John Doe", "email": "john@example.de"})
@@ -106,24 +101,25 @@ class FeedBuilder:
         fg.link(href="http://example.com", rel="alternate")
 
         for file_name, title, description, published_date in self.metadata:
+            self.httpserver.expect_request("/" + file_name).respond_with_data(
+                "mp3_content"
+            )
+
             fe = fg.add_entry()
             fe.title(title)
             fe.description(description)
-            fe.enclosure(
-                f"file:///{self.origin_feed_directory}/{file_name}", 0, "audio/mpeg"
-            )
+            fe.enclosure(self.httpserver.url_for(file_name), 0, "audio/mpeg")
             fe.published(published_date)
 
-            self.__add_file_in_source(file_name)
+        self.httpserver.expect_request(self.FEED_RSS_FILE_NAME).respond_with_data(
+            fg.rss_str()
+        )
 
-        path_to_file = str(self.origin_feed_directory / "podcast.xml")
-        fg.rss_file(path_to_file)
+    def get_feed_url(self) -> str:
+        self.__fill_up_dates()
+        self.__build_rss()
 
-        return path_to_file
-
-    def __add_file_in_source(self, file_name):
-        path_to_file = self.origin_feed_directory / file_name
-        path_to_file.write_text("text")
+        return self.httpserver.url_for(self.FEED_RSS_FILE_NAME)
 
 
 class PodcastDirectory:
@@ -151,8 +147,8 @@ class PodcastDirectory:
 
 
 @pytest.fixture()
-def feed_builder(origin_feed_directory):
-    yield FeedBuilder(origin_feed_directory)
+def feed(httpserver):
+    yield FeedBuilder(httpserver)
 
 
 @pytest.fixture()
@@ -174,15 +170,15 @@ def check_the_download_directory(download_destination_directory: Path) -> Iterat
 
 def test_default_behavior_on_empty_directory(
     config_file_location: Path,
-    feed_builder: FeedBuilder,
+    feed: FeedBuilder,
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
     last_file_name = generate_random_string() + ".mp3"
 
-    feed_builder.add_entry()
-    feed_builder.add_entry()
-    feed_builder.add_entry(file_name=last_file_name)
+    feed.add_entry()
+    feed.add_entry()
+    feed.add_entry(file_name=last_file_name)
 
     build_config(
         config_file_location,
@@ -191,7 +187,7 @@ def test_default_behavior_on_empty_directory(
                 {
                     "name": generate_random_string(),
                     "path": podcast_directory.path(),
-                    "rss_link": feed_builder.build(),
+                    "rss_link": feed.get_feed_url(),
                 }
             ]
         },
@@ -201,5 +197,6 @@ def test_default_behavior_on_empty_directory(
     run_podcast_downloader()
 
     # Assert
+    feed.httpserver.check_assertions()
     podcast_directory.is_containing(last_file_name.lower())
     podcast_directory.is_containing_single_file()
