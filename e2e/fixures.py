@@ -84,24 +84,14 @@ class PodcastDirectory:
     def __init__(self, download_destination_directory: Path) -> None:
         self.download_destination_directory = download_destination_directory
 
-    def add_file(self, file_name: str, create_datetime: str):
-        return self
+    def is_containing_only(self, expected_files_list: List[str]) -> None:
+        files_in_destination_directory = set(
+            self.download_destination_directory.iterdir()
+        )
+        expected_unique_files = set(expected_files_list)
 
-    def is_looking_like(self, files: List[str]) -> bool:
-        pass
-
-    def is_containing(self, file_name: str):
-        requested_file = self.download_destination_directory / file_name
-        assert requested_file.exists() and requested_file.is_file()
-        return self
-
-    def is_containing_n_files(self, n: int):
-        file_number = sum(1 for _ in self.download_destination_directory.iterdir())
-        assert file_number == n
-        return self
-
-    def is_containing_single_file(self):
-        return self.is_containing_n_files(1)
+        assert len(expected_unique_files) == len(files_in_destination_directory)
+        assert len(files_in_destination_directory & expected_unique_files) == 0
 
     def path(self):
         return str(self.download_destination_directory)
