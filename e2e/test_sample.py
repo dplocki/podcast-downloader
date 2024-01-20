@@ -40,5 +40,4 @@ def test_default_behavior_on_empty_directory(
     run_podcast_downloader()
 
     # Assert
-    podcast_directory.is_containing(last_file_name.lower())
-    podcast_directory.is_containing_single_file()
+    podcast_directory.is_containing_only([last_file_name])
