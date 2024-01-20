@@ -84,6 +84,10 @@ class PodcastDirectory:
     def __init__(self, download_destination_directory: Path) -> None:
         self.download_destination_directory = download_destination_directory
 
+    def add_file(self, file_name: str) -> None:
+        file_path = self.download_destination_directory / file_name.lower()
+        file_path.write_text(file_name + " content")
+
     def is_containing_only(self, expected_files_list: List[str]) -> None:
         files_in_destination_directory = set(
             self.download_destination_directory.iterdir()
