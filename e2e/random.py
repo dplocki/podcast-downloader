@@ -1,5 +1,6 @@
 import random
 import string
+from typing import Callable, List
 
 
 def generate_random_string(length: int = 7) -> str:
@@ -13,3 +14,11 @@ def generate_random_sentence(word_count: int) -> str:
         ).capitalize()
         + "."
     )
+
+
+def generate_random_mp3_file():
+    return generate_random_string() + ".mp3"
+
+
+def call_n_times(generator: Callable[[], str], n: int = None) -> List[str]:
+    return [generator() for _ in range(n or random.randint(4, 7))]

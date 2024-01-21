@@ -8,7 +8,7 @@ from e2e.fixures import (
     podcast_directory,
     download_destination_directory,
 )
-from e2e.random import generate_random_string
+from e2e.random import call_n_times, generate_random_mp3_file, generate_random_string
 from typing import Callable, Dict
 
 
@@ -18,10 +18,9 @@ def test_default_behavior_on_empty_podcast_directory(
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
-    last_file_name = generate_random_string() + ".mp3"
+    last_file_name = generate_random_mp3_file()
 
-    feed.add_entry()
-    feed.add_entry()
+    feed.add_random_entries()
     feed.add_entry(file_name=last_file_name)
 
     use_config(
@@ -49,18 +48,13 @@ def test_default_behavior_on_nonempty_podcast_directory(
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
-    podcast_a_file = generate_random_string() + ".mp3"
-    podcast_b_file = generate_random_string() + ".mp3"
-    podcast_c_file = generate_random_string() + ".mp3"
+    podcasts_files = call_n_times(generate_random_mp3_file)
 
-    feed.add_entry()
-    feed.add_entry()
-    feed.add_entry()
-    feed.add_entry(file_name=podcast_a_file)
-    feed.add_entry(file_name=podcast_b_file)
-    feed.add_entry(file_name=podcast_c_file)
+    feed.add_random_entries()
+    for file_name in podcasts_files:
+        feed.add_entry(file_name=file_name)
 
-    podcast_directory.add_file(podcast_a_file)
+    podcast_directory.add_file(podcasts_files[0])
 
     use_config(
         {
@@ -78,6 +72,4 @@ def test_default_behavior_on_nonempty_podcast_directory(
     run_podcast_downloader()
 
     # Assert
-    podcast_directory.is_containing_only(
-        [podcast_a_file, podcast_b_file, podcast_c_file]
-    )
+    podcast_directory.is_containing_only(podcasts_files)
