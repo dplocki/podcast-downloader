@@ -4,7 +4,7 @@ import pytest
 import random
 import subprocess
 import sys
-from e2e.random import generate_random_sentence, generate_random_string
+from e2e.random import generate_random_sentence, generate_random_mp3_file
 from feedgen.feed import FeedGenerator
 from pathlib import Path
 from pytest_httpserver import HTTPServer
@@ -26,7 +26,7 @@ class FeedBuilder:
         description: str = None,
     ):
         if file_name == None:
-            file_name = generate_random_string(7) + ".mp3"
+            file_name = generate_random_mp3_file()
 
         if title == None:
             title = generate_random_sentence(4)
@@ -35,6 +35,12 @@ class FeedBuilder:
             description = generate_random_sentence(6)
 
         self.metadata.append((file_name, title, description, published_date))
+
+        return self
+
+    def add_random_entries(self, n: int = None):
+        for _ in range(n or random.randint(4, 7)):
+            self.add_entry()
 
         return self
 
