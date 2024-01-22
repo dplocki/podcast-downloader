@@ -1,7 +1,9 @@
-name: Run Unit Tests
+name: Run E2E Tests
 
 on:
-  push
+  push:
+    branches:
+      master
 
 jobs:
 
@@ -20,13 +22,10 @@ jobs:
           python-version: '3.10'
 
       - name: Installing dependencies
-        run: pip install --upgrade pip black --quiet
-
-      - name: Style check
-        run: black . --check
+        run: pip install --upgrade pip pytest pytest-httpserver --quiet
 
       - name: Install module
         run: pip install -e .
 
       - name: Running tests
-        run: python -m unittest discover -s tests -p *_test.py
+        run: pytest e2e
