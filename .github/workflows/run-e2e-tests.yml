@@ -22,7 +22,7 @@ jobs:
           python-version: '3.10'
 
       - name: Installing dependencies
-        run: pip install --upgrade pip pytest pytest-httpserver feedparser --quiet
+        run: pip install --upgrade pip pytest pytest-httpserver feedgen --quiet
 
       - name: Install module
         run: pip install -e .
