@@ -79,7 +79,7 @@ Those will be cover by all values given by command line.
 | `name`               | string     | yes      | -                                      | The name of channel (used in logger) |
 | `rss_link`           | string     | yes      | -                                      | The URL of RSS channel |
 | `path`               | string     | yes      | -                                      | The path to directory, for podcast files |
-| `file_name_template` | string     | no       | `%file_name%.%file_extension%`         | The template for the downloaded files, more 
+| `file_name_template` | string     | no       | `%file_name%.%file_extension%`         | The template for the downloaded files, see [File name template](#file-name-template)|
 | `disable`            | boolean    | no       | `false`                                | This podcast will be ignored |
 | `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | The file filter |
 | `if_directory_empty` | string     | no       | `download_last`                        | See [In case of empty directory](#in-case-of-empty-directory) |
@@ -107,6 +107,8 @@ Those will be cover by all values given by command line.
 ```
 
 ### HTTP request headers
+
+Some servers may don't like how the urllib is presenting itself to them (the HTTP User-Agent header). This may lead into problem likes: `urllib.error.HTTPError: HTTP Error 403: Forbidden`. It may be require to present the script client as something else.
 
 There is an option to specify HTTP headers when downloading files.
 You can provide them using the `http_headers` value in the configuration file.
