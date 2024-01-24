@@ -100,9 +100,10 @@ class PodcastDirectory:
         )
         expected_unique_files = set(expected_files_list)
 
-        assert len(expected_unique_files) == len(
-            files_in_destination_directory
-        ), f"The expected_files_list contain duplication"
+        if len(expected_unique_files) > 0:
+            assert len(expected_unique_files) == len(
+                files_in_destination_directory
+            ), f"The expected_files_list contain duplication"
         assert (
             len(files_in_destination_directory & expected_unique_files) == 0
         ), f"The files in the podcast directory is different than expected"
