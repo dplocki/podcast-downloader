@@ -8,6 +8,9 @@ feedparser = "*"
 
 [dev-packages]
 pylint = "*"
+pytest = "*"
+pytest-httpserver = "*"
+feedgen = "*"
 autopep8 = "*"
 black = "*"
 
