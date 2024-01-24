@@ -76,9 +76,9 @@ Those will be cover by all values given by command line.
 
 | Property             | Type       | Required | Default                                | Note |
 |:---------------------|:----------:|:--------:|:--------------------------------------:|:-----|
-| `name`               | string     | yes      | -                                      | The name of channel (used in logger) |
-| `rss_link`           | string     | yes      | -                                      | The URL of RSS channel |
-| `path`               | string     | yes      | -                                      | The path to directory, for podcast files |
+| `name`               | string     | yes      | -                                      | The name of channel (use in logger) |
+| `rss_link`           | string     | yes      | -                                      | The URL of RSS feed |
+| `path`               | string     | yes      | -                                      | The path to directory, where podcast are stored, will be downloaded |
 | `file_name_template` | string     | no       | `%file_name%.%file_extension%`         | The template for the downloaded files, see [File name template](#file-name-template)|
 | `disable`            | boolean    | no       | `false`                                | This podcast will be ignored |
 | `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | The file filter |
