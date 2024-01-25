@@ -1,3 +1,4 @@
+import random
 from typing import Callable, Dict
 from e2e.fixures import (
     FeedBuilder,
@@ -9,7 +10,12 @@ from e2e.fixures import (
     podcast_directory,
     download_destination_directory,
 )
-from e2e.random import generate_random_string
+from e2e.random import (
+    generate_random_file,
+    generate_random_int,
+    generate_random_mp3_file,
+    generate_random_string,
+)
 
 
 def test_configuration_ignore_option(

@@ -96,17 +96,23 @@ class PodcastDirectory:
 
     def is_containing_only(self, expected_files_list: List[str]) -> None:
         files_in_destination_directory = set(
-            self.download_destination_directory.iterdir()
+            file.name for file in self.download_destination_directory.iterdir()
         )
         expected_unique_files = set(expected_files_list)
 
         if len(expected_unique_files) > 0:
             assert len(expected_unique_files) == len(
-                files_in_destination_directory
+                expected_files_list
             ), f"The expected_files_list contain duplication"
-        assert (
-            len(files_in_destination_directory & expected_unique_files) == 0
-        ), f"The files in the podcast directory is different than expected"
+
+            the_difference = files_in_destination_directory ^ expected_unique_files
+
+            assert (
+                len(the_difference) == 0
+            ), f"The files in the podcast directory is different than expected. See: {the_difference}"
+            return
+
+        assert len(files_in_destination_directory) == 0
 
     def path(self):
         return str(self.download_destination_directory)
