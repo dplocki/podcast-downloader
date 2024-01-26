@@ -8,7 +8,11 @@ from e2e.random import generate_random_sentence, generate_random_mp3_file
 from feedgen.feed import FeedGenerator
 from pathlib import Path
 from pytest_httpserver import HTTPServer
-from typing import Dict, List
+from typing import Dict, List, Set
+
+
+def print_set_content(content: Set):
+    return ", ".join(sorted(content))
 
 
 class FeedBuilder:
@@ -24,6 +28,7 @@ class FeedBuilder:
         published_date: datetime = None,
         title: str = None,
         description: str = None,
+        file_type: str = None,
     ):
         if file_name == None:
             file_name = generate_random_mp3_file()
@@ -34,7 +39,10 @@ class FeedBuilder:
         if description == None:
             description = generate_random_sentence(6)
 
-        self.metadata.append((file_name, title, description, published_date))
+        if file_type == None:
+            file_type = "audio/mpeg"
+
+        self.metadata.append((file_name, title, description, published_date, file_type))
 
         return self
 
@@ -53,7 +61,9 @@ class FeedBuilder:
         while self.metadata:
             metadatum = self.metadata.pop()
             previous -= datetime.timedelta(days=random.randrange(2, 6))
-            result.append((metadatum[0], metadatum[1], metadatum[2], previous))
+            result.append(
+                (metadatum[0], metadatum[1], metadatum[2], previous, metadatum[4])
+            )
 
         self.metadata = reversed(result)
 
@@ -64,7 +74,7 @@ class FeedBuilder:
         fg.subtitle("This is a cool feed!")
         fg.link(href="http://example.com", rel="alternate")
 
-        for file_name, title, description, published_date in self.metadata:
+        for file_name, title, description, published_date, file_type in self.metadata:
             self.httpserver.expect_request("/" + file_name).respond_with_data(
                 "mp3_content"
             )
@@ -72,7 +82,7 @@ class FeedBuilder:
             fe = fg.add_entry()
             fe.title(title)
             fe.description(description)
-            fe.enclosure(self.httpserver.url_for(file_name), 0, "audio/mpeg")
+            fe.enclosure(self.httpserver.url_for(file_name), 0, file_type)
             fe.published(published_date)
 
         self.httpserver.expect_request(self.FEED_RSS_FILE_NAME).respond_with_data(
@@ -109,7 +119,7 @@ class PodcastDirectory:
 
             assert (
                 len(the_difference) == 0
-            ), f"The files in the podcast directory is different than expected. See: {the_difference}"
+            ), f"The files in the podcast directory is different than expected.\nDirectory:  {print_set_content(files_in_destination_directory)}\nExpected:   {print_set_content(expected_unique_files)}\nDifference: {print_set_content(the_difference)}"
             return
 
         assert len(files_in_destination_directory) == 0
