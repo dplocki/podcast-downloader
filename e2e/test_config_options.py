@@ -111,4 +111,9 @@ def test_configuration_file_name_template_option(
     run_podcast_downloader()
 
     # Assert
-    podcast_directory.is_containing_only([file_name.lower().replace('.', '_terminus_est_') for file_name in mp3_files_date])
+    podcast_directory.is_containing_only(
+        [
+            file_name.lower().replace(".", "_terminus_est_")
+            for file_name in mp3_files_date
+        ]
+    )
