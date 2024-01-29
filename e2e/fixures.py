@@ -4,11 +4,15 @@ import pytest
 import random
 import subprocess
 import sys
-from e2e.random import generate_random_sentence, generate_random_mp3_file
+from e2e.random import (
+    generate_random_sentence,
+    generate_random_mp3_file,
+    generate_random_string,
+)
 from feedgen.feed import FeedGenerator
 from pathlib import Path
 from pytest_httpserver import HTTPServer
-from typing import Dict, List, Set
+from typing import Dict, Generator, List, Set
 
 
 def print_set_content(content: Set):
@@ -18,9 +22,10 @@ def print_set_content(content: Set):
 class FeedBuilder:
     FEED_RSS_FILE_NAME = "/rss_feed.xml"
 
-    def __init__(self, httpserver: HTTPServer) -> None:
+    def __init__(self, httpserver: HTTPServer, url_prefix: str = None) -> None:
         self.metadata = []
         self.httpserver = httpserver
+        self.url_prefix = url_prefix or ""
 
     def add_entry(
         self,
@@ -75,25 +80,27 @@ class FeedBuilder:
         fg.link(href="http://example.com", rel="alternate")
 
         for file_name, title, description, published_date, file_type in self.metadata:
-            self.httpserver.expect_request("/" + file_name).respond_with_data(
-                "mp3_content"
-            )
+            self.httpserver.expect_request(
+                self.url_prefix + "/" + file_name
+            ).respond_with_data("mp3_content")
 
             fe = fg.add_entry()
             fe.title(title)
             fe.description(description)
-            fe.enclosure(self.httpserver.url_for(file_name), 0, file_type)
+            fe.enclosure(
+                self.httpserver.url_for(self.url_prefix + "/" + file_name), 0, file_type
+            )
             fe.published(published_date)
 
-        self.httpserver.expect_request(self.FEED_RSS_FILE_NAME).respond_with_data(
-            fg.rss_str()
-        )
+        self.httpserver.expect_request(
+            self.url_prefix + self.FEED_RSS_FILE_NAME
+        ).respond_with_data(fg.rss_str())
 
     def get_feed_url(self) -> str:
         self.__fill_up_dates()
         self.__build_rss()
 
-        return self.httpserver.url_for(self.FEED_RSS_FILE_NAME)
+        return self.httpserver.url_for(self.url_prefix + self.FEED_RSS_FILE_NAME)
 
 
 class PodcastDirectory:
@@ -128,6 +135,43 @@ class PodcastDirectory:
         return str(self.download_destination_directory)
 
 
+class MultiplePodcastDirectory:
+    def __init__(self, tmp_path: Path) -> None:
+        self.tmp_path = tmp_path
+        self.directories = {}
+
+    def __get_directory(self, name) -> Path:
+        if name not in self.directories:
+            feed_destination_path = self.tmp_path / "destination"
+            if not feed_destination_path.exists():
+                feed_destination_path.mkdir()
+
+            output_directory = feed_destination_path / name
+            output_directory.mkdir()
+
+            self.directories[name] = output_directory
+
+        return self.directories[name]
+
+    def get_first_directory(self) -> str:
+        return str(self.__get_directory("first"))
+
+    def get_second_directory(self) -> str:
+        return str(self.__get_directory("second"))
+
+    def get_first_directory_files(self) -> Generator[str, None, None]:
+        return self.__get_directory("first").iterdir()
+
+    def get_second_directory_files(self) -> Generator[str, None, None]:
+        return self.__get_directory("second").iterdir()
+
+
+class MultipleFeedBuilder:
+    def __init__(self, httpserver) -> None:
+        self.first_feed = FeedBuilder(httpserver, "/" + generate_random_string())
+        self.second_feed = FeedBuilder(httpserver, "/" + generate_random_string())
+
+
 @pytest.fixture()
 def download_destination_directory(tmp_path) -> Path:
     feed_destination_path = tmp_path / "destination"
@@ -144,6 +188,16 @@ def feed(httpserver):
 @pytest.fixture()
 def podcast_directory(download_destination_directory):
     yield PodcastDirectory(download_destination_directory)
+
+
+@pytest.fixture()
+def podcast_directory_manager(tmp_path):
+    yield MultiplePodcastDirectory(tmp_path)
+
+
+@pytest.fixture()
+def feed_builder_manager(httpserver):
+    return MultipleFeedBuilder(httpserver)
 
 
 @pytest.fixture

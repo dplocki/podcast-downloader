@@ -2,13 +2,17 @@ import random
 from typing import Callable, Dict
 from e2e.fixures import (
     FeedBuilder,
+    MultipleFeedBuilder,
+    MultiplePodcastDirectory,
     PodcastDirectory,
     run_podcast_downloader,
     # fixures:
+    download_destination_directory,
     feed,
+    feed_builder_manager,
     use_config,
     podcast_directory,
-    download_destination_directory,
+    podcast_directory_manager,
 )
 from e2e.random import (
     generate_random_file,
@@ -88,6 +92,7 @@ def test_configuration_file_name_template_option(
     use_config: Callable[[Dict], None],
     podcast_directory: PodcastDirectory,
 ):
+    # Arrange
     mp3_files_date = [generate_random_mp3_file() for _ in range(generate_random_int())]
 
     for file_name in mp3_files_date:
@@ -117,3 +122,49 @@ def test_configuration_file_name_template_option(
             for file_name in mp3_files_date
         ]
     )
+
+
+def test_configuration_downloads_limit_option(
+    feed_builder_manager: MultipleFeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory_manager: MultiplePodcastDirectory,
+):
+    # Arrange
+    limit = random.randrange(9, 13)
+
+    for _ in range(generate_random_int()):
+        feed_builder_manager.first_feed.add_entry(file_name=generate_random_mp3_file())
+
+    for _ in range(generate_random_int()):
+        feed_builder_manager.second_feed.add_entry(file_name=generate_random_mp3_file())
+
+    use_config(
+        {
+            "if_directory_empty": "download_all_from_feed",
+            "downloads_limit": limit,
+            "podcasts": [
+                {
+                    "name": generate_random_string(),
+                    "path": podcast_directory_manager.get_first_directory(),
+                    "rss_link": feed_builder_manager.first_feed.get_feed_url(),
+                },
+                {
+                    "name": generate_random_string(),
+                    "path": podcast_directory_manager.get_second_directory(),
+                    "rss_link": feed_builder_manager.second_feed.get_feed_url(),
+                },
+            ],
+        }
+    )
+
+    # Act
+    run_podcast_downloader()
+
+    # Assert
+    downloaded_files_count = sum(
+        1 for _ in podcast_directory_manager.get_first_directory_files()
+    ) + sum(1 for _ in podcast_directory_manager.get_second_directory_files())
+
+    assert (
+        downloaded_files_count == limit
+    ), f"Excepted the download files number ({downloaded_files_count}) to equal to limit ({limit})"
