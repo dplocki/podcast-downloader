@@ -130,9 +130,10 @@ def test_configuration_downloads_limit_option(
     podcast_directory_manager: MultiplePodcastDirectory,
 ):
     # Arrange
-    limit = random.randrange(9, 13)
+    first_entries = generate_random_int()
+    limit = first_entries + random.randint(2, 3)
 
-    for _ in range(generate_random_int()):
+    for _ in range(first_entries):
         feed_builder_manager.first_feed.add_entry(file_name=generate_random_mp3_file())
 
     for _ in range(generate_random_int()):
