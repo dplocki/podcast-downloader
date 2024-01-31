@@ -12,7 +12,7 @@ from e2e.random import (
 from feedgen.feed import FeedGenerator
 from pathlib import Path
 from pytest_httpserver import HTTPServer
-from typing import Dict, Generator, List, Set
+from typing import Dict, Generator, Iterable, List, Set
 
 
 def print_set_content(content: Set):
@@ -26,6 +26,10 @@ class FeedBuilder:
         self.metadata = []
         self.httpserver = httpserver
         self.url_prefix = url_prefix or ""
+        self.headers = None
+
+    def set_request_headers(self, headers):
+        self.headers = headers
 
     def add_entry(
         self,
@@ -81,7 +85,7 @@ class FeedBuilder:
 
         for file_name, title, description, published_date, file_type in self.metadata:
             self.httpserver.expect_request(
-                self.url_prefix + "/" + file_name
+                self.url_prefix + "/" + file_name, headers=self.headers
             ).respond_with_data("mp3_content")
 
             fe = fg.add_entry()
@@ -112,9 +116,7 @@ class PodcastDirectory:
         file_path.write_text(file_name + " content")
 
     def is_containing_only(self, expected_files_list: List[str]) -> None:
-        files_in_destination_directory = set(
-            file.name for file in self.download_destination_directory.iterdir()
-        )
+        files_in_destination_directory = self.get_files_list()
         expected_unique_files = set(expected_files_list)
 
         if len(expected_unique_files) > 0:
@@ -130,6 +132,9 @@ class PodcastDirectory:
             return
 
         assert len(files_in_destination_directory) == 0
+
+    def get_files_list(self) -> Iterable[str]:
+        return set(file.name for file in self.download_destination_directory.iterdir())
 
     def path(self):
         return str(self.download_destination_directory)

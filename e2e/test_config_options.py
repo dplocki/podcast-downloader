@@ -169,3 +169,44 @@ def test_configuration_downloads_limit_option(
     assert (
         downloaded_files_count == limit
     ), f"Excepted the download files number ({downloaded_files_count}) to equal to limit ({limit})"
+
+
+def test_configuration_http_headers_option(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory_manager: MultiplePodcastDirectory,
+):
+    # Arrange
+    request_user_agent = generate_random_string()
+    feed.set_request_headers({"User-Agent": request_user_agent})
+    feed.add_random_entries()
+    rss_link = feed.get_feed_url()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "name": generate_random_string(),
+                    "http_headers": {"User-Agent": request_user_agent},
+                    "path": podcast_directory_manager.get_first_directory(),
+                    "rss_link": rss_link,
+                },
+                {
+                    "name": generate_random_string(),
+                    "path": podcast_directory_manager.get_second_directory(),
+                    "rss_link": rss_link,
+                },
+            ],
+        }
+    )
+
+    # Act
+    run_podcast_downloader()
+
+    # Assert
+    assert (
+        len(list(podcast_directory_manager.get_first_directory_files())) > 0
+    ), "you need to download something"
+    assert (
+        len(list(podcast_directory_manager.get_second_directory_files())) == 0
+    ), "you need to download something"
