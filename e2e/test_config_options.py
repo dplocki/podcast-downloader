@@ -206,7 +206,7 @@ def test_configuration_http_headers_option(
     # Assert
     assert (
         len(list(podcast_directory_manager.get_first_directory_files())) > 0
-    ), "you need to download something"
+    ), "User-Agent should allow the download"
     assert (
         len(list(podcast_directory_manager.get_second_directory_files())) == 0
-    ), "you need to download something"
+    ), "User-Agent should not allow the download"
