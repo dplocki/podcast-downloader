@@ -106,3 +106,36 @@ def test_download_all_from_feed_behavior(
 
     # Assert
     podcast_directory.is_containing_only(expected_downloaded_files)
+
+
+def test_download_last_from_feed_behavior(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    podcasts_files = call_n_times(generate_random_mp3_file)
+    expected_downloaded_files = list(file_name.lower() for file_name in podcasts_files)
+    last_podcast_file = expected_downloaded_files[-1]
+
+    for file_name in podcasts_files:
+        feed.add_entry(file_name=file_name)
+
+    use_config(
+        {
+            "if_directory_empty": "download_last",
+            "podcasts": [
+                {
+                    "name": generate_random_string(),
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    run_podcast_downloader()
+
+    # Assert
+    podcast_directory.is_containing_only([last_podcast_file])
