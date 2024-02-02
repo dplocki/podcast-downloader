@@ -72,14 +72,14 @@ class FeedBuilder:
             metadatum = self.metadata.pop()
             if metadatum[self.PUBLISHED_DATE_INDEX] != None:
                 previous = metadatum[self.PUBLISHED_DATE_INDEX]
-                continue
+            else:
+                previous -= datetime.timedelta(days=random.randrange(2, 6))
 
-            previous -= datetime.timedelta(days=random.randrange(2, 6))
             result.append(
                 (metadatum[0], metadatum[1], metadatum[2], previous, metadatum[4])
             )
 
-        self.metadata = reversed(result)
+        self.metadata = result[::-1]
 
     def __build_rss(self):
         fg = FeedGenerator()

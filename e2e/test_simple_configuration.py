@@ -158,7 +158,7 @@ def test_download_from_n_days_from_feed_behavior(
 
     metadata = []
     previous = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
-    for _ in range(generate_random_int()):
+    for _ in range(random.randrange(7, 13)):
         metadata.append((generate_random_mp3_file(), previous))
         previous -= datetime.timedelta(days=1)
 
@@ -183,5 +183,5 @@ def test_download_from_n_days_from_feed_behavior(
     # Act
     run_podcast_downloader()
     podcast_directory.is_containing_only(
-        [m[0].lower() for m in metadata[:-n_days_number]]
+        [m[0].lower() for m in metadata[-n_days_number:]]
     )
