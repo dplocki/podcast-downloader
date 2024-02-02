@@ -1,3 +1,5 @@
+import datetime
+import random
 from e2e.fixures import (
     FeedBuilder,
     PodcastDirectory,
@@ -8,7 +10,12 @@ from e2e.fixures import (
     podcast_directory,
     download_destination_directory,
 )
-from e2e.random import call_n_times, generate_random_mp3_file, generate_random_string
+from e2e.random import (
+    call_n_times,
+    generate_random_int,
+    generate_random_mp3_file,
+    generate_random_string,
+)
 from typing import Callable, Dict
 
 
@@ -139,3 +146,42 @@ def test_download_last_from_feed_behavior(
 
     # Assert
     podcast_directory.is_containing_only([last_podcast_file])
+
+
+def test_download_from_n_days_from_feed_behavior(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    n_days_number = generate_random_int()
+
+    metadata = []
+    previous = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
+    for _ in range(generate_random_int()):
+        metadata.append((generate_random_mp3_file(), previous))
+        previous -= datetime.timedelta(days=1)
+
+    metadata.reverse()
+
+    for file_name, file_publish_data in metadata:
+        feed.add_entry(file_name=file_name, published_date=file_publish_data)
+
+    use_config(
+        {
+            "if_directory_empty": f"download_from_{n_days_number}_days",
+            "podcasts": [
+                {
+                    "name": generate_random_string(),
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    run_podcast_downloader()
+    podcast_directory.is_containing_only(
+        [m[0].lower() for m in metadata[:-n_days_number]]
+    )

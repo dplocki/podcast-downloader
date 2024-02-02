@@ -21,6 +21,7 @@ def print_set_content(content: Set):
 
 class FeedBuilder:
     FEED_RSS_FILE_NAME = "/rss_feed.xml"
+    PUBLISHED_DATE_INDEX = 3
 
     def __init__(self, httpserver: HTTPServer, url_prefix: str = None) -> None:
         self.metadata = []
@@ -69,6 +70,10 @@ class FeedBuilder:
 
         while self.metadata:
             metadatum = self.metadata.pop()
+            if metadatum[self.PUBLISHED_DATE_INDEX] != None:
+                previous = metadatum[self.PUBLISHED_DATE_INDEX]
+                continue
+
             previous -= datetime.timedelta(days=random.randrange(2, 6))
             result.append(
                 (metadatum[0], metadatum[1], metadatum[2], previous, metadatum[4])
