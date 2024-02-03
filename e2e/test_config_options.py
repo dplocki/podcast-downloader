@@ -1,4 +1,3 @@
-import random
 from typing import Callable, Dict
 from e2e.fixures import (
     FeedBuilder,
@@ -19,6 +18,7 @@ from e2e.random import (
     generate_random_int,
     generate_random_mp3_file,
     generate_random_string,
+    randomize_iterables,
 )
 
 
@@ -58,10 +58,10 @@ def test_configuration_podcast_extensions_option(
     # Arrange
     avi_files = [generate_random_file(".avi") for _ in range(generate_random_int())]
     mp3_files = [generate_random_mp3_file() for _ in range(generate_random_int())]
-    all_files = [(file_name, "movie/mpeg") for file_name in avi_files] + [
-        (file_name, None) for file_name in mp3_files
-    ]
-    random.shuffle(all_files)
+    all_files = randomize_iterables(
+        ((file_name, "movie/mpeg") for file_name in avi_files),
+        ((file_name, None) for file_name in mp3_files),
+    )
 
     for file_name, file_type in all_files:
         feed.add_entry(file_name=file_name, file_type=file_type)
@@ -131,7 +131,7 @@ def test_configuration_downloads_limit_option(
 ):
     # Arrange
     first_entries = generate_random_int()
-    limit = first_entries + random.randint(2, 3)
+    limit = first_entries + generate_random_int(2, 3)
 
     for _ in range(first_entries):
         feed_builder_manager.first_feed.add_entry(file_name=generate_random_mp3_file())
