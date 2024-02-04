@@ -55,7 +55,7 @@ def test_default_behavior_on_nonempty_podcast_directory(
 ):
     # Arrange
     podcasts_files = call_n_times(generate_random_mp3_file)
-    expected_downloaded_files = list(file_name.lower() for file_name in podcasts_files)
+    expected_downloaded_files = list(map(str.lower, podcasts_files))
 
     feed.add_random_entries()
     for file_name in podcasts_files:
@@ -89,7 +89,7 @@ def test_download_all_from_feed_behavior(
 ):
     # Arrange
     podcasts_files = call_n_times(generate_random_mp3_file)
-    expected_downloaded_files = list(file_name.lower() for file_name in podcasts_files)
+    expected_downloaded_files = list(map(str.lower, podcasts_files))
 
     for file_name in podcasts_files:
         feed.add_entry(file_name=file_name)
@@ -121,7 +121,7 @@ def test_download_last_from_feed_behavior(
 ):
     # Arrange
     podcasts_files = call_n_times(generate_random_mp3_file)
-    expected_downloaded_files = list(file_name.lower() for file_name in podcasts_files)
+    expected_downloaded_files = list(map(str.lower, podcasts_files))
     last_podcast_file = expected_downloaded_files[-1]
 
     for file_name in podcasts_files:
