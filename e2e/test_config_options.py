@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Callable, Dict
 from e2e.fixures import (
     FeedBuilder,
@@ -14,6 +15,7 @@ from e2e.fixures import (
     podcast_directory_manager,
 )
 from e2e.random import (
+    call_n_times,
     generate_random_file,
     generate_random_int,
     generate_random_mp3_file,
@@ -56,8 +58,8 @@ def test_configuration_podcast_extensions_option(
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
-    avi_files = [generate_random_file(".avi") for _ in range(generate_random_int())]
-    mp3_files = [generate_random_mp3_file() for _ in range(generate_random_int())]
+    avi_files = call_n_times(partial(generate_random_file, ".avi"))
+    mp3_files = call_n_times(generate_random_mp3_file)
     all_files = randomize_iterables(
         ((file_name, "movie/mpeg") for file_name in avi_files),
         ((file_name, None) for file_name in mp3_files),
@@ -93,7 +95,7 @@ def test_configuration_file_name_template_option(
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
-    mp3_files_date = [generate_random_mp3_file() for _ in range(generate_random_int())]
+    mp3_files_date = call_n_times(generate_random_mp3_file)
 
     for file_name in mp3_files_date:
         feed.add_entry(file_name=file_name)
