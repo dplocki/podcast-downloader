@@ -12,7 +12,7 @@ It is not using database of any sort. It require configuration file.
 The script is analyzing the directory where it put the previously downloaded files.
 It is compering the last added file with the rss feed, finding the missing ones, and downloading them.
 
-As name suggested, the script is designed for podcasts. The files searched by default are mp3.
+As name suggested, the script is designed for podcasts. The files searched by default are `mp3`.
 
 ## Setup
 
@@ -24,7 +24,8 @@ pip install podcast_downloader
 
 ## Running the script
 
-After installation, the script is called as Python module.
+The script [require configuration file](#configuration) in order to work.
+After installation, the script can be called as any Python module:
 
 ```bash
 python -m podcast_downloader
@@ -50,6 +51,26 @@ Using the [example above](#example), the result will be:
 The configuration file is placed in home directory.
 
 The name: `.podcast_downloader_config.json`. The file is format in [JSON](https://en.wikipedia.org/wiki/JSON). The expected encoding is [utf-8](https://en.wikipedia.org/wiki/UTF-8).
+
+### An example of configuration file
+
+```json
+{
+  "if_directory_empty": "download_from_4_days",
+  "podcasts": [
+    {
+      "name": "Python for dummies",
+      "rss_link": "http://python-for-dummies/atom.rss",
+      "path": "~/podcasts/PythonForDummies"
+    },
+    {
+      "name": "The Skeptic Guide",
+      "rss_link": "https://feed.theskepticsguide.org/feed/rss.aspx",
+      "path": "~/podcasts/SGTTU"
+    }
+  ]
+}
+```
 
 ### The settings hierarchy
 
@@ -85,26 +106,6 @@ Those will be cover by all values given by command line.
 | `if_directory_empty` | string     | no       | `download_last`                        | See [In case of empty directory](#in-case-of-empty-directory) |
 | `require_date`       | boolean    | no       | `false`                                | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
 | `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` |      |
-
-### An example of configuration file
-
-```json
-{
-  "if_directory_empty": "download_from_4_days",
-  "podcasts": [
-    {
-      "name": "Python for dummies",
-      "rss_link": "http://python-for-dummies/atom.rss",
-      "path": "~/podcasts/PythonForDummies"
-    },
-    {
-      "name": "The Skeptic Guide",
-      "rss_link": "https://feed.theskepticsguide.org/feed/rss.aspx",
-      "path": "~/podcasts/SGTTU"
-    }
-  ]
-}
-```
 
 ### HTTP request headers
 
