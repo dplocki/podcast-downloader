@@ -146,7 +146,7 @@ The script accept following command line arguments:
 | Short version | Long name              | Parameter           | Default         | Note |
 |:--------------|:-----------------------|:-------------------:|:---------------:|:-----|
 |               | `--downloads_limit`    | number              | infinity        | The maximum number of downloaded mp3 files |
-|               | `--if_directory_empty` | string              | `download_last` | The general approach on empty directory' |
+|               | `--if_directory_empty` | string              | `download_last` | The general approach on empty directory |
 
 ## Adding date to file name
 
