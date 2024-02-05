@@ -206,6 +206,7 @@ If a directory for podcast is empty, the script needs to recognize what to do. D
 
 * [download all episodes from feed](#download-all-from-feed)
 * [download only the last episode](#only-last)
+* [download last n episodes](#download-n-last-episodes)
 * [download all new episode from last n days](#download-all-from-n-days)
 * [download all new episode since day after, the last episode should appear](#download-all-episode-since-last-excepted)
 
@@ -222,6 +223,12 @@ It is a good approach when you wish to start listening the podcast.
 It is also default approach of the script.
 
 Set by `download_last`.
+
+### Download last n episodes
+
+The script will download exactly given number of episodes from the feed.
+
+Set by `download_last_n_episodes`. The *n* must be replace by number of episodes, which you wanted to have downloaded. For example: `download_last_5_episodes` means that 5 last episodes will be downloaded.
 
 ### Download all from n days
 
