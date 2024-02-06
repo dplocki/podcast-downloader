@@ -213,7 +213,7 @@ def feed_builder_manager(httpserver):
 @pytest.fixture
 def use_config():
     def internal(config_object: Dict):
-        for podcast in config_object['podcasts']:
+        for podcast in config_object["podcasts"]:
             if "name" not in podcast:
                 podcast["name"] = generate_random_string()
 
