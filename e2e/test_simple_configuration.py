@@ -33,7 +33,6 @@ def test_default_behavior_on_empty_podcast_directory(
         {
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -67,7 +66,6 @@ def test_default_behavior_on_nonempty_podcast_directory(
         {
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -99,7 +97,6 @@ def test_download_all_from_feed_behavior(
             "if_directory_empty": "download_all_from_feed",
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -132,7 +129,6 @@ def test_download_last_from_feed_behavior(
             "if_directory_empty": "download_last",
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -171,7 +167,6 @@ def test_download_from_n_days_from_feed_behavior(
             "if_directory_empty": f"download_from_{n_days_number}_days",
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -203,7 +198,6 @@ def test_download_last_n_episodes_behavior(
             "podcasts": [
                 {
                     "if_directory_empty": f"download_last_{n}_episodes",
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }

@@ -37,7 +37,6 @@ def test_configuration_ignore_option(
             "podcasts": [
                 {
                     "disable": True,
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -74,7 +73,6 @@ def test_configuration_podcast_extensions_option(
             "podcasts": [
                 {
                     "podcast_extensions": {".avi": "movie/mpeg"},
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -106,7 +104,6 @@ def test_configuration_file_name_template_option(
             "podcasts": [
                 {
                     "file_name_template": "%file_name%_terminus_est_%file_extension%",
-                    "name": generate_random_string(),
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                 }
@@ -147,12 +144,10 @@ def test_configuration_downloads_limit_option(
             "downloads_limit": limit,
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory_manager.get_first_directory(),
                     "rss_link": feed_builder_manager.first_feed.get_feed_url(),
                 },
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory_manager.get_second_directory(),
                     "rss_link": feed_builder_manager.second_feed.get_feed_url(),
                 },
@@ -188,13 +183,11 @@ def test_configuration_http_headers_option(
         {
             "podcasts": [
                 {
-                    "name": generate_random_string(),
                     "http_headers": {"User-Agent": request_user_agent},
                     "path": podcast_directory_manager.get_first_directory(),
                     "rss_link": rss_link,
                 },
                 {
-                    "name": generate_random_string(),
                     "path": podcast_directory_manager.get_second_directory(),
                     "rss_link": rss_link,
                 },
