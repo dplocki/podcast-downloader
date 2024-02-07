@@ -191,7 +191,10 @@ def test_download_last_n_episodes_behavior(
     # Arrange
     n = generate_random_int(3, 6)
     podcasts_files = call_n_times(generate_random_mp3_file, generate_random_int(10, 15))
-    expected_downloaded_files = list(map(str.lower, podcasts_files[:n]))
+    expected_downloaded_files = list(map(str.lower, podcasts_files[-n:]))
+
+    for file_name in podcasts_files:
+        feed.add_entry(file_name=file_name)
 
     use_config(
         {
