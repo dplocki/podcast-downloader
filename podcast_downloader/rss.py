@@ -110,8 +110,10 @@ def build_only_new_entities(
     )
 
 
-def only_last_entity(raw_rss_entries: Iterator[RSSEntity]) -> Iterator[RSSEntity]:
-    return islice(raw_rss_entries, 1)
+def only_last_n_entities(
+    n: int, raw_rss_entries: Iterator[RSSEntity]
+) -> Iterator[RSSEntity]:
+    return islice(raw_rss_entries, n)
 
 
 def is_entity_newer(from_date: time.struct_time, entity: RSSEntity) -> bool:
