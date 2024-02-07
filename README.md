@@ -228,7 +228,7 @@ Set by `download_last`.
 
 The script will download exactly given number of episodes from the feed.
 
-Set by `download_last_n_episodes`. The *n* must be replace by number of episodes, which you wanted to have downloaded. For example: `download_last_5_episodes` means that 5 last episodes will be downloaded.
+Set by `download_last_n_episodes`. The *n* must be replaced by number of episodes, which you wanted to have downloaded. For example: `download_last_5_episodes` means that five last episodes will be downloaded.
 
 ### Download all from n days
 
