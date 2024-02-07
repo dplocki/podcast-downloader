@@ -17,7 +17,7 @@ class TestOnlyNLastRSSEntity(unittest.TestCase):
 
         # Assert
         self.assertSequenceEqual(
-            result, expected, "Only the last entity should be return as result"
+            result, expected, "Only the two entities should be return as result"
         )
 
     def test_get_only_last_n_rss_entities_less_than_required(self):
