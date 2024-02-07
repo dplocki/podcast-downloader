@@ -26,8 +26,8 @@ from .rss import (
     flatten_rss_links_data,
     get_raw_rss_entries_from_web,
     limit_file_name,
-    only_last_entity,
     only_entities_from_date,
+    only_last_n_entities,
 )
 
 
@@ -78,7 +78,7 @@ def configuration_to_function_on_empty_directory(
     configuration_value: str,
 ) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
-        return only_last_entity
+        return partial(only_last_n_entities, 1)
 
     if configuration_value == "download_all_from_feed":
         return lambda source: source
@@ -89,6 +89,11 @@ def configuration_to_function_on_empty_directory(
     if from_n_day_match:
         from_date = get_n_age_date(int(from_n_day_match[1]), local_time)
         return only_entities_from_date(from_date)
+
+    last_n_episodes = re.match(r"^download_last_(\d+)_episodes", configuration_value)
+    if last_n_episodes:
+        download_limit = int(last_n_episodes[1])
+        return partial(only_last_n_entities, download_limit)
 
     from_nth_day_match = re.match(r"^download_from_(.*)", configuration_value)
     if from_nth_day_match:
