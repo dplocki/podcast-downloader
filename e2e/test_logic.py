@@ -9,7 +9,7 @@ from e2e.fixures import (
     use_config,
     podcast_directory,
 )
-from e2e.random import generate_random_string
+from e2e.random import call_n_times, generate_random_mp3_file, generate_random_string
 
 
 def test_configuration_hierarchy(
@@ -39,3 +39,33 @@ def test_configuration_hierarchy(
 
     # Assert
     assert len(podcast_directory.get_files_list()) == 1
+
+
+def test_ignore_files_not_being_part_of_the_feed(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    feed.add_random_entries()
+    not_podcasts_files = call_n_times(generate_random_mp3_file)
+    last_podcast_file = generate_random_mp3_file()
+    feed.add_entry(file_name=last_podcast_file)
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "if_directory_empty": "download_last",
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    run_podcast_downloader()
+
+    # Assert
+    podcast_directory.is_containing_only(not_podcasts_files + [last_podcast_file])
