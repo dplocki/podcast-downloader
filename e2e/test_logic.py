@@ -49,6 +49,9 @@ def test_ignore_files_not_being_part_of_the_feed(
     # Arrange
     feed.add_random_entries()
     not_podcasts_files = call_n_times(generate_random_mp3_file)
+    for file_name in not_podcasts_files:
+        podcast_directory.add_file(file_name)
+
     last_podcast_file = generate_random_mp3_file()
     feed.add_entry(file_name=last_podcast_file)
 
