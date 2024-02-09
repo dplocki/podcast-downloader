@@ -207,6 +207,7 @@ if __name__ == "__main__":
         to_name_function = configuration_to_function_rss_to_name(
             rss_file_name_template_value, rss_source
         )
+
         on_directory_empty = configuration_to_function_on_empty_directory(
             rss_if_directory_empty
         )
@@ -216,6 +217,24 @@ if __name__ == "__main__":
                 get_extensions_checker(rss_podcast_extensions), rss_source_path
             )
         )
+
+        allow_link_types = list(set(rss_podcast_extensions.values()))
+
+        all_feed_entries = compose(
+            list,
+            partial(filter, build_only_allowed_filter_for_link_data(allow_link_types)),
+            flatten_rss_links_data,
+            get_raw_rss_entries_from_web,
+        )(rss_source_link)
+
+        to_real_podcast_file_name = compose(
+            partial(limit_file_name, file_length_limit), to_name_function
+        )
+
+        all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))
+
+        downloaded_files = set(all_feed_files) & set(downloaded_files)
+
         last_downloaded_file = downloaded_files[0] if downloaded_files else None
 
         download_limiter_function = (
@@ -224,22 +243,11 @@ if __name__ == "__main__":
             else on_directory_empty
         )
 
-        allow_link_types = list(set(rss_podcast_extensions.values()))
-        missing_files_links = compose(
-            list,
-            download_limiter_function,
-            partial(filter, build_only_allowed_filter_for_link_data(allow_link_types)),
-            flatten_rss_links_data,
-            get_raw_rss_entries_from_web,
-        )(rss_source_link)
+        missing_files_links = compose(list, download_limiter_function)(all_feed_entries)
 
         logger.info('Last downloaded file "%s"', last_downloaded_file or "<none>")
 
         if missing_files_links:
-            to_real_podcast_file_name = compose(
-                partial(limit_file_name, file_length_limit), to_name_function
-            )
-
             download_podcast = partial(
                 download_rss_entity_to_path,
                 rss_https_header,
