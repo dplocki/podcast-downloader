@@ -71,4 +71,7 @@ def test_ignore_files_not_being_part_of_the_feed(
     run_podcast_downloader()
 
     # Assert
-    podcast_directory.is_containing_only(not_podcasts_files + [last_podcast_file])
+    podcast_directory.is_containing_only(
+        [file_name.lower() for file_name in not_podcasts_files]
+        + [last_podcast_file.lower()]
+    )
