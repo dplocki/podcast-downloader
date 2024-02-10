@@ -233,7 +233,7 @@ if __name__ == "__main__":
 
         all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))
 
-        downloaded_files = set(all_feed_files) & set(downloaded_files)
+        downloaded_files = [feed for feed in all_feed_files if feed in downloaded_files]
 
         last_downloaded_file = downloaded_files[0] if downloaded_files else None
 
