@@ -87,7 +87,7 @@ Those will be cover by all values given by command line.
 |:---------------------|:----------:|:--------:|:--------------------------------------:|:-----|
 | `downloads_limit`    | number     | no       | infinity                               |      |
 | `if_directory_empty` | string     | no       | download_last                          | See [In case of empty directory](#in-case-of-empty-directory) |
-| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | The file filter |
+| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | See [File types filter](#file-types-filter) |
 | `podcasts`           | subsection | yes      | `[]`                                   | See [Podcasts sub category](#podcasts-sub-category) |
 | `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 
