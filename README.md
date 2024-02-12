@@ -90,6 +90,7 @@ Those will be cover by all values given by command line.
 | `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | See [File types filter](#file-types-filter) |
 | `podcasts`           | subsection | yes      | `[]`                                   | See [Podcasts sub category](#podcasts-sub-category) |
 | `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
+| `fill_up_gaps`       | boolean    | no       | false                                  | See [Download files from gaps](#download-files-from-gaps) |
 
 ### Podcasts sub category
 
@@ -105,11 +106,12 @@ Those will be cover by all values given by command line.
 | `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | The file filter |
 | `if_directory_empty` | string     | no       | `download_last`                        | See [In case of empty directory](#in-case-of-empty-directory) |
 | `require_date`       | boolean    | no       | `false`                                | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
-| `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` |      |
+| `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
+| `fill_up_gaps`       | boolean    | no       | false                                  | See [Download files from gaps](#download-files-from-gaps) |
 
 ### HTTP request headers
 
-Some servers may don't like how the urllib is presenting itself to them (the HTTP User-Agent header). This may lead into problem likes: `urllib.error.HTTPError: HTTP Error 403: Forbidden`. It may be require to present the script client as something else.
+Some servers may don't like how the urllib is presenting itself to them (the HTTP User-Agent header). This may lead into problems like: `urllib.error.HTTPError: HTTP Error 403: Forbidden`. That is way, there is a possibility to present the script client as something else.
 
 There is an option to specify HTTP headers when downloading files.
 You can provide them using the `http_headers` value in the configuration file.
@@ -263,6 +265,12 @@ Examples:
 | `download_from_monday` | New episodes appear in Monday. The script will download all episodes since last Tuesday (including it) |
 | `download_from_Fri`    | New episodes appear in Friday. The script will download all episodes since last Saturday (including it) |
 | `download_from_12`     | New episodes appear each 12th of month. The script will download all episodes since 13 month before |
+
+## Download files from gaps
+
+The script recognizes the stream of downloaded files (based on the feed). By default, the last downloaded file (according to the feed) marks the start of downloading. In case of gaps, situations where there are missing files before the last downloaded one, the script will ignore them by default. However, there is a possibility to change this behavior to download all missing files between already downloaded ones. To enable this, you need to set the `fill_up_gaps` value to **true**. It's important to note that the script will not download files before the first one (according to the feed).
+
+Default value: `false`.
 
 ## The analyze of the RSS feed
 
