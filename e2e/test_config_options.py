@@ -1,4 +1,5 @@
 from functools import partial
+from itertools import chain
 from typing import Callable, Dict
 from e2e.fixures import (
     FeedBuilder,
@@ -205,3 +206,66 @@ def test_configuration_http_headers_option(
     assert (
         len(list(podcast_directory_manager.get_second_directory_files())) == 0
     ), "User-Agent should not allow the download"
+
+
+def test_configuration_fill_up_gaps_option(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    files_earliest_downloaded = call_n_times(generate_random_mp3_file)
+    downloaded_files_before_gap = call_n_times(generate_random_mp3_file)
+    the_gap_begin_file = generate_random_mp3_file()
+    files_in_the_gap = call_n_times(generate_random_mp3_file)
+    the_gap_end_file = generate_random_mp3_file()
+    downloaded_files_after_gap = call_n_times(generate_random_mp3_file)
+    files_to_download = call_n_times(generate_random_mp3_file)
+
+    for file_name in chain(
+        files_earliest_downloaded,
+        downloaded_files_before_gap,
+        [the_gap_begin_file],
+        files_in_the_gap,
+        [the_gap_end_file],
+        downloaded_files_after_gap,
+        files_to_download,
+    ):
+        feed.add_entry(file_name)
+
+    for file_name in chain(
+        downloaded_files_before_gap,
+        [the_gap_begin_file, the_gap_end_file],
+        downloaded_files_after_gap,
+    ):
+        podcast_directory.add_file(file_name)
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                    "full_up_gaps": True,
+                }
+            ],
+        }
+    )
+
+    # Act
+    run_podcast_downloader()
+
+    # Assert
+    podcast_directory.is_containing_only(
+        [
+            file_name.lower()
+            for file_name in chain(
+                downloaded_files_before_gap,
+                [the_gap_begin_file],
+                files_in_the_gap,
+                [the_gap_end_file],
+                downloaded_files_after_gap,
+                files_to_download,
+            )
+        ]
+    )
