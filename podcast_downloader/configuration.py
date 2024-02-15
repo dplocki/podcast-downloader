@@ -10,6 +10,7 @@ CONFIG_DOWNLOADS_LIMIT = "downloads_limit"
 CONFIG_FILE_NAME_TEMPLATE = "file_name_template"
 CONFIG_PODCAST_EXTENSIONS = "podcast_extensions"
 CONFIG_HTTP_HEADER = "http_headers"
+CONFIG_FILL_UP_GAPS = "fill_up_gaps"
 
 CONFIG_PODCASTS = "podcasts"
 CONFIG_PODCASTS_NAME = "name"
