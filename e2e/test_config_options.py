@@ -246,7 +246,7 @@ def test_configuration_fill_up_gaps_option(
                 {
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
-                    "full_up_gaps": True,
+                    "fill_up_gaps": True,
                 }
             ],
         }

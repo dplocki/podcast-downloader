@@ -198,6 +198,10 @@ if __name__ == "__main__":
             CONFIGURATION[configuration.CONFIG_HTTP_HEADER],
             rss_source.get(configuration.CONFIG_HTTP_HEADER, {}),
         )
+        rss_fill_up_gaps = rss_source.get(
+            CONFIGURATION[configuration.CONFIG_FILL_UP_GAPS],
+            rss_source.get(configuration.CONFIG_FILL_UP_GAPS, False),
+        )
 
         if rss_disable:
             logger.info('Skipping the "%s"', rss_source_name)
@@ -237,6 +241,7 @@ if __name__ == "__main__":
         downloaded_files = [feed for feed in all_feed_files if feed in downloaded_files]
 
         last_downloaded_file = downloaded_files[0] if downloaded_files else None
+
 
         download_limiter_function = (
             partial(build_only_new_entities(to_name_function), last_downloaded_file)
