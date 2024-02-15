@@ -153,6 +153,7 @@ if __name__ == "__main__":
         configuration.CONFIG_PODCAST_EXTENSIONS: {".mp3": "audio/mpeg"},
         configuration.CONFIG_FILE_NAME_TEMPLATE: "%file_name%.%file_extension%",
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
+        configuration.CONFIG_FILL_UP_GAPS: False,
         configuration.CONFIG_PODCASTS: [],
     }
 
