@@ -31,3 +31,7 @@ def get_downloaded_files(
         for file in get_files_from(podcast_directory)
         if podcast_files_filter(file) and is_directory_file(file)
     )
+
+
+def get_last_downloaded_file_before_gap():
+    pass

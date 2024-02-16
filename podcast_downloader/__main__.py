@@ -16,7 +16,11 @@ from podcast_downloader.configuration import (
     parse_day_label,
 )
 from .utils import ConsoleOutputFormatter, compose
-from .downloaded import get_downloaded_files, get_extensions_checker
+from .downloaded import (
+    get_downloaded_files,
+    get_extensions_checker,
+    get_last_downloaded_file_before_gap,
+)
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
     RSSEntity,
@@ -237,17 +241,22 @@ if __name__ == "__main__":
         )
 
         all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))
-
         downloaded_files = [feed for feed in all_feed_files if feed in downloaded_files]
 
-        last_downloaded_file = downloaded_files[0] if downloaded_files else None
-
-
-        download_limiter_function = (
-            partial(build_only_new_entities(to_name_function), last_downloaded_file)
-            if last_downloaded_file
-            else on_directory_empty
-        )
+        last_downloaded_file = None
+        if downloaded_files:
+            if rss_fill_up_gaps:
+                last_downloaded_file = get_last_downloaded_file_before_gap(
+                    all_feed_files, downloaded_files
+                )
+                download_limiter_function = None
+            else:
+                last_downloaded_file = downloaded_files[0]
+                download_limiter_function = partial(
+                    build_only_new_entities(to_name_function), last_downloaded_file
+                )
+        else:
+            download_limiter_function = on_directory_empty
 
         missing_files_links = compose(list, download_limiter_function)(all_feed_entries)
 
