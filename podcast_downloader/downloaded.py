@@ -33,5 +33,5 @@ def get_downloaded_files(
     )
 
 
-def get_last_downloaded_file_before_gap():
+def get_last_downloaded_file_before_gap(feed_files, downloaded_files):
     pass
