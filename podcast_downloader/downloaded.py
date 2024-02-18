@@ -1,7 +1,7 @@
 import os
 
 from functools import partial
-from typing import Callable, List
+from typing import Callable, Iterable, List
 
 
 def get_extensions_checker(extensions: List[str]) -> Callable[[str], bool]:
@@ -33,5 +33,7 @@ def get_downloaded_files(
     )
 
 
-def get_last_downloaded_file_before_gap(feed_files, downloaded_files):
-    pass
+def get_last_downloaded_file_before_gap(
+    feed_files: List[str], downloaded_files: Iterable[str]
+) -> str:
+    return downloaded_files[-1] if downloaded_files else None

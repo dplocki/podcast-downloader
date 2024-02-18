@@ -25,3 +25,20 @@ class TestGetLastDownloadedFileBeforeGap(unittest.TestCase):
 
         # Assert
         self.assertIsNone(result)
+
+    def test_should_return_last_for_nonempty_directory_files(self):
+        # Assign
+        feed_files = [
+            "podcast_episode_1.mp3",
+            "podcast_episode_2.mp3",
+            "podcast_episode_3.mp3",
+            "podcast_episode_4.mp3",
+        ]
+
+        directory_files = feed_files.copy()
+
+        # Act
+        result = get_last_downloaded_file_before_gap(feed_files, directory_files)
+
+        # Assert
+        self.assertEqual(result, feed_files[-1])
