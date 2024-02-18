@@ -36,4 +36,11 @@ def get_downloaded_files(
 def get_last_downloaded_file_before_gap(
     feed_files: List[str], downloaded_files: Iterable[str]
 ) -> str:
-    return downloaded_files[-1] if downloaded_files else None
+    last_file = None
+    all_downloaded_files = set(downloaded_files)
+
+    for feed_file_name in feed_files:
+        if feed_file_name in all_downloaded_files:
+            last_file = feed_file_name
+
+    return last_file
