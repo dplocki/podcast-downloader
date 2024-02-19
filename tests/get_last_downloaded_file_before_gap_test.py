@@ -34,7 +34,7 @@ class TestGetLastDownloadedFileBeforeGap(unittest.TestCase):
 
         # Assert
         self.assertEqual(
-            result, feed_files[-1], "Should return the last files from the feed"
+            result, feed_files[-1], "Should return the last file from the feed"
         )
 
     def test_should_return_last_according_the_feed_order(self):
@@ -50,7 +50,7 @@ class TestGetLastDownloadedFileBeforeGap(unittest.TestCase):
 
         # Assert
         self.assertEqual(
-            result, feed_files[-1], "Should return the last files from the feed"
+            result, feed_files[-1], "Should return the last file from the feed"
         )
 
     def test_should_return_last_according_the_feed_order_when_feed_is_longer(self):
@@ -66,7 +66,27 @@ class TestGetLastDownloadedFileBeforeGap(unittest.TestCase):
 
         # Assert
         self.assertEqual(
-            result, feed_files[-3], "Should return the last files from the feed"
+            result,
+            feed_files[-3],
+            "Should return the last file (according to feed) which is downloaded",
+        )
+
+    def test_should_return_last_according_the_feed_order_with_gap_between_files(self):
+        # Assign
+        feed_files = list(generate_podcast_files_episodes(8))
+
+        directory_files = feed_files[2:4] + [feed_files[-2]]
+        shuffle(directory_files)
+        directory_files.insert(0, feed_files[-4])
+
+        # Act
+        result = get_last_downloaded_file_before_gap(feed_files, directory_files)
+
+        # Assert
+        self.assertEqual(
+            result,
+            feed_files[-4],
+            "Should return the last file (according to feed) before gap which is downloaded",
         )
 
 
