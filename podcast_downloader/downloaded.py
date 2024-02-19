@@ -42,5 +42,8 @@ def get_last_downloaded_file_before_gap(
     for feed_file_name in feed_files:
         if feed_file_name in all_downloaded_files:
             last_file = feed_file_name
+        else:
+            if last_file != None:
+                return last_file
 
     return last_file
