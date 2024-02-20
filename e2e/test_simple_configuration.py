@@ -89,18 +89,14 @@ def test_default_behavior_fill_up_gaps(
     # Arrange
     files_earliest_downloaded = call_n_times(generate_random_mp3_file)
     downloaded_files_before_gap = call_n_times(generate_random_mp3_file)
-    the_gap_begin_file = generate_random_mp3_file()
     files_in_the_gap = call_n_times(generate_random_mp3_file)
-    the_gap_end_file = generate_random_mp3_file()
     downloaded_files_after_gap = call_n_times(generate_random_mp3_file)
     files_to_download = call_n_times(generate_random_mp3_file)
 
     for file_name in chain(
         files_earliest_downloaded,
         downloaded_files_before_gap,
-        [the_gap_begin_file],
         files_in_the_gap,
-        [the_gap_end_file],
         downloaded_files_after_gap,
         files_to_download,
     ):
@@ -108,7 +104,6 @@ def test_default_behavior_fill_up_gaps(
 
     for file_name in chain(
         downloaded_files_before_gap,
-        [the_gap_begin_file, the_gap_end_file],
         downloaded_files_after_gap,
     ):
         podcast_directory.add_file(file_name)
@@ -133,8 +128,6 @@ def test_default_behavior_fill_up_gaps(
             file_name.lower()
             for file_name in chain(
                 downloaded_files_before_gap,
-                [the_gap_begin_file],
-                [the_gap_end_file],
                 downloaded_files_after_gap,
                 files_to_download,
             )
