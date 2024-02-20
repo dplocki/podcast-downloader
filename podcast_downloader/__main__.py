@@ -240,7 +240,7 @@ if __name__ == "__main__":
             partial(limit_file_name, file_length_limit), to_name_function
         )
 
-        all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))
+        all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))[::-1]
         downloaded_files = [feed for feed in all_feed_files if feed in downloaded_files]
 
         last_downloaded_file = None
@@ -250,7 +250,7 @@ if __name__ == "__main__":
                     all_feed_files, downloaded_files
                 )
             else:
-                last_downloaded_file = downloaded_files[0]
+                last_downloaded_file = downloaded_files[-1]
 
             download_limiter_function = partial(
                 build_only_new_entities(to_name_function), last_downloaded_file
