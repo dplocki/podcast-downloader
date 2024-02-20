@@ -249,12 +249,12 @@ if __name__ == "__main__":
                 last_downloaded_file = get_last_downloaded_file_before_gap(
                     all_feed_files, downloaded_files
                 )
-                download_limiter_function = None
             else:
                 last_downloaded_file = downloaded_files[0]
-                download_limiter_function = partial(
-                    build_only_new_entities(to_name_function), last_downloaded_file
-                )
+
+            download_limiter_function = partial(
+                build_only_new_entities(to_name_function), last_downloaded_file
+            )
         else:
             download_limiter_function = on_directory_empty
 
