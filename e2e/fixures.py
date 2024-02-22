@@ -111,6 +111,9 @@ class FeedBuilder:
 
         return self.httpserver.url_for(self.url_prefix + self.FEED_RSS_FILE_NAME)
 
+    def get_requested_files_list(self):
+        return [log[0].path[1:] for log in self.httpserver.log]
+
 
 class PodcastDirectory:
     def __init__(self, download_destination_directory: Path) -> None:
