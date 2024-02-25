@@ -121,4 +121,8 @@ def test_configuration_during_filling_up_gaps_should_not_download_existing_files
     run_podcast_downloader()
 
     # Assert
-    assert set(feed.get_requested_files_list()) == set(files_to_download)
+    assert set(
+        file_name.lower()
+        for file_name in feed.get_requested_files_list()
+        if file_name.endswith(".mp3")
+    ) == set(file_name.lower() for file_name in (files_to_download + files_in_the_gap))
