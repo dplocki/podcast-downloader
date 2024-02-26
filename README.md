@@ -164,14 +164,25 @@ Default value (the `%file_name%.%file_extension%`) will simple save up the file 
 
 Template values:
 
-| Name               | Notes |
-|:-------------------|:------|
-| `%file_name%`      | The file name taken from link, without extension |
-| `%file_extension%` | The extension for the file, taken from link |
-| `%publish_date%`   | The publish date of the RSS entry, in format `YEARMMDD` |
-| `%title%`          | The title of the RSS entry |
+| Name               | Notes                                                   |
+|:-------------------|:--------------------------------------------------------|
+| `%file_name%`      | The file name taken from link, without extension        |
+| `%file_extension%` | The extension for the file, taken from link             |
+| `%publish_date%`   | The publish date of the RSS entry                       |
+| `%title%`          | The title of the RSS entry                              |
 
-Examples:
+### Non default the publish_date
+
+The `%publish_date%` by default gives result in format `YEARMMDD`. In order to change the date you can provide the new format after the colon (the `:` character). The script respect the codes [of the 1989 C standard](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes), but the percent sign (`%`) must be replaced by dollar sign (`$`). This is because of my unfortunate decision to use the percent character as marker of the code.
+
+
+| The standard code | The script code | Notes                                      |
+|:------------------|:----------------|:-------------------------------------------|
+| `%Y%m%d`          | `$Y$m$d`        | The default value of the `%publish_date%`  |
+| `%A`              | `$A`            | Adds the weekday (local language settings) |
+| `%x`              | `$x`            | The local date represent. **Warning**: in some settings, the `/` is used here, so it may caused problem in the file name |
+
+### Examples
 
 * `[%publish_date%] %file_name%.%file_extension%`
 * `[%publish_date%] %title%.%file_extension%`
