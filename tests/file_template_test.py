@@ -153,6 +153,22 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
                 "[%publish_date%] %title%.%file_extension%",
                 "[20200102] abc def.mp3",
             ),
+            (
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                    title="abcdef",
+                ),
+                "[%publish_date:$Y$m$d%] %title%.%file_extension%",
+                "[20200102] abcdef.mp3",
+            ),
+            (
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                    title="abcdef",
+                ),
+                "[%publish_date:$a $d $b $Y, $I:$M$p] %title%.%file_extension%",
+                "[Tue 02 Jan 2020, 11:59PM] abcdef.mp3",
+            ),
         ]
 
         for rss_entry, template_file_name, expected_file_name in test_parameters:
