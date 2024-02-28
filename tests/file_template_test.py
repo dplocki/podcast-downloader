@@ -163,10 +163,18 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
             ),
             (
                 build_test_link_data(
-                    link="http://www.podcast.com/podcast/something/fIlE_nAme.mp3",
+                    link="http://www.podcast.com/podcast/something/file_name.mp3",
                     title="abcdef",
                 ),
-                "[%publish_date:$a $d $b $Y, $I:$M$p] %title%.%file_extension%",
+                "[%publish_date:$a $d $b $Y, $I:$M$p%] %title%.%file_extension%",
+                "[Tue 02 Jan 2020, 11:59PM] abcdef.mp3",
+            ),
+            (
+                build_test_link_data(
+                    link="http://www.podcast.com/podcast/file_name.mp3",
+                    title="abcdef",
+                ),
+                "[%publish_date:$a% %publish_date:$d $b $Y%, %publish_date:$I:$M$p%] %title%.%file_extension%",
                 "[Tue 02 Jan 2020, 11:59PM] abcdef.mp3",
             ),
         ]
