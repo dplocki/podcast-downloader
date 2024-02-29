@@ -51,6 +51,15 @@ def str_to_filename(value: str) -> str:
 
 
 def file_template_to_file_name(name_template: str, entity: RSSEntity) -> str:
+    publish_date_template = '%publish_date:'
+    publish_date_template_len = len(publish_date_template)
+
+    if '%publish_date:' in name_template:
+        start_token = name_template.index('%publish_date:')
+        token = name_template[start_token: name_template.index('%', start_token + publish_date_template_len) + 1]
+        result = time.strftime(token[publish_date_template_len:-1].replace('$', '%'), entity.published_date)
+        name_template = name_template.replace(token, result)
+
     return (
         name_template.replace("%file_name%", link_to_file_name(entity.link))
         .replace("%publish_date%", time.strftime("%Y%m%d", entity.published_date))
