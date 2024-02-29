@@ -167,7 +167,7 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
                     title="abcdef",
                 ),
                 "[%publish_date:$a $d $b $Y, $I:$M$p%] %title%.%file_extension%",
-                "[Tue 02 Jan 2020, 11:59PM] abcdef.mp3",
+                "[Tue 02 Jan 2020, 05:03PM] abcdef.mp3",
             ),
             (
                 build_test_link_data(
@@ -175,7 +175,7 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
                     title="abcdef",
                 ),
                 "[%publish_date:$a% %publish_date:$d $b $Y%, %publish_date:$I:$M$p%] %title%.%file_extension%",
-                "[Tue 02 Jan 2020, 11:59PM] abcdef.mp3",
+                "[Tue 02 Jan 2020, 05:03PM] abcdef.mp3",
             ),
         ]
 
