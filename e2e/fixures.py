@@ -185,6 +185,11 @@ class MultipleFeedBuilder:
         self.second_feed = FeedBuilder(httpserver, "/" + generate_random_string())
 
 
+class PodcastDownloaderRunner:
+    def run(self):
+        self.output = subprocess.run([sys.executable, "-m", "podcast_downloader"], capture_output=True, text=True)
+
+
 @pytest.fixture()
 def download_destination_directory(tmp_path) -> Path:
     feed_destination_path = tmp_path / "destination"
@@ -239,4 +244,7 @@ def use_config():
 
 
 def run_podcast_downloader():
-    subprocess.check_call([sys.executable, "-m", "podcast_downloader"])
+    runner = PodcastDownloaderRunner()
+    runner.run()
+
+    return runner
