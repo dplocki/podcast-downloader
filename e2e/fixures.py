@@ -28,9 +28,13 @@ class FeedBuilder:
         self.httpserver = httpserver
         self.url_prefix = url_prefix or ""
         self.headers = None
+        self.title = None
 
     def set_request_headers(self, headers):
         self.headers = headers
+
+    def set_title(self, title):
+        self.title = title
 
     def add_entry(
         self,
@@ -83,7 +87,7 @@ class FeedBuilder:
 
     def __build_rss(self):
         fg = FeedGenerator()
-        fg.title("Some Testfeed")
+        fg.title(self.title or generate_random_string())
         fg.author({"name": "John Doe", "email": "john@example.de"})
         fg.subtitle("This is a cool feed!")
         fg.link(href="http://example.com", rel="alternate")
