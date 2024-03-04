@@ -155,4 +155,5 @@ def test_should_get_name_from_the_feed(
     runner = run_podcast_downloader()
 
     # Assert
+    assert runner.is_correct()
     assert feed_title in runner.output

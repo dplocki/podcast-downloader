@@ -191,7 +191,16 @@ class MultipleFeedBuilder:
 
 class PodcastDownloaderRunner:
     def run(self):
-        self.output = subprocess.run([sys.executable, "-m", "podcast_downloader"], capture_output=True, text=True)
+        self.output = subprocess.run(
+            [sys.executable, "-m", "podcast_downloader"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.output.check_returncode()
+
+    def is_correct(self):
+        return self.output.returncode == 0 and self.output.stderr == ""
 
 
 @pytest.fixture()
