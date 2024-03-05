@@ -155,5 +155,7 @@ def test_should_get_name_from_the_feed(
     runner = run_podcast_downloader()
 
     # Assert
-    assert runner.is_correct()
-    assert feed_title in runner.output
+    assert runner.is_correct(), "The script haven't finished work correctly"
+    assert runner.is_highlighted_in_outcome(
+        feed_title
+    ), "Feed title haven't appear in output"
