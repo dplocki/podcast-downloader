@@ -159,3 +159,34 @@ def test_should_get_name_from_the_feed(
     assert runner.is_highlighted_in_outcome(
         feed_title
     ), "Feed title haven't appear in output"
+
+
+def test_configuration_ignore_option_display_feed_name(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    feed_title = generate_random_string()
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "name": feed_title,
+                    "disable": True,
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ]
+        }
+    )
+
+    # Act
+    runner = run_podcast_downloader()
+
+    # Assert
+    assert runner.is_highlighted_in_outcome(feed_title)
+    assert runner.is_containing("Skipping the ")
+    assert runner.is_containing(feed_title)
