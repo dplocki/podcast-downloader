@@ -28,8 +28,10 @@ from .rss import (
     build_only_new_entities,
     file_template_to_file_name,
     flatten_rss_links_data,
-    get_raw_rss_entries_from_web,
+    get_feed_title_from_feed,
+    get_raw_rss_entries_from_feed,
     limit_file_name,
+    load_feed,
     only_entities_from_date,
     only_last_n_entities,
 )
@@ -180,7 +182,7 @@ if __name__ == "__main__":
 
     for rss_source in RSS_SOURCES:
         file_length_limit = get_system_file_name_limit(rss_source)
-        rss_source_name = rss_source[configuration.CONFIG_PODCASTS_NAME]
+        rss_source_name = rss_source.get(configuration.CONFIG_PODCASTS_NAME, None)
         rss_source_path = os.path.expanduser(
             rss_source[configuration.CONFIG_PODCASTS_PATH]
         )
@@ -211,6 +213,15 @@ if __name__ == "__main__":
             logger.info('Skipping the "%s"', rss_source_name)
             continue
 
+        try:
+            feed = load_feed(rss_source_link)
+            if not rss_source_name:
+                rss_source_name = get_feed_title_from_feed(feed)
+
+        except error:
+            logger.error(f"Error while checking the link: '{rss_source_link}': {error}")
+            continue
+
         logger.info('Checking "%s"', rss_source_name)
 
         to_name_function = configuration_to_function_rss_to_name(
@@ -233,8 +244,8 @@ if __name__ == "__main__":
             list,
             partial(filter, build_only_allowed_filter_for_link_data(allow_link_types)),
             flatten_rss_links_data,
-            get_raw_rss_entries_from_web,
-        )(rss_source_link)
+            get_raw_rss_entries_from_feed,
+        )(feed)
 
         to_real_podcast_file_name = compose(
             partial(limit_file_name, file_length_limit), to_name_function

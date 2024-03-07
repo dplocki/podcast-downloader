@@ -5,7 +5,6 @@ from functools import partial
 from itertools import takewhile, islice
 from typing import Callable, Generator, Iterator, List
 import unicodedata
-
 import feedparser
 
 
@@ -91,10 +90,18 @@ def limit_file_name(maximum_length: int, file_name: str) -> str:
     )
 
 
-def get_raw_rss_entries_from_web(
-    rss_link: str,
+def load_feed(rss_link: str) -> feedparser.FeedParserDict:
+    return feedparser.parse(rss_link)
+
+
+def get_feed_title_from_feed(feedParser: feedparser.FeedParserDict) -> str:
+    return feedParser.feed.title
+
+
+def get_raw_rss_entries_from_feed(
+    feedParser: feedparser.FeedParserDict,
 ) -> Generator[feedparser.FeedParserDict, None, None]:
-    yield from feedparser.parse(rss_link).entries
+    yield from feedParser.entries
 
 
 def flatten_rss_links_data(
