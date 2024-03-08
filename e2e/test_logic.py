@@ -126,3 +126,67 @@ def test_configuration_during_filling_up_gaps_should_not_download_existing_files
         for file_name in feed.get_requested_files_list()
         if file_name.endswith(".mp3")
     ) == set(file_name.lower() for file_name in (files_to_download + files_in_the_gap))
+
+
+def test_should_get_name_from_the_feed(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    feed_title = generate_random_string()
+    feed.set_title(feed_title)
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "name": None,
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                    "fill_up_gaps": True,
+                }
+            ],
+        }
+    )
+
+    # Act
+    runner = run_podcast_downloader()
+
+    # Assert
+    assert runner.is_correct(), "The script haven't finished work correctly"
+    assert runner.is_highlighted_in_outcome(
+        feed_title
+    ), "Feed title haven't appear in output"
+
+
+def test_configuration_ignore_option_display_feed_name(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    feed_title = generate_random_string()
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "name": feed_title,
+                    "disable": True,
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ]
+        }
+    )
+
+    # Act
+    runner = run_podcast_downloader()
+
+    # Assert
+    assert runner.is_highlighted_in_outcome(feed_title)
+    assert runner.is_containing("Skipping the ")
+    assert runner.is_containing(feed_title)

@@ -28,9 +28,13 @@ class FeedBuilder:
         self.httpserver = httpserver
         self.url_prefix = url_prefix or ""
         self.headers = None
+        self.title = None
 
     def set_request_headers(self, headers):
         self.headers = headers
+
+    def set_title(self, title):
+        self.title = title
 
     def add_entry(
         self,
@@ -83,7 +87,7 @@ class FeedBuilder:
 
     def __build_rss(self):
         fg = FeedGenerator()
-        fg.title("Some Testfeed")
+        fg.title(self.title or generate_random_string())
         fg.author({"name": "John Doe", "email": "john@example.de"})
         fg.subtitle("This is a cool feed!")
         fg.link(href="http://example.com", rel="alternate")
@@ -185,6 +189,28 @@ class MultipleFeedBuilder:
         self.second_feed = FeedBuilder(httpserver, "/" + generate_random_string())
 
 
+class PodcastDownloaderRunner:
+    def run(self):
+        self.output = subprocess.run(
+            [sys.executable, "-m", "podcast_downloader"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.output.check_returncode()
+
+    def is_correct(self):
+        return (
+            self.output.returncode == 0
+        )  # and self.output.stderr == "" # TODO: https://github.com/dplocki/podcast-downloader/projects/2#card-91992699
+
+    def is_highlighted_in_outcome(self, word: str) -> bool:
+        return self.is_containing(f"\x1b[97m{word}\x1b[0m")
+
+    def is_containing(self, word: str) -> bool:
+        return word in self.output.stderr
+
+
 @pytest.fixture()
 def download_destination_directory(tmp_path) -> Path:
     feed_destination_path = tmp_path / "destination"
@@ -239,4 +265,7 @@ def use_config():
 
 
 def run_podcast_downloader():
-    subprocess.check_call([sys.executable, "-m", "podcast_downloader"])
+    runner = PodcastDownloaderRunner()
+    runner.run()
+
+    return runner
