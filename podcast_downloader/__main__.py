@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     logger = getLogger(__name__)
     logger.setLevel(INFO)
-    stdout_handler = StreamHandler()
+    stdout_handler = StreamHandler(stream=sys.stdout)
     stdout_handler.setFormatter(ConsoleOutputFormatter())
     logger.addHandler(stdout_handler)
 

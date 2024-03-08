@@ -200,15 +200,13 @@ class PodcastDownloaderRunner:
         self.output.check_returncode()
 
     def is_correct(self):
-        return (
-            self.output.returncode == 0
-        )  # and self.output.stderr == "" # TODO: https://github.com/dplocki/podcast-downloader/projects/2#card-91992699
+        return (self.output.returncode == 0) and self.output.stderr == ""
 
     def is_highlighted_in_outcome(self, word: str) -> bool:
         return self.is_containing(f"\x1b[97m{word}\x1b[0m")
 
     def is_containing(self, word: str) -> bool:
-        return word in self.output.stderr
+        return word in self.output.stdout
 
 
 @pytest.fixture()
