@@ -32,9 +32,6 @@ WEEK_DAYS = (
 
 def configuration_verification(config: dict) -> Tuple[bool, List[str]]:
     for podcast in config[CONFIG_PODCASTS]:
-        if not CONFIG_PODCASTS_NAME in podcast:
-            return False, "Name is missing for one of the podcast"
-
         if not CONFIG_PODCASTS_PATH in podcast:
             return (
                 False,
