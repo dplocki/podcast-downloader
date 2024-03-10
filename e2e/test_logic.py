@@ -142,13 +142,13 @@ def test_should_get_name_from_the_feed(
         {
             "podcasts": [
                 {
-                    "name": None,
                     "path": podcast_directory.path(),
                     "rss_link": feed.get_feed_url(),
                     "fill_up_gaps": True,
                 }
             ],
-        }
+        },
+        skip_default=True
     )
 
     # Act

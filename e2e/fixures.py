@@ -239,9 +239,9 @@ def feed_builder_manager(httpserver):
 
 @pytest.fixture
 def use_config():
-    def internal(config_object: Dict):
+    def internal(config_object: Dict, skip_default: bool = False):
         for podcast in config_object["podcasts"]:
-            if "name" not in podcast:
+            if "name" not in podcast and not skip_default:
                 podcast["name"] = generate_random_string()
 
         config_file_name.write_text(json.dumps(config_object))
