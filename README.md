@@ -286,3 +286,34 @@ Default value: `false`.
 ## The analyze of the RSS feed
 
 The script is look through all the `items` nodes in RSS file. The `item` node can contain the `enclosure` node. Those nodes are used to passing the files. According to the convention the single `item` should contain only one `enclosure`, but script (as [the library used](https://pypi.org/project/feedparser/) under it) can handle the multiple files attached into podcast `item`.
+
+## Converting the OPML
+
+The [OPML](https://en.wikipedia.org/wiki/OPML) files can be converted into [configuration](#configuration). The output file needs to be adjusted (missing the `path`).
+
+```py
+import json
+import sys
+import xml.etree.ElementTree as ET
+
+
+def build_podcast(node_rss):
+    return {
+        "name": node_rss.attrib["title"],
+        "rss_link": node_rss.attrib["xmlUrl"],
+        "path": "",
+    }
+
+
+tree = ET.parse(sys.argv[1])
+podcasts = list(map(build_podcast, tree.findall("body/outline[@type='rss']")))
+result = json.dumps({"podcasts": podcasts}, sort_keys=True, indent=4)
+
+print(result)
+```
+
+Example of usage (after saving it as `opml_converter.py`):
+
+```sh
+python opml_converter.py example.opml > podcast_downloader_config.json
+```
