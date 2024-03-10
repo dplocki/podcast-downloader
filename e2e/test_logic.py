@@ -148,7 +148,7 @@ def test_should_get_name_from_the_feed(
                 }
             ],
         },
-        skip_default=True
+        skip_default=True,
     )
 
     # Act
