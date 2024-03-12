@@ -77,6 +77,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="The general approach on empty directory",
     )
 
+    parser.add_argument(
+        "--config_file",
+        required=False,
+        type=open,
+        help="The path to configuration file"
+    )
+
     return parser
 
 
