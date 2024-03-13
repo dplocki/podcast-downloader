@@ -190,9 +190,14 @@ class MultipleFeedBuilder:
 
 
 class PodcastDownloaderRunner:
-    def run(self):
+    def run(self, additional_parameters: Iterable[str] = None):
+        args = [sys.executable, "-m", "podcast_downloader"]
+
+        if additional_parameters:
+            args += additional_parameters
+
         self.output = subprocess.run(
-            [sys.executable, "-m", "podcast_downloader"],
+            args,
             check=True,
             capture_output=True,
             text=True,
@@ -262,8 +267,10 @@ def use_config():
         backup_config_file_name.rename(config_file_name)
 
 
-def run_podcast_downloader():
+def run_podcast_downloader(
+    additional_parameters: Iterable[str] = None,
+) -> PodcastDownloaderRunner:
     runner = PodcastDownloaderRunner()
-    runner.run()
+    runner.run(additional_parameters)
 
     return runner

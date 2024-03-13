@@ -81,7 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--config_file",
         required=False,
         type=open,
-        help="The path to configuration file"
+        help="The path to configuration file",
     )
 
     return parser
