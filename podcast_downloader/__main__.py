@@ -78,7 +78,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--config_file",
+        "--config",
         required=False,
         type=open,
         help="The path to configuration file",

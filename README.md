@@ -149,7 +149,7 @@ The script accept following command line arguments:
 
 | Short version | Long name              | Parameter           | Default                             | Note |
 |:--------------|:-----------------------|:-------------------:|:-----------------------------------:|:-----|
-|               | `--config_file`        | string              | `~/.podcast_downloader_config.json` | The placement of the configuration file |
+|               | `--config`             | string              | `~/.podcast_downloader_config.json` | The placement of the configuration file |
 |               | `--downloads_limit`    | number              | infinity                            | The maximum number of downloaded mp3 files |
 |               | `--if_directory_empty` | string              | `download_last`                     | The general approach on empty directory |
 
