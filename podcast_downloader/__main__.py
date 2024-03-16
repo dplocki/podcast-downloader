@@ -80,7 +80,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--config",
         required=False,
-        type=open,
+        type=str,
         help="The path to configuration file",
     )
 
@@ -170,13 +170,20 @@ if __name__ == "__main__":
         configuration.CONFIG_PODCASTS: [],
     }
 
-    CONFIG_FILE = "~/.podcast_downloader_config.json"
-    logger.info('Loading configuration (from file: "%s")', CONFIG_FILE)
+    PARAMETERS_CONFIGURATION = parse_argv(build_parser())
+
+    config_file_name = PARAMETERS_CONFIGURATION.get(
+        "config", "~/.podcast_downloader_config.json"
+    )
+    logger.info('Loading configuration (from file: "%s")', config_file_name)
+    CONFIGURATION_FROM_FILE = load_configuration_file(
+        os.path.expanduser(config_file_name)
+    )
 
     CONFIGURATION = merge_parameters_collection(
         DEFAULT_CONFIGURATION,
-        load_configuration_file(os.path.expanduser(CONFIG_FILE)),
-        parse_argv(build_parser()),
+        CONFIGURATION_FROM_FILE,
+        PARAMETERS_CONFIGURATION,
     )
 
     is_valid, error = configuration_verification(CONFIGURATION)
