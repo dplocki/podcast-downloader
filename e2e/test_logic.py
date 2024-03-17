@@ -1,14 +1,15 @@
 from itertools import chain
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 from e2e.fixures import (
     FeedBuilder,
     PodcastDirectory,
-    run_podcast_downloader,
+    PodcastDownloaderRunner,
     # fixures:
     download_destination_directory,
     feed,
     use_config,
     podcast_directory,
+    podcast_downloader,
 )
 from e2e.random import call_n_times, generate_random_mp3_file, generate_random_string
 
@@ -16,6 +17,7 @@ from e2e.random import call_n_times, generate_random_mp3_file, generate_random_s
 def test_configuration_hierarchy(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -36,7 +38,7 @@ def test_configuration_hierarchy(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     assert len(podcast_directory.get_files_list()) == 1
@@ -45,6 +47,7 @@ def test_configuration_hierarchy(
 def test_ignore_files_not_being_part_of_the_feed(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -69,7 +72,7 @@ def test_ignore_files_not_being_part_of_the_feed(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(
@@ -81,6 +84,7 @@ def test_ignore_files_not_being_part_of_the_feed(
 def test_configuration_during_filling_up_gaps_should_not_download_existing_files(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -118,7 +122,7 @@ def test_configuration_during_filling_up_gaps_should_not_download_existing_files
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     assert set(
@@ -131,6 +135,7 @@ def test_configuration_during_filling_up_gaps_should_not_download_existing_files
 def test_should_get_name_from_the_feed(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -152,7 +157,7 @@ def test_should_get_name_from_the_feed(
     )
 
     # Act
-    runner = run_podcast_downloader()
+    runner = podcast_downloader.run()
 
     # Assert
     assert runner.is_correct(), "The script haven't finished work correctly"
@@ -164,6 +169,7 @@ def test_should_get_name_from_the_feed(
 def test_configuration_ignore_option_display_feed_name(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -184,7 +190,7 @@ def test_configuration_ignore_option_display_feed_name(
     )
 
     # Act
-    runner = run_podcast_downloader()
+    runner = podcast_downloader.run()
 
     # Assert
     assert runner.is_highlighted_in_outcome(feed_title)

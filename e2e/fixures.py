@@ -190,11 +190,16 @@ class MultipleFeedBuilder:
 
 
 class PodcastDownloaderRunner:
+    def __init__(self, script_directory: Path) -> None:
+        self.script_directory = script_directory
+
     def run(self, additional_parameters: Iterable[str] = None):
         args = [sys.executable, "-m", "podcast_downloader"]
 
         if additional_parameters:
             args += additional_parameters
+        else:
+            args += ["--config", str(self.script_directory / "config.json")]
 
         self.output = subprocess.run(
             args,
@@ -203,6 +208,8 @@ class PodcastDownloaderRunner:
             text=True,
         )
         self.output.check_returncode()
+
+        return self
 
     def is_correct(self):
         return (self.output.returncode == 0) and self.output.stderr == ""
@@ -243,7 +250,7 @@ def feed_builder_manager(httpserver):
 
 
 @pytest.fixture
-def use_config():
+def use_config(tmp_path):
     def internal(config_object: Dict, skip_default: bool = False):
         for podcast in config_object["podcasts"]:
             if "name" not in podcast and not skip_default:
@@ -251,26 +258,12 @@ def use_config():
 
         config_file_name.write_text(json.dumps(config_object))
 
-    home_directory = Path.home()
-    config_file_name = home_directory / ".podcast_downloader_config.json"
-    backup_config_file_name = (
-        home_directory / ".safe_copy_podcast_downloader_config.json"
-    )
-
-    if config_file_name.exists():
-        config_file_name.rename(backup_config_file_name)
+    config_file_name = tmp_path / "config.json"
 
     yield internal
 
-    if backup_config_file_name.exists():
-        config_file_name.unlink()
-        backup_config_file_name.rename(config_file_name)
 
-
-def run_podcast_downloader(
-    additional_parameters: Iterable[str] = None,
-) -> PodcastDownloaderRunner:
-    runner = PodcastDownloaderRunner()
-    runner.run(additional_parameters)
-
-    return runner
+@pytest.fixture
+def podcast_downloader(tmp_path) -> Generator[PodcastDownloaderRunner, None, None]:
+    runner = PodcastDownloaderRunner(tmp_path)
+    yield runner

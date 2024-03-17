@@ -1,12 +1,12 @@
 from functools import partial
 from itertools import chain
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 from e2e.fixures import (
     FeedBuilder,
     MultipleFeedBuilder,
     MultiplePodcastDirectory,
     PodcastDirectory,
-    run_podcast_downloader,
+    PodcastDownloaderRunner,
     # fixures:
     download_destination_directory,
     feed,
@@ -14,6 +14,7 @@ from e2e.fixures import (
     use_config,
     podcast_directory,
     podcast_directory_manager,
+    podcast_downloader,
 )
 from e2e.random import (
     call_n_times,
@@ -28,6 +29,7 @@ from e2e.random import (
 def test_configuration_ignore_option(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -46,7 +48,7 @@ def test_configuration_ignore_option(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only([])
@@ -55,6 +57,7 @@ def test_configuration_ignore_option(
 def test_configuration_podcast_extensions_option(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -82,7 +85,7 @@ def test_configuration_podcast_extensions_option(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only([file_name.lower() for file_name in avi_files])
@@ -91,6 +94,7 @@ def test_configuration_podcast_extensions_option(
 def test_configuration_file_name_template_option(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -113,7 +117,7 @@ def test_configuration_file_name_template_option(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(
@@ -127,6 +131,7 @@ def test_configuration_file_name_template_option(
 def test_configuration_downloads_limit_option(
     feed_builder_manager: MultipleFeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory_manager: MultiplePodcastDirectory,
 ):
     # Arrange
@@ -157,7 +162,7 @@ def test_configuration_downloads_limit_option(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     downloaded_files_count = sum(
@@ -172,6 +177,7 @@ def test_configuration_downloads_limit_option(
 def test_configuration_http_headers_option(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory_manager: MultiplePodcastDirectory,
 ):
     # Arrange
@@ -197,7 +203,7 @@ def test_configuration_http_headers_option(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     assert (
@@ -211,6 +217,7 @@ def test_configuration_http_headers_option(
 def test_configuration_fill_up_gaps_option(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -248,7 +255,7 @@ def test_configuration_fill_up_gaps_option(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(
