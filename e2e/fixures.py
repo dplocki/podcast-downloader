@@ -15,6 +15,9 @@ from pytest_httpserver import HTTPServer
 from typing import Dict, Generator, Iterable, List, Set
 
 
+DEFAULT_CONFIG_NAME = "config.json"
+
+
 def print_set_content(content: Set):
     return ", ".join(sorted(content))
 
@@ -199,7 +202,7 @@ class PodcastDownloaderRunner:
         if additional_parameters:
             args += additional_parameters
         else:
-            args += ["--config", str(self.script_directory / "config.json")]
+            args += ["--config", str(self.script_directory / DEFAULT_CONFIG_NAME)]
 
         self.output = subprocess.run(
             args,
@@ -258,7 +261,7 @@ def use_config(tmp_path):
 
         config_file_name.write_text(json.dumps(config_object))
 
-    config_file_name = tmp_path / "config.json"
+    config_file_name = tmp_path / DEFAULT_CONFIG_NAME
 
     yield internal
 
