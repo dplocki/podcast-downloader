@@ -3,12 +3,13 @@ from itertools import chain
 from e2e.fixures import (
     FeedBuilder,
     PodcastDirectory,
-    run_podcast_downloader,
+    PodcastDownloaderRunner,
     # fixures:
+    download_destination_directory,
     feed,
     use_config,
     podcast_directory,
-    download_destination_directory,
+    podcast_downloader,
 )
 from e2e.random import (
     call_n_times,
@@ -16,12 +17,13 @@ from e2e.random import (
     generate_random_mp3_file,
     generate_random_string,
 )
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 
 def test_default_behavior_on_empty_podcast_directory(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -42,7 +44,7 @@ def test_default_behavior_on_empty_podcast_directory(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only([last_file_name.lower()])
@@ -51,6 +53,7 @@ def test_default_behavior_on_empty_podcast_directory(
 def test_default_behavior_on_nonempty_podcast_directory(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -75,7 +78,7 @@ def test_default_behavior_on_nonempty_podcast_directory(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(expected_downloaded_files)
@@ -84,6 +87,7 @@ def test_default_behavior_on_nonempty_podcast_directory(
 def test_default_behavior_fill_up_gaps(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -120,7 +124,7 @@ def test_default_behavior_fill_up_gaps(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(
@@ -138,6 +142,7 @@ def test_default_behavior_fill_up_gaps(
 def test_download_all_from_feed_behavior(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -160,7 +165,7 @@ def test_download_all_from_feed_behavior(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(expected_downloaded_files)
@@ -169,6 +174,7 @@ def test_download_all_from_feed_behavior(
 def test_download_last_from_feed_behavior(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -192,7 +198,7 @@ def test_download_last_from_feed_behavior(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only([last_podcast_file])
@@ -201,6 +207,7 @@ def test_download_last_from_feed_behavior(
 def test_download_from_n_days_from_feed_behavior(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -230,7 +237,7 @@ def test_download_from_n_days_from_feed_behavior(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(
@@ -241,6 +248,7 @@ def test_download_from_n_days_from_feed_behavior(
 def test_download_last_n_episodes_behavior(
     feed: FeedBuilder,
     use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
 ):
     # Arrange
@@ -264,7 +272,7 @@ def test_download_last_n_episodes_behavior(
     )
 
     # Act
-    run_podcast_downloader()
+    podcast_downloader.run()
 
     # Assert
     podcast_directory.is_containing_only(expected_downloaded_files)

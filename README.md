@@ -52,6 +52,8 @@ The configuration file is placed in home directory.
 
 The name: `.podcast_downloader_config.json`. The file is format in [JSON](https://en.wikipedia.org/wiki/JSON). The expected encoding is [utf-8](https://en.wikipedia.org/wiki/UTF-8).
 
+The configuration file placement can be specified by [script argument](#script-arguments).
+
 ### An example of configuration file
 
 ```json
@@ -145,10 +147,11 @@ Example:
 
 The script accept following command line arguments:
 
-| Short version | Long name              | Parameter           | Default         | Note |
-|:--------------|:-----------------------|:-------------------:|:---------------:|:-----|
-|               | `--downloads_limit`    | number              | infinity        | The maximum number of downloaded mp3 files |
-|               | `--if_directory_empty` | string              | `download_last` | The general approach on empty directory |
+| Short version | Long name              | Parameter           | Default                             | Note |
+|:--------------|:-----------------------|:-------------------:|:-----------------------------------:|:-----|
+|               | `--config`             | string              | `~/.podcast_downloader_config.json` | The placement of the configuration file |
+|               | `--downloads_limit`    | number              | infinity                            | The maximum number of downloaded mp3 files |
+|               | `--if_directory_empty` | string              | `download_last`                     | The general approach on empty directory |
 
 ## Adding date to file name
 
