@@ -42,6 +42,12 @@ After installation, the script can be called as any Python module:
 python -m podcast_downloader
 ```
 
+It is also possible to run the script with given configuration file:
+
+```bash
+python -m podcast_downloader --config my_config.json
+```
+
 ## Configuration
 
 ### The configuration file
