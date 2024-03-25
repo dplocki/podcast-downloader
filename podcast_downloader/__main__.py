@@ -229,7 +229,9 @@ if __name__ == "__main__":
 
         feed = load_feed(rss_source_link)
         if feed.bozo:
-            logger.error(f"Error while checking the link: '{rss_source_link}': {feed['bozo_exception']}")
+            logger.error(
+                f"Error while checking the link: '{rss_source_link}': {feed['bozo_exception']}"
+            )
             continue
 
         if not rss_source_name:
