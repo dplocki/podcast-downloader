@@ -224,7 +224,7 @@ if __name__ == "__main__":
         )
 
         if rss_disable:
-            logger.info('Skipping the "%s"', rss_source_name)
+            logger.info('Skipping the "%s"', rss_source_name or rss_source_link)
             continue
 
         feed = load_feed(rss_source_link)
