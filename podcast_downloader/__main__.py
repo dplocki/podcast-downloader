@@ -228,7 +228,7 @@ if __name__ == "__main__":
             continue
 
         feed = load_feed(rss_source_link)
-        if feed.bozo:
+        if feed.bozo and len(feed.entries) == 0:
             logger.error(
                 f"Error while checking the link: '{rss_source_link}': {feed['bozo_exception']}"
             )
