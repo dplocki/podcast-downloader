@@ -14,9 +14,20 @@ It is compering the last added file with the rss feed, finding the missing ones,
 
 As name suggested, the script is designed for podcasts. The files searched by default are `mp3`.
 
+Using the [example below](#example), the result will be:
+
+```log
+[2020-06-16 19:54:35] Loading configuration (from file: "~/.podcast_downloader_config.json")
+[2020-06-16 19:54:35] Checking "The Skeptic Guide"
+[2020-06-16 19:54:35] Last downloaded file "skepticast2020-06-13.mp3"
+[2020-06-16 19:54:39] The Skeptic Guide: Nothing new
+[2020-06-16 19:54:39] ------------------------------
+[2020-06-16 19:54:39] Finished
+```
+
 ## Setup
 
-### Installation from PyPI
+Installation from PyPI:
 
 ```bash
 pip install podcast_downloader
@@ -31,17 +42,10 @@ After installation, the script can be called as any Python module:
 python -m podcast_downloader
 ```
 
-### In action
+It is also possible to run the script with given configuration file:
 
-Using the [example above](#example), the result will be:
-
-```log
-[2020-06-16 19:54:35] Loading configuration (from file: "~/.podcast_downloader_config.json")
-[2020-06-16 19:54:35] Checking "The Skeptic Guide"
-[2020-06-16 19:54:35] Last downloaded file "skepticast2020-06-13.mp3"
-[2020-06-16 19:54:39] The Skeptic Guide: Nothing new
-[2020-06-16 19:54:39] ------------------------------
-[2020-06-16 19:54:39] Finished
+```bash
+python -m podcast_downloader --config my_config.json
 ```
 
 ## Configuration
