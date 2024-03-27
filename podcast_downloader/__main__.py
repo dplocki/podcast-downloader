@@ -224,17 +224,18 @@ if __name__ == "__main__":
         )
 
         if rss_disable:
-            logger.info('Skipping the "%s"', rss_source_name)
+            logger.info('Skipping the "%s"', rss_source_name or rss_source_link)
             continue
 
-        try:
-            feed = load_feed(rss_source_link)
-            if not rss_source_name:
-                rss_source_name = get_feed_title_from_feed(feed)
-
-        except error:
-            logger.error(f"Error while checking the link: '{rss_source_link}': {error}")
+        feed = load_feed(rss_source_link)
+        if feed.bozo and len(feed.entries) == 0:
+            logger.error(
+                f"Error while checking the link: '{rss_source_link}': {feed['bozo_exception']}"
+            )
             continue
+
+        if not rss_source_name:
+            rss_source_name = get_feed_title_from_feed(feed)
 
         logger.info('Checking "%s"', rss_source_name)
 
