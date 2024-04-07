@@ -6,13 +6,13 @@
 [![Downloads](https://img.shields.io/pypi/dm/podcast-downloader.svg)](https://pypi.python.org/pypi/podcast-downloader)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-The Python module for downloading files from given RSS feeds.
-It is not using a database of any sort. It require a configuration file.
+The Python module designed for downloading files from given RSS feeds, particularly targeted at podcasts.
+It does not use any sort of database but requires a configuration file.
 
-The script is analyzing the directory where it puts the previously downloaded files.
-It is comparing the last added file with the rss feed, finding the missing ones, and downloading them.
+The script is intended to be run periodically. Upon starting, it analyzes the directory where it previously stored downloaded files.
+It then compares these files with those listed in the RSS feed, identifying any missing ones and downloading them.
 
-As name suggested, the script is designed for podcasts. The files searched by default are `mp3`.
+The files searched by default are `mp3`.
 
 Using the [example below](#example), the result will be:
 
