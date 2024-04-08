@@ -14,15 +14,31 @@ It then compares these files with those listed in the RSS feed, identifying any 
 
 The files searched by default are `mp3`.
 
-Using the [example below](#example), the result will be:
+The result of using the [example below](#configuration), on empty directories, will be:
 
 ```log
-[2020-06-16 19:54:35] Loading configuration (from file: "~/.podcast_downloader_config.json")
-[2020-06-16 19:54:35] Checking "The Skeptic Guide"
-[2020-06-16 19:54:35] Last downloaded file "skepticast2020-06-13.mp3"
-[2020-06-16 19:54:39] The Skeptic Guide: Nothing new
-[2020-06-16 19:54:39] ------------------------------
-[2020-06-16 19:54:39] Finished
+dplocki@ghost-wheel:~$ python -m podcast_downloader
+[2024-04-08 21:19:10] Loading configuration (from file: "~/.podcast_downloader_config.json")
+[2024-04-08 21:19:15] Checking "The Skeptic Guide"
+[2024-04-08 21:19:15] Last downloaded file "<none>"
+[2024-04-08 21:19:15] The Skeptic Guide: Downloading file: "https://traffic.libsyn.com/secure/skepticsguide/skepticast2024-04-06.mp3" saved as "skepticast2024-04-06.mp3"
+[2024-04-08 21:19:41] Checking "The Real Python Podcast"
+[2024-04-08 21:19:41] Last downloaded file "<none>"
+[2024-04-08 21:19:41] The Real Python Podcast: Downloading file: "https://chtbl.com/track/92DB94/files.realpython.com/podcasts/RPP_E199_03_Calvin.eef1db4d6679.mp3" saved as "[20240405] rpp_e199_03_calvin.eef1db4d6679.mp3"
+[2024-04-08 21:20:04] Finished
+```
+
+The result:
+
+```
+dplocki@ghost-wheel:~$ tree podcasts/
+podcasts/
+├── RealPython
+│   └── [20240405] rpp_e199_03_calvin.eef1db4d6679.mp3
+└── SGTTU
+    └── skepticast2024-04-06.mp3
+
+2 directories, 2 files
 ```
 
 ## Setup
@@ -50,53 +66,53 @@ python -m podcast_downloader --config my_config.json
 
 ## Configuration
 
-### The configuration file
-
-The configuration file is placed in home directory.
-
-The name: `.podcast_downloader_config.json`. The file is format in [JSON](https://en.wikipedia.org/wiki/JSON). The expected encoding is [utf-8](https://en.wikipedia.org/wiki/UTF-8).
-
-The configuration file placement can be specified by [script argument](#script-arguments).
-
-### An example of configuration file
+An example of configuration file
 
 ```json
 {
   "if_directory_empty": "download_from_4_days",
   "podcasts": [
     {
-      "name": "Python for dummies",
-      "rss_link": "http://python-for-dummies/atom.rss",
-      "path": "~/podcasts/PythonForDummies"
-    },
-    {
       "name": "The Skeptic Guide",
       "rss_link": "https://feed.theskepticsguide.org/feed/rss.aspx",
       "path": "~/podcasts/SGTTU"
+    },
+    {
+      "rss_link": "https://realpython.com/podcasts/rpp/feed",
+      "path": "~/podcasts/RealPython",
+      "file_name_template": "[%publish_date%] %file_name%.%file_extension%"
     }
   ]
 }
 ```
 
+### The configuration file
+
+By default the configuration file is placed in home directory. The default name is: `.podcast_downloader_config.json`.
+
+The config file is format in [JSON](https://en.wikipedia.org/wiki/JSON). The expected encoding is [utf-8](https://en.wikipedia.org/wiki/UTF-8).
+
+The path to configuration file can be specified by [script argument](#script-arguments).
+
 ### The settings hierarchy
 
-The script will replace default values by read from configuration file.
-Those will be cover by all values given by command line.
+The script replaces default values by those read from configuration file.
+Those will be overload by values given from command line.
 
 ```
- command line parameters > configuration file > default values
+command line parameters > configuration file > default values
 ```
 
 ### The main options
 
-| Property             | Type       | Required | Default                                | Note |
-|:---------------------|:----------:|:--------:|:--------------------------------------:|:-----|
-| `downloads_limit`    | number     | no       | infinity                               |      |
-| `if_directory_empty` | string     | no       | download_last                          | See [In case of empty directory](#in-case-of-empty-directory) |
-| `podcast_extensions` | key-value  | no       | `{".mp3": "audio/mpeg"}`               | See [File types filter](#file-types-filter) |
-| `podcasts`           | subsection | yes      | `[]`                                   | See [Podcasts sub category](#podcasts-sub-category) |
-| `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
-| `fill_up_gaps`       | boolean    | no       | false                                  | See [Download files from gaps](#download-files-from-gaps) |
+| Property             | Type       | Required? | Default                                | Note |
+|:---------------------|:----------:|:---------:|:--------------------------------------:|:-----|
+| `downloads_limit`    | number     | no        | infinity                               |      |
+| `if_directory_empty` | string     | no        | download_last                          | See [In case of empty directory](#in-case-of-empty-directory) |
+| `podcast_extensions` | key-value  | no        | `{".mp3": "audio/mpeg"}`               | See [File types filter](#file-types-filter) |
+| `podcasts`           | subsection | yes       | `[]`                                   | See [Podcasts sub category](#podcasts-sub-category) |
+| `http_headers`       | key-value  | no        | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
+| `fill_up_gaps`       | boolean    | no        | false                                  | See [Download files from gaps](#download-files-from-gaps) |
 
 ### Podcasts sub category
 
