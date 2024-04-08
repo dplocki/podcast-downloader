@@ -135,11 +135,11 @@ command line parameters > configuration file > default values
 
 Some servers may don't like how the urllib is presenting itself to them (the HTTP User-Agent header). This may lead into problems like: `urllib.error.HTTPError: HTTP Error 403: Forbidden`. That is way, there is a possibility to present the script client as something else.
 
-There is an option to specify HTTP headers when downloading files.
-You can provide them using the `http_headers` value in the configuration file.
-The option value should be a dictionary where each header is presented as a key-value pair, with the key being the header title and the value being the header value.
+There is an option to specify HTTP headers while downloading files.
+You can provide them by using the `http_headers` value in the configuration file.
+The option value should be a dictionary object where each header is presented as a key-value pair. The key being the header title and the value being the header value.
 
-Default value: `{"User-Agent": "podcast-downloader"}`. Providing any value for `http_headers` will override the default value.
+Default value: `{"User-Agent": "podcast-downloader"}`. Providing any value for `http_headers` will override all the default values (they do not merge).
 
 Podcast `http_headers` will be merged with the global `http_headers`. In case of a conflict (same key name), the vale from podcast sub-configuration will override the global one.
 
@@ -165,7 +165,7 @@ Example:
 
 ## Script arguments
 
-The script accept following command line arguments:
+The script accepts following command line arguments:
 
 | Short version | Long name              | Parameter           | Default                             | Note |
 |:--------------|:-----------------------|:-------------------:|:-----------------------------------:|:-----|
@@ -173,31 +173,24 @@ The script accept following command line arguments:
 |               | `--downloads_limit`    | number              | infinity                            | The maximum number of downloaded mp3 files |
 |               | `--if_directory_empty` | string              | `download_last`                     | The general approach on empty directory |
 
-## Adding date to file name
-
-If RSS channel doesn't have single and constant name convention, it may causing the script to working incorrectly. The solution is force files to have common and meaningful prefix. The script is able to adding the date on beginning of downloaded file name.
-
-Use [File name template](#file-name-template) and option `%publish_date%`.
-
 ## File name template
 
 Use to change the name of downloaded file after its downloading.
 
-Default value (the `%file_name%.%file_extension%`) will simple save up the file as it was uploaded by original creator. The file name and its extension is taken from the link to podcast file.
+Default value (the `%file_name%.%file_extension%`) will simple save up the file as it was uploaded by original creator. The file name and its extension is based on the link to podcast file.
 
 Template values:
 
 | Name               | Notes                                                   |
 |:-------------------|:--------------------------------------------------------|
-| `%file_name%`      | The file name taken from link, without extension        |
-| `%file_extension%` | The extension for the file, taken from link             |
+| `%file_name%`      | The file name from the link, without extension          |
+| `%file_extension%` | The extension for the file, from link                   |
 | `%publish_date%`   | The publish date of the RSS entry                       |
 | `%title%`          | The title of the RSS entry                              |
 
-### Non default the publish_date
+### Non-default the publish_date
 
 The `%publish_date%` by default gives result in format `YEARMMDD`. In order to change the date you can provide the new format after the colon (the `:` character). The script respect the codes [of the 1989 C standard](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes), but the percent sign (`%`) must be replaced by dollar sign (`$`). This is because of my unfortunate decision to use the percent character as marker of the code.
-
 
 | The standard code | The script code | Notes                                      |
 |:------------------|:----------------|:-------------------------------------------|
@@ -212,17 +205,16 @@ The `%publish_date%` by default gives result in format `YEARMMDD`. In order to c
 
 ## File types filter
 
-Podcasts are mostly stored as `*.mp3` files. By default Podcast Downloader will look just for them.
+Podcasts are mostly stored as `*.mp3` files. By default Podcast Downloader looks just for them, ignoring all others.
 
-If your podcast support other types of media files, you can precised your own podcast file filter, by providing extension for the file (like `.mp3`), and type of link in RSS feed itself (for `mp3` it is `audio/mpeg`).
+If your podcast supports other types of media files, you can specified the file filters. Provide the  extension for the file (like `.mp3`) and type of link in RSS feed itself (for `mp3` it is `audio/mpeg`).
 
-If you don't know the type of the file, you can check the RSS file. Seek for `enclosure` tags, should looks like this:
+If you don't know the type of the file, you can look for it in the RSS file. Seek for `enclosure` tags, should looks like this:
 
 ```xml
-  <enclosure
-    url="https://an.apple.supporter.page/podcast/episode23.m4a"
-    length="14527149"
-    type="audio/x-m4a" />
+  <enclosure url="https://www.vidocast.url/podcast/episode23.m4a"
+             length="14527149"
+             type="audio/x-m4a" />
 ```
 
 Notes: the dot on the file extension is require.
