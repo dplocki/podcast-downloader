@@ -51,8 +51,8 @@ pip install podcast_downloader
 
 ## Running the script
 
-The script [require configuration file](#configuration) in order to work.
-After installation, the script can be called as any Python module:
+The script [requires configuration file](#configuration) in order to work.
+After installation, the script can be run as any Python module:
 
 ```bash
 python -m podcast_downloader
@@ -88,7 +88,7 @@ An example of configuration file
 
 ### The configuration file
 
-By default the configuration file is placed in home directory. The default name is: `.podcast_downloader_config.json`.
+By default the configuration file is placed in home directory. It's file name is: `.podcast_downloader_config.json`.
 
 The config file is format in [JSON](https://en.wikipedia.org/wiki/JSON). The expected encoding is [utf-8](https://en.wikipedia.org/wiki/UTF-8).
 
@@ -116,7 +116,7 @@ command line parameters > configuration file > default values
 
 ### Podcasts sub category
 
-`Podcasts` is the part of configuration file where you provide the array of objects with fallowing content:
+The `podcasts` segment is the part of configuration file where you provide the array of objects with fallowing content:
 
 | Property             | Type       | Required | Default                                | Note |
 |:---------------------|:----------:|:--------:|:--------------------------------------:|:-----|
@@ -133,15 +133,13 @@ command line parameters > configuration file > default values
 
 ### HTTP request headers
 
-Some servers may don't like how the urllib is presenting itself to them (the HTTP User-Agent header). This may lead into problems like: `urllib.error.HTTPError: HTTP Error 403: Forbidden`. That is way, there is a possibility to present the script client as something else.
+Some servers may not like how the urllib is presenting itself to them (the HTTP User-Agent header). This may lead into problems like: `urllib.error.HTTPError: HTTP Error 403: Forbidden`. That is why, there is a possibility for the script to pose as something else: by specifying the HTTP headers during downloading files.
 
-There is an option to specify HTTP headers while downloading files.
-You can provide them by using the `http_headers` value in the configuration file.
-The option value should be a dictionary object where each header is presented as a key-value pair. The key being the header title and the value being the header value.
+Use the `http_headers` option in the configuration file. The value should be a dictionary object where each header is presented as a key-value pair. The key being the header title and the value being the header value.
 
-Default value: `{"User-Agent": "podcast-downloader"}`. Providing any value for `http_headers` will override all the default values (they do not merge).
+By default the value is: `{"User-Agent": "podcast-downloader"}`. Providing anything else for `http_headers` will override all the default values (they do not merge).
 
-Podcast `http_headers` will be merged with the global `http_headers`. In case of a conflict (same key name), the vale from podcast sub-configuration will override the global one.
+On other hand in the podcast sub-configuration, the `http_headers` will be merged with the global `http_headers`. In case of a conflict (same key name), the vale from podcast sub-configuration will override the global one.
 
 Example:
 
@@ -149,19 +147,31 @@ Example:
 {
   "http_headers": {
     "User-Agent": "podcast-downloader"
+
   },
   "podcasts": [
     {
-      "name": "Unu Podcast",
-      "rss_link": "http://www.unupodcast.org/feed.rss",
-      "path": "~/podcasts/unu_podcast",
+      "name": "Unua Podcast",
+      "rss_link": "http://www.unuapodcast.org/feed.rss",
+      "path": "~/podcasts/unua_podcast",
       "https_headers": {
-        "User-Agent": "User-Agent: Mozilla/5.0",
+        "User-Agent": "Mozilla/5.0"
+      }
+    },
+    {
+      "name": "Dua Podcast",
+      "rss_link": "http://www.duapodcast.org/feed.rss",
+      "path": "~/podcasts/dua_podcast",
+      "https_headers": {
+        "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
       }
     }
   ]
 }
 ```
+
+In this example, the Unua Podcast will be download just with the header: `User-Agent: Mozilla/5.0`, and the Dua Podcast with: `User-Agent: podcast-downloader` and `Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
+
 
 ## Script arguments
 
@@ -175,7 +185,7 @@ The script accepts following command line arguments:
 
 ## File name template
 
-Use to change the name of downloaded file after its downloading.
+Use to adjust the file name after downloading.
 
 Default value (the `%file_name%.%file_extension%`) will simple save up the file as it was uploaded by original creator. The file name and its extension is based on the link to podcast file.
 
@@ -190,7 +200,7 @@ Template values:
 
 ### Non-default the publish_date
 
-The `%publish_date%` by default gives result in format `YEARMMDD`. In order to change the date you can provide the new format after the colon (the `:` character). The script respect the codes [of the 1989 C standard](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes), but the percent sign (`%`) must be replaced by dollar sign (`$`). This is because of my unfortunate decision to use the percent character as marker of the code.
+The `%publish_date%` by default gives result in format `YEARMMDD`. In order to change it you can provide the new one after the colon (the `:` character). The script respect the codes [of the 1989 C standard](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes), but the percent sign (`%`) must be replaced by dollar sign (`$`). This is because of my unfortunate decision to use the percent character as marker of the code.
 
 | The standard code | The script code | Notes                                      |
 |:------------------|:----------------|:-------------------------------------------|
@@ -205,9 +215,9 @@ The `%publish_date%` by default gives result in format `YEARMMDD`. In order to c
 
 ## File types filter
 
-Podcasts are mostly stored as `*.mp3` files. By default Podcast Downloader looks just for them, ignoring all others.
+Podcasts are mostly stored as `*.mp3` files. By default Podcast Downloader looks just for them, ignoring all others types.
 
-If your podcast supports other types of media files, you can specified the file filters. Provide the  extension for the file (like `.mp3`) and type of link in RSS feed itself (for `mp3` it is `audio/mpeg`).
+If your podcast supports other types of media files, you can specified the file filters. Provide the  extension of the file (like `.mp3`) and type of link in RSS feed itself (for `mp3` it is `audio/mpeg`).
 
 If you don't know the type of the file, you can look for it in the RSS file. Seek for `enclosure` tags, should looks like this:
 
@@ -217,7 +227,7 @@ If you don't know the type of the file, you can look for it in the RSS file. See
              type="audio/x-m4a" />
 ```
 
-Notes: the dot on the file extension is require.
+**Note**: the dot on the file extension is require.
 
 ### Example
 
@@ -230,13 +240,15 @@ Notes: the dot on the file extension is require.
 
 ## In case of empty directory
 
-If a directory for podcast is empty, the script needs to recognize what to do. Due to lack of database, you can:
+If a directory for podcast is empty, the script needs to know what to do. Due to lack of database, you can:
 
 * [download all episodes from feed](#download-all-from-feed)
-* [download only the last episode](#only-last)
-* [download last n episodes](#download-n-last-episodes)
+* [download only the last episode](#download-last)
+* [download last n episodes](#download-last-n-episodes)
 * [download all new episode from last n days](#download-all-from-n-days)
 * [download all new episode since day after, the last episode should appear](#download-all-episode-since-last-excepted)
+
+Default behavior is: `download_last`
 
 ### Download all from feed
 
@@ -244,23 +256,22 @@ The script will download all episodes from the feed.
 
 Set by `download_all_from_feed`.
 
-### Only last
+### Download last
 
 The script will download only the last episode from the feed.
-It is a good approach when you wish to start listening the podcast.
 It is also default approach of the script.
 
 Set by `download_last`.
 
 ### Download last n episodes
 
-The script will download exactly given number of episodes from the feed.
+The script will download exactly the given number of episodes from the feed.
 
-Set by `download_last_n_episodes`. The *n* must be replaced by number of episodes, which you wanted to have downloaded. For example: `download_last_5_episodes` means that five last episodes will be downloaded.
+Set by `download_last_n_episodes`. The *n* must be replaced by a number of episodes, which you wanted to have downloaded. For example: `download_last_5_episodes` means that five most recent episodes will be downloaded.
 
 ### Download all from n days
 
-The script will download all episodes which appear in last *n* days. I can be use when you are downloading on regular schedule.
+The script will download all episodes which appear in recent *n* days. It can be use when you are downloading on regular schedule.
 The *n* number is given within the setup value: `download_from_n_days`. For example: `download_from_3_days` means download all episodes from last 3 days.
 
 ### Download all episode since last excepted
@@ -294,13 +305,13 @@ Examples:
 
 ## Download files from gaps
 
-The script recognizes the stream of downloaded files (based on the feed). By default, the last downloaded file (according to the feed) marks the start of downloading. In case of gaps, situations where there are missing files before the last downloaded one, the script will ignore them by default. However, there is a possibility to change this behavior to download all missing files between already downloaded ones. To enable this, you need to set the `fill_up_gaps` value to **true**. It's important to note that the script will not download files before the first one (according to the feed).
+The script recognizes the stream of downloaded files (based on the feed data). By default, the last downloaded file (according to the feed) marks the start of downloading. In case of gaps, situation where there are missing files before the last downloaded one, the script will ignore them by default. However, there is a possibility to change this behavior to download all missing files between already downloaded ones. To enable this, you need to set the `fill_up_gaps` value to **true**. It's important to note that the script will not download files before the first one (according to the feed), the most earlier episode.
 
 Default value: `false`.
 
 ## The analyze of the RSS feed
 
-The script is look through all the `items` nodes in RSS file. The `item` node can contain the `enclosure` node. Those nodes are used to passing the files. According to the convention the single `item` should contain only one `enclosure`, but script (as [the library used](https://pypi.org/project/feedparser/) under it) can handle the multiple files attached into podcast `item`.
+The script looks through all the `items` nodes in RSS file. The `item` node can contain the `enclosure` node. Those nodes are used to passing the files. According to the convention the single `item` should contain only one `enclosure`, but script (as [the library used](https://pypi.org/project/feedparser/) under it) can handle the multiple files attached into podcast `item`.
 
 ## Converting the OPML
 
