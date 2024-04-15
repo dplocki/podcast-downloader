@@ -269,3 +269,29 @@ def test_configuration_fill_up_gaps_option(
             )
         ]
     )
+
+
+def test_configuration_abc(
+    mocker,
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "download_delay": 3,
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                    "if_directory_empty": "download_all_from_feed",
+                }
+            ],
+        }
+    )
+
+    mocker.patch("time.sleep")
