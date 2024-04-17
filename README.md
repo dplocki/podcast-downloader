@@ -113,6 +113,7 @@ command line parameters > configuration file > default values
 | `podcasts`           | subsection | yes       | `[]`                                   | See [Podcasts sub category](#podcasts-sub-category) |
 | `http_headers`       | key-value  | no        | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 | `fill_up_gaps`       | boolean    | no        | false                                  | See [Download files from gaps](#download-files-from-gaps) |
+| `download_delay`     | number     | no        | `0`                                    | See [Download delay](#download-delay) |
 
 ### Podcasts sub category
 
@@ -172,6 +173,16 @@ Example:
 
 In this example, the Unua Podcast will be download just with the header: `User-Agent: Mozilla/5.0`, and the Dua Podcast with: `User-Agent: podcast-downloader` and `Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
 
+### Download delay
+
+When you had a lot of files to download from a single server, it may be better to set up the small delay between downloads to avoid being recognized as an attacker by the server. In the script there is an option called `download_delay`, which represents the **number of seconds** the script will wait between downloads.
+
+The default value is `0`.
+
+Notes:
+
+ * this delay applies per podcast, not between two different podcasts
+ * the value can be provided as [script argument](#script-arguments)
 
 ## Script arguments
 
@@ -182,6 +193,7 @@ The script accepts following command line arguments:
 |               | `--config`             | string              | `~/.podcast_downloader_config.json` | The placement of the configuration file |
 |               | `--downloads_limit`    | number              | infinity                            | The maximum number of downloaded mp3 files |
 |               | `--if_directory_empty` | string              | `download_last`                     | The general approach on empty directory |
+|               | `--download_delay`     | number              | `0`                                 | The waiting time (seconds) between downloads |
 
 ## File name template
 

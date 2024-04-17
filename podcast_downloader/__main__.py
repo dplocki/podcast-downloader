@@ -84,6 +84,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="The path to configuration file",
     )
 
+    parser.add_argument(
+        "--download_delay",
+        required=False,
+        type=int,
+        help="The waiting time (seconds) between downloads",
+    )
+
     return parser
 
 
@@ -167,6 +174,7 @@ if __name__ == "__main__":
         configuration.CONFIG_FILE_NAME_TEMPLATE: "%file_name%.%file_extension%",
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_FILL_UP_GAPS: False,
+        configuration.CONFIG_DOWNLOAD_DELAY: 0,
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -221,6 +229,10 @@ if __name__ == "__main__":
         rss_fill_up_gaps = rss_source.get(
             CONFIGURATION[configuration.CONFIG_FILL_UP_GAPS],
             rss_source.get(configuration.CONFIG_FILL_UP_GAPS, False),
+        )
+        rss_download_delay = rss_source.get(
+            CONFIGURATION[configuration.CONFIG_DOWNLOAD_DELAY],
+            rss_source.get(configuration.CONFIG_DOWNLOAD_DELAY, 0),
         )
 
         if rss_disable:
@@ -295,7 +307,13 @@ if __name__ == "__main__":
                 to_real_podcast_file_name,
             )
 
+            first_element = True
             for rss_entry in reversed(missing_files_links):
+                if rss_download_delay > 0:
+                    if not first_element:
+                        time.sleep(rss_download_delay)
+                        first_element = False
+
                 wanted_podcast_file_name = to_name_function(rss_entry)
                 if wanted_podcast_file_name in downloaded_files:
                     continue
