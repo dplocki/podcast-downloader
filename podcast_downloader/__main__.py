@@ -311,7 +311,9 @@ if __name__ == "__main__":
             for rss_entry in reversed(missing_files_links):
                 if rss_download_delay > 0:
                     if not first_element:
-                        logger.info('The download is sleeping (%d second)', rss_download_delay)
+                        logger.info(
+                            "The download is sleeping (%d second)", rss_download_delay
+                        )
                         time.sleep(rss_download_delay)
                         first_element = False
 
