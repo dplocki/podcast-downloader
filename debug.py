@@ -1,8 +1,16 @@
 from functools import partial
 import os
+from podcast_downloader.__main__ import get_system_file_name_limit
 from podcast_downloader.downloaded import get_downloaded_files, get_extensions_checker
 from podcast_downloader.parameters import load_configuration_file
-from podcast_downloader.rss import build_only_allowed_filter_for_link_data, flatten_rss_links_data, get_raw_rss_entries_from_feed, load_feed
+from podcast_downloader.rss import (
+    build_only_allowed_filter_for_link_data,
+    file_template_to_file_name,
+    flatten_rss_links_data,
+    get_raw_rss_entries_from_feed,
+    limit_file_name,
+    load_feed,
+)
 from podcast_downloader.utils import compose
 
 
@@ -11,8 +19,9 @@ podcast_config = config["podcasts"][0]
 rss_source_link = podcast_config["rss_link"]
 feed = load_feed(rss_source_link)
 
-
-rss_podcast_extensions = podcast_config.get("podcast_extensions", {".mp3": "audio/mpeg"})
+rss_podcast_extensions = podcast_config.get(
+    "podcast_extensions", {".mp3": "audio/mpeg"}
+)
 rss_source_path = os.path.expanduser(podcast_config["path"])
 
 
@@ -31,4 +40,12 @@ downloaded_files = list(
     )
 )
 
-print(all_feed_entries, downloaded_files)
+to_name_function = partial(file_template_to_file_name, "%file_name%.%file_extension%")
+file_length_limit = get_system_file_name_limit(podcast_config)
+to_real_podcast_file_name = compose(
+    partial(limit_file_name, file_length_limit), to_name_function
+)
+
+all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))[::-1]
+
+print(all_feed_files, downloaded_files)
