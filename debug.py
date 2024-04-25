@@ -22,6 +22,9 @@ feed = load_feed(rss_source_link)
 rss_podcast_extensions = podcast_config.get(
     "podcast_extensions", {".mp3": "audio/mpeg"}
 )
+rss_podcast_file_name_template = podcast_config.get(
+    "file_name_template", "%file_name%.%file_extension%"
+)
 rss_source_path = os.path.expanduser(podcast_config["path"])
 
 
@@ -40,7 +43,7 @@ downloaded_files = list(
     )
 )
 
-to_name_function = partial(file_template_to_file_name, "%file_name%.%file_extension%")
+to_name_function = partial(file_template_to_file_name, rss_podcast_file_name_template)
 file_length_limit = get_system_file_name_limit(podcast_config)
 to_real_podcast_file_name = compose(
     partial(limit_file_name, file_length_limit), to_name_function
