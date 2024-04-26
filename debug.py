@@ -5,6 +5,7 @@ from podcast_downloader.downloaded import get_downloaded_files, get_extensions_c
 from podcast_downloader.parameters import load_configuration_file
 from podcast_downloader.rss import (
     build_only_allowed_filter_for_link_data,
+    build_only_new_entities,
     file_template_to_file_name,
     flatten_rss_links_data,
     get_raw_rss_entries_from_feed,
@@ -50,5 +51,12 @@ to_real_podcast_file_name = compose(
 )
 
 all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))[::-1]
+last_downloaded_file = downloaded_files[-1]
 
-print(all_feed_files, downloaded_files)
+download_limiter_function = partial(
+    build_only_new_entities(to_name_function), last_downloaded_file
+)
+
+missing_files_links = compose(list, download_limiter_function)(all_feed_entries)
+
+print(missing_files_links)
