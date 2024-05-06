@@ -51,7 +51,8 @@ to_real_podcast_file_name = compose(
 )
 
 all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))[::-1]
-last_downloaded_file = downloaded_files[-1]
+only_files_from_feed_sorted = [feed for feed in all_feed_files if feed in downloaded_files]
+last_downloaded_file = only_files_from_feed_sorted[-1]
 
 download_limiter_function = partial(
     build_only_new_entities(to_name_function), last_downloaded_file
