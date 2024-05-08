@@ -51,7 +51,9 @@ to_real_podcast_file_name = compose(
 )
 
 all_feed_files = list(map(to_real_podcast_file_name, all_feed_entries))[::-1]
-only_files_from_feed_sorted = [feed for feed in all_feed_files if feed in downloaded_files]
+only_files_from_feed_sorted = [
+    feed for feed in all_feed_files if feed in downloaded_files
+]
 last_downloaded_file = only_files_from_feed_sorted[-1]
 
 download_limiter_function = partial(
@@ -60,4 +62,13 @@ download_limiter_function = partial(
 
 missing_files_links = compose(list, download_limiter_function)(all_feed_entries)
 
-print(missing_files_links)
+for feed in all_feed_entries:
+    feed_file = to_real_podcast_file_name(feed)
+
+    status = (
+        "to-download"
+        if feed_file in missing_files_links
+        else ("downloaded" if feed_file in only_files_from_feed_sorted else "ignored")
+    )
+
+    print(feed.title + "\t" + feed_file + "\t" + status)
