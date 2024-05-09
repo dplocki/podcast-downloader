@@ -259,6 +259,7 @@ If a directory for podcast is empty, the script needs to know what to do. Due to
 * [download last n episodes](#download-last-n-episodes)
 * [download all new episode from last n days](#download-all-from-n-days)
 * [download all new episode since day after, the last episode should appear](#download-all-episode-since-last-excepted)
+* [download all the new, since the last run](#download-all-new-since-the-last-run)
 
 Default behavior is: `download_last`
 
@@ -315,7 +316,7 @@ Examples:
 | `download_from_Fri`    | New episodes appear in Friday. The script will download all episodes since last Saturday (including it) |
 | `download_from_12`     | New episodes appear each 12th of month. The script will download all episodes since 13 month before |
 
-### Download all new, since the last time
+### Download all new, since the last run
 
 Once you establish the totem file, the script can use it to store the date of its last run. Then, based on this date, the script will download all new episodes that have appeared since then.
 
