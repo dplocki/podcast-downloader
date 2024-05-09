@@ -317,9 +317,9 @@ Examples:
 
 ### Download all new, since the last time
 
-Since you establish the totem file, the script can use it for store the date of its last run. Then, based on this date, the script will download all new episodes, which appear in the meantime.
+Once you establish the totem file, the script can use it to store the date of its last run. Then, based on this date, the script will download all new episodes that have appeared since then.
 
-Set by `check_totem`.
+Set by `check_totem`. Requires establish the totem file.
 
 ## Download files from gaps
 
