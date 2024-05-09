@@ -315,6 +315,12 @@ Examples:
 | `download_from_Fri`    | New episodes appear in Friday. The script will download all episodes since last Saturday (including it) |
 | `download_from_12`     | New episodes appear each 12th of month. The script will download all episodes since 13 month before |
 
+### Download all new, since the last time
+
+Since you establish the totem file, the script can use it for store the date of its last run. Then, based on this date, the script will download all new episodes, which appear in the meantime.
+
+Set by `check_totem`.
+
 ## Download files from gaps
 
 The script recognizes the stream of downloaded files (based on the feed data). By default, the last downloaded file (according to the feed) marks the start of downloading. In case of gaps, situation where there are missing files before the last downloaded one, the script will ignore them by default. However, there is a possibility to change this behavior to download all missing files between already downloaded ones. To enable this, you need to set the `fill_up_gaps` value to **true**. It's important to note that the script will not download files before the first one (according to the feed), the most earlier episode.
