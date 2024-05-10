@@ -320,7 +320,7 @@ Examples:
 
 Once you establish the totem file, the script can use it to store the date of its last run. Then, based on this date, the script will download all new episodes that have appeared since then.
 
-Set by `check_totem`. Requires establish the totem file.
+Set by `download_since_last_run`. Requires establish the totem file.
 
 ## Download files from gaps
 
