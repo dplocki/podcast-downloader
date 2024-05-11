@@ -95,13 +95,17 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def configuration_to_function_on_empty_directory(
-    configuration_value: str,
+    configuration_value: str, mark_file_path: str
 ) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
         return partial(only_last_n_entities, 1)
 
     if configuration_value == "download_all_from_feed":
         return lambda source: source
+
+    if configuration_value == "download_since_last_run":
+        raise NotImplemented("from_date from mark_file_path")
+        return only_entities_from_date(from_date)
 
     local_time = time.localtime()
 
@@ -175,6 +179,7 @@ if __name__ == "__main__":
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_FILL_UP_GAPS: False,
         configuration.CONFIG_DOWNLOAD_DELAY: 0,
+        configuration.CONFIG_LAST_RUN_MARK: None,
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -201,6 +206,7 @@ if __name__ == "__main__":
 
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
+    CONFIG_LAST_RUN_MARK = CONFIGURATION[configuration.CONFIG_LAST_RUN_MARK]
 
     for rss_source in RSS_SOURCES:
         file_length_limit = get_system_file_name_limit(rss_source)
@@ -214,7 +220,7 @@ if __name__ == "__main__":
             configuration.CONFIG_FILE_NAME_TEMPLATE,
             CONFIGURATION[configuration.CONFIG_FILE_NAME_TEMPLATE],
         )
-        rss_if_directory_empty = rss_source.get(
+        rss_on_empty_directory = rss_source.get(
             configuration.CONFIG_IF_DIRECTORY_EMPTY,
             CONFIGURATION[configuration.CONFIG_IF_DIRECTORY_EMPTY],
         )
@@ -255,8 +261,8 @@ if __name__ == "__main__":
             rss_file_name_template_value, rss_source
         )
 
-        on_directory_empty = configuration_to_function_on_empty_directory(
-            rss_if_directory_empty
+        on_empty_directory = configuration_to_function_on_empty_directory(
+            rss_on_empty_directory, CONFIG_LAST_RUN_MARK
         )
 
         downloaded_files = list(
@@ -294,7 +300,7 @@ if __name__ == "__main__":
                 build_only_new_entities(to_name_function), last_downloaded_file
             )
         else:
-            download_limiter_function = on_directory_empty
+            download_limiter_function = on_empty_directory
 
         missing_files_links = compose(list, download_limiter_function)(all_feed_entries)
 
