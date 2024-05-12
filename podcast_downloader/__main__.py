@@ -95,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def configuration_to_function_on_empty_directory(
-    configuration_value: str, mark_file_path: str
+    configuration_value: str, last_run_date: time.struct_time
 ) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
         return partial(only_last_n_entities, 1)
@@ -104,8 +104,7 @@ def configuration_to_function_on_empty_directory(
         return lambda source: source
 
     if configuration_value == "download_since_last_run":
-        raise NotImplemented("from_date from mark_file_path")
-        return only_entities_from_date(from_date)
+        return only_entities_from_date(last_run_date)
 
     local_time = time.localtime()
 
@@ -161,6 +160,25 @@ def configuration_to_function_rss_to_name(
     return partial(file_template_to_file_name, configuration_value)
 
 
+def load_the_last_run_date_store_now(marker_file_path, now):
+    if marker_file_path == None:
+        return None
+
+    if os.path.exists(marker_file_path):
+        logger.warning("Marker file doesn't exist, creating (set last time run as now)")
+
+        with open(marker_file_path, "w") as file:
+            file.write(
+                "This is a marker file for podcast_download. It last access date is used to determine the last run time"
+            )
+
+        return now
+
+    access_time = os.path.getatime(marker_file_path)
+    os.utime(marker_file_path, (now, now))
+    return access_time
+
+
 if __name__ == "__main__":
     import sys
     from logging import getLogger, StreamHandler, INFO
@@ -179,7 +197,7 @@ if __name__ == "__main__":
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_FILL_UP_GAPS: False,
         configuration.CONFIG_DOWNLOAD_DELAY: 0,
-        configuration.CONFIG_LAST_RUN_MARK: None,
+        configuration.CONFIG_LAST_RUN_MARK_PATH: None,
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -206,7 +224,9 @@ if __name__ == "__main__":
 
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
-    CONFIG_LAST_RUN_MARK = CONFIGURATION[configuration.CONFIG_LAST_RUN_MARK]
+    LAST_RUN_DATETIME = load_the_last_run_date_store_now(
+        CONFIGURATION[configuration.CONFIG_LAST_RUN_MARK_PATH], time.localtime()
+    )
 
     for rss_source in RSS_SOURCES:
         file_length_limit = get_system_file_name_limit(rss_source)
@@ -262,7 +282,7 @@ if __name__ == "__main__":
         )
 
         on_empty_directory = configuration_to_function_on_empty_directory(
-            rss_on_empty_directory, CONFIG_LAST_RUN_MARK
+            rss_on_empty_directory, LAST_RUN_DATETIME
         )
 
         downloaded_files = list(
