@@ -176,7 +176,10 @@ def load_the_last_run_date_store_now(marker_file_path, now):
 
     access_time = time.localtime(os.path.getatime(marker_file_path))
 
-    logger.info('Last time the script has been run: %s', time.strftime("%Y-%m-%d %H:%M:%S", access_time))
+    logger.info(
+        "Last time the script has been run: %s",
+        time.strftime("%Y-%m-%d %H:%M:%S", access_time),
+    )
 
     os.utime(marker_file_path, times=(time.mktime(now), time.mktime(now)))
     return access_time
