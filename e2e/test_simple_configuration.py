@@ -2,6 +2,7 @@ import datetime
 from itertools import chain
 from e2e.fixures import (
     FeedBuilder,
+    MarkerFileManager,
     PodcastDirectory,
     PodcastDownloaderRunner,
     # fixures:
@@ -10,6 +11,7 @@ from e2e.fixures import (
     use_config,
     podcast_directory,
     podcast_downloader,
+    marker_file_manager,
 )
 from e2e.random import (
     call_n_times,
@@ -283,6 +285,7 @@ def test_download_since_last_run(
     use_config: Callable[[Dict], None],
     podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
     podcast_directory: PodcastDirectory,
+    marker_file_manager: MarkerFileManager,
 ):
     # Arrange
     expected_number_of_episode = generate_random_int(2, 5)
@@ -299,9 +302,11 @@ def test_download_since_last_run(
     last_run_date = metadata[expected_number_of_episode][1]
     last_run_date -= datetime.timedelta(hours=1)
 
+    marker_file_manager.set_date(last_run_date)
+
     use_config(
         {
-            "last_run_mark_file_path": "totem.json",
+            "last_run_mark_file_path": marker_file_manager.get_path(),
             "podcasts": [
                 {
                     "if_directory_empty": "download_since_last_run",

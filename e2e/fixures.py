@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import pytest
 import random
 import subprocess
@@ -126,9 +127,9 @@ class PodcastDirectory:
     def __init__(self, download_destination_directory: Path) -> None:
         self.download_destination_directory = download_destination_directory
 
-    def add_file(self, file_name: str) -> None:
+    def add_file(self, file_name: str, content: str = None) -> None:
         file_path = self.download_destination_directory / file_name.lower()
-        file_path.write_text(file_name + " content")
+        file_path.write_text(file_name + " content" if content == None else content)
 
     def is_containing_only(self, expected_files_list: List[str]) -> None:
         files_in_destination_directory = self.get_files_list()
@@ -224,6 +225,19 @@ class PodcastDownloaderRunner:
         return word in self.output.stdout
 
 
+class MarkerFileManager:
+    def __init__(self, directory) -> None:
+        self.path_of_marker_file = directory / ".marker"
+        self.path_of_marker_file.write_text(generate_random_string())
+
+    def get_path(self) -> str:
+        return str(self.path_of_marker_file)
+
+    def set_date(self, new_modification_time: datetime.datetime) -> None:
+        os.utime(str(self.path_of_marker_file), (0, 0))
+        # os.utime(str(self.path_of_marker_file), (new_modification_time.timestamp(), new_modification_time.timestamp()))
+
+
 @pytest.fixture()
 def download_destination_directory(tmp_path) -> Path:
     feed_destination_path = tmp_path / "destination"
@@ -270,3 +284,8 @@ def use_config(tmp_path):
 def podcast_downloader(tmp_path) -> Generator[PodcastDownloaderRunner, None, None]:
     runner = PodcastDownloaderRunner(tmp_path)
     yield runner
+
+
+@pytest.fixture()
+def marker_file_manager(tmp_path):
+    yield MarkerFileManager(tmp_path)
