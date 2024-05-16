@@ -234,8 +234,8 @@ class MarkerFileManager:
         return str(self.path_of_marker_file)
 
     def set_date(self, new_modification_time: datetime.datetime) -> None:
-        os.utime(str(self.path_of_marker_file), (0, 0))
-        # os.utime(str(self.path_of_marker_file), (new_modification_time.timestamp(), new_modification_time.timestamp()))
+        dt = new_modification_time.timestamp()
+        os.utime(self.path_of_marker_file, (dt, dt))
 
 
 @pytest.fixture()
