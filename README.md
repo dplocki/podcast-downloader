@@ -320,7 +320,26 @@ Examples:
 
 Once you establish the totem file, the script can use it to store the date of its last run. Then, based on this date, the script will download all new episodes that have appeared since then.
 
-Set by `download_since_last_run`. Requires establish the totem file.
+Set by `download_since_last_run`. Requires establish the store file by `last_run_mark_file_path`.
+
+#### Example:
+
+```json
+{
+  "last_run_mark_file_path": "~/.totem.json",
+  "podcasts": [
+    {
+      "name": "The Skeptic Guide",
+      "rss_link": "https://feed.theskepticsguide.org/feed/rss.aspx",
+      "path": "~/podcasts/SGTTU"
+    }
+  ]
+}
+```
+
+#### The last run mark file
+
+The script is reading the date of last modification of the file. The file's modification date is updated by the script.
 
 ## Download files from gaps
 
