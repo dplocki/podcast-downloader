@@ -323,3 +323,34 @@ def test_download_since_last_run(
 
     # Assert
     podcast_directory.is_containing_only(expected_episode)
+
+
+def test_download_since_last_run_with_no_marker_file_setup(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: PodcastDownloaderRunner,
+    podcast_directory: PodcastDirectory,
+    marker_file_manager: MarkerFileManager,
+):
+    # Arrange
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "last_run_mark_file_path": marker_file_manager.get_path(),
+            "podcasts": [
+                {
+                    "if_directory_empty": "download_since_last_run",
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    podcast_downloader.run()
+
+    # Assert
+    assert marker_file_manager.is_exists()
+    assert podcast_downloader.is_containing("Marker file")

@@ -224,16 +224,24 @@ class PodcastDownloaderRunner:
     def is_containing(self, word: str) -> bool:
         return word in self.output.stdout
 
+    def get_output(self):
+        return self.output.stdout.splitlines()
+
 
 class MarkerFileManager:
     def __init__(self, directory) -> None:
         self.path_of_marker_file = directory / ".marker"
-        self.path_of_marker_file.write_text(generate_random_string())
 
     def get_path(self) -> str:
         return str(self.path_of_marker_file)
 
+    def is_exists(self) -> bool:
+        return self.path_of_marker_file.is_file()
+
     def set_date(self, new_modification_time: datetime.datetime) -> None:
+        if self.is_exists():
+            self.path_of_marker_file.write_text(generate_random_string())
+
         dt = new_modification_time.timestamp()
         os.utime(self.path_of_marker_file, (dt, dt))
 
