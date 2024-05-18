@@ -297,8 +297,12 @@ def test_download_since_last_run(
 
     metadata.reverse()
 
-    expected_episode = [name.lower() for name, _ in metadata[expected_number_of_episode:]]
-    last_run_date = metadata[expected_number_of_episode][1] - datetime.timedelta(hours=1)
+    expected_episode = [
+        name.lower() for name, _ in metadata[expected_number_of_episode:]
+    ]
+    last_run_date = metadata[expected_number_of_episode][1] - datetime.timedelta(
+        hours=1
+    )
 
     marker_file_manager.set_date(last_run_date)
 
