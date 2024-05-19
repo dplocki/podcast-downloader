@@ -358,3 +358,33 @@ def test_download_since_last_run_with_no_marker_file_setup(
     # Assert
     assert marker_file_manager.is_exists()
     assert podcast_downloader.is_containing("Marker file")
+
+
+def test_download_since_last_run_with_missing_marker_file_setup(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: PodcastDownloaderRunner,
+    podcast_directory: PodcastDirectory,
+    marker_file_manager: MarkerFileManager,
+):
+    # Arrange
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "if_directory_empty": "download_since_last_run",
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    podcast_downloader.run()
+
+    # Assert
+    assert marker_file_manager.is_exists()
+    assert podcast_downloader.is_containing("Marker file")
