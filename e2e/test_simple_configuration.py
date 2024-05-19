@@ -386,5 +386,4 @@ def test_download_since_last_run_with_missing_marker_file_setup(
     podcast_downloader.run()
 
     # Assert
-    assert marker_file_manager.is_exists()
     assert podcast_downloader.is_containing("Marker file")

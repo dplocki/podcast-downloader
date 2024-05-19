@@ -104,7 +104,13 @@ def configuration_to_function_on_empty_directory(
         return lambda source: source
 
     if configuration_value == "download_since_last_run":
-        return only_entities_from_date(last_run_date)
+        if last_run_date:
+            return only_entities_from_date(last_run_date)
+
+        logger.error(
+            'The "download_since_last_run" require setup the "last_run_mark_file_path"'
+        )
+        raise Exception("Missing the last run mark file")
 
     local_time = time.localtime()
 
