@@ -239,7 +239,7 @@ class MarkerFileManager:
         return self.path_of_marker_file.is_file()
 
     def set_date(self, new_modification_time: datetime.datetime) -> None:
-        if self.is_exists():
+        if not self.is_exists():
             self.path_of_marker_file.write_text(generate_random_string())
 
         dt = new_modification_time.timestamp()
