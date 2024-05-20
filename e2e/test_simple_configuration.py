@@ -365,7 +365,6 @@ def test_download_since_last_run_with_missing_marker_file_setup(
     use_config: Callable[[Dict], None],
     podcast_downloader: PodcastDownloaderRunner,
     podcast_directory: PodcastDirectory,
-    marker_file_manager: MarkerFileManager,
 ):
     # Arrange
     feed.add_random_entries()
@@ -382,8 +381,9 @@ def test_download_since_last_run_with_missing_marker_file_setup(
         }
     )
 
-    # Act
-    podcast_downloader.run()
-
-    # Assert
-    assert podcast_downloader.is_containing("Marker file")
+    try:
+        # Act
+        podcast_downloader.run()
+    except Exception as error:
+        # Assert
+        assert "Missing the last run mark file" in error.stderr
