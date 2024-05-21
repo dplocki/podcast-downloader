@@ -12,6 +12,7 @@ CONFIG_PODCAST_EXTENSIONS = "podcast_extensions"
 CONFIG_HTTP_HEADER = "http_headers"
 CONFIG_FILL_UP_GAPS = "fill_up_gaps"
 CONFIG_DOWNLOAD_DELAY = "download_delay"
+CONFIG_LAST_RUN_MARK_PATH = "last_run_mark_file_path"
 
 CONFIG_PODCASTS = "podcasts"
 CONFIG_PODCASTS_NAME = "name"

@@ -2,6 +2,7 @@ import datetime
 from itertools import chain
 from e2e.fixures import (
     FeedBuilder,
+    MarkerFileManager,
     PodcastDirectory,
     PodcastDownloaderRunner,
     # fixures:
@@ -10,6 +11,7 @@ from e2e.fixures import (
     use_config,
     podcast_directory,
     podcast_downloader,
+    marker_file_manager,
 )
 from e2e.random import (
     call_n_times,
@@ -276,3 +278,112 @@ def test_download_last_n_episodes_behavior(
 
     # Assert
     podcast_directory.is_containing_only(expected_downloaded_files)
+
+
+def test_download_since_last_run(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
+    podcast_directory: PodcastDirectory,
+    marker_file_manager: MarkerFileManager,
+):
+    # Arrange
+    expected_number_of_episode = generate_random_int(2, 5)
+    metadata = []
+    previous = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
+    for _ in range(generate_random_int(7, 13)):
+        metadata.append((generate_random_mp3_file(), previous))
+        previous -= datetime.timedelta(days=1)
+
+    metadata.reverse()
+
+    expected_episode = [
+        name.lower() for name, _ in metadata[expected_number_of_episode:]
+    ]
+    last_run_date = metadata[expected_number_of_episode][1] - datetime.timedelta(
+        hours=1
+    )
+
+    marker_file_manager.set_date(last_run_date)
+
+    for file_name, file_publish_data in metadata:
+        feed.add_entry(file_name=file_name, published_date=file_publish_data)
+
+    use_config(
+        {
+            "last_run_mark_file_path": marker_file_manager.get_path(),
+            "podcasts": [
+                {
+                    "if_directory_empty": "download_since_last_run",
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    podcast_downloader.run()
+
+    # Assert
+    podcast_directory.is_containing_only(expected_episode)
+
+
+def test_download_since_last_run_with_no_marker_file_setup(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: PodcastDownloaderRunner,
+    podcast_directory: PodcastDirectory,
+    marker_file_manager: MarkerFileManager,
+):
+    # Arrange
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "last_run_mark_file_path": marker_file_manager.get_path(),
+            "podcasts": [
+                {
+                    "if_directory_empty": "download_since_last_run",
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    # Act
+    podcast_downloader.run()
+
+    # Assert
+    assert marker_file_manager.is_exists()
+    assert podcast_downloader.is_containing("Marker file")
+
+
+def test_download_since_last_run_with_missing_marker_file_setup(
+    feed: FeedBuilder,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: PodcastDownloaderRunner,
+    podcast_directory: PodcastDirectory,
+):
+    # Arrange
+    feed.add_random_entries()
+
+    use_config(
+        {
+            "podcasts": [
+                {
+                    "if_directory_empty": "download_since_last_run",
+                    "path": podcast_directory.path(),
+                    "rss_link": feed.get_feed_url(),
+                }
+            ],
+        }
+    )
+
+    try:
+        # Act
+        podcast_downloader.run()
+    except Exception as error:
+        # Assert
+        assert "Missing the last run mark file" in error.stderr

@@ -95,13 +95,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def configuration_to_function_on_empty_directory(
-    configuration_value: str,
+    configuration_value: str, last_run_date: time.struct_time
 ) -> Callable[[Iterable[RSSEntity]], Iterable[RSSEntity]]:
     if configuration_value == "download_last":
         return partial(only_last_n_entities, 1)
 
     if configuration_value == "download_all_from_feed":
         return lambda source: source
+
+    if configuration_value == "download_since_last_run":
+        if last_run_date:
+            return only_entities_from_date(last_run_date)
+
+        logger.error(
+            'The "download_since_last_run" require setup the "last_run_mark_file_path"'
+        )
+        raise Exception("Missing the last run mark file")
 
     local_time = time.localtime()
 
@@ -157,6 +166,31 @@ def configuration_to_function_rss_to_name(
     return partial(file_template_to_file_name, configuration_value)
 
 
+def load_the_last_run_date_store_now(marker_file_path, now):
+    if marker_file_path == None:
+        return None
+
+    if not os.path.exists(marker_file_path):
+        logger.warning("Marker file doesn't exist, creating (set last time run as now)")
+
+        with open(marker_file_path, "w") as file:
+            file.write(
+                "This is a marker file for podcast_download. It last access date is used to determine the last run time"
+            )
+
+        return now
+
+    access_time = time.localtime(os.path.getatime(marker_file_path))
+
+    logger.info(
+        "Last time the script has been run: %s",
+        time.strftime("%Y-%m-%d %H:%M:%S", access_time),
+    )
+
+    os.utime(marker_file_path, times=(time.mktime(now), time.mktime(now)))
+    return access_time
+
+
 if __name__ == "__main__":
     import sys
     from logging import getLogger, StreamHandler, INFO
@@ -175,6 +209,7 @@ if __name__ == "__main__":
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_FILL_UP_GAPS: False,
         configuration.CONFIG_DOWNLOAD_DELAY: 0,
+        configuration.CONFIG_LAST_RUN_MARK_PATH: None,
         configuration.CONFIG_PODCASTS: [],
     }
 
@@ -201,6 +236,9 @@ if __name__ == "__main__":
 
     RSS_SOURCES = CONFIGURATION[configuration.CONFIG_PODCASTS]
     DOWNLOADS_LIMITS = CONFIGURATION[configuration.CONFIG_DOWNLOADS_LIMIT]
+    LAST_RUN_DATETIME = load_the_last_run_date_store_now(
+        CONFIGURATION[configuration.CONFIG_LAST_RUN_MARK_PATH], time.localtime()
+    )
 
     for rss_source in RSS_SOURCES:
         file_length_limit = get_system_file_name_limit(rss_source)
@@ -214,7 +252,7 @@ if __name__ == "__main__":
             configuration.CONFIG_FILE_NAME_TEMPLATE,
             CONFIGURATION[configuration.CONFIG_FILE_NAME_TEMPLATE],
         )
-        rss_if_directory_empty = rss_source.get(
+        rss_on_empty_directory = rss_source.get(
             configuration.CONFIG_IF_DIRECTORY_EMPTY,
             CONFIGURATION[configuration.CONFIG_IF_DIRECTORY_EMPTY],
         )
@@ -255,8 +293,8 @@ if __name__ == "__main__":
             rss_file_name_template_value, rss_source
         )
 
-        on_directory_empty = configuration_to_function_on_empty_directory(
-            rss_if_directory_empty
+        on_empty_directory = configuration_to_function_on_empty_directory(
+            rss_on_empty_directory, LAST_RUN_DATETIME
         )
 
         downloaded_files = list(
@@ -294,7 +332,7 @@ if __name__ == "__main__":
                 build_only_new_entities(to_name_function), last_downloaded_file
             )
         else:
-            download_limiter_function = on_directory_empty
+            download_limiter_function = on_empty_directory
 
         missing_files_links = compose(list, download_limiter_function)(all_feed_entries)
 
