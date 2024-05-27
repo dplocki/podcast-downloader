@@ -170,7 +170,8 @@ def load_the_last_run_date_store_now(marker_file_path, now):
     if marker_file_path == None:
         return None
 
-    if not os.path.exists(marker_file_path):
+    full_marker_file_path = os.path.expanduser(marker_file_path)
+    if not os.path.exists(full_marker_file_path):
         logger.warning("Marker file doesn't exist, creating (set last time run as now)")
 
         with open(marker_file_path, "w") as file:
@@ -180,14 +181,13 @@ def load_the_last_run_date_store_now(marker_file_path, now):
 
         return now
 
-    access_time = time.localtime(os.path.getatime(marker_file_path))
-
+    access_time = time.localtime(os.path.getatime(full_marker_file_path))
     logger.info(
         "Last time the script has been run: %s",
         time.strftime("%Y-%m-%d %H:%M:%S", access_time),
     )
 
-    os.utime(marker_file_path, times=(time.mktime(now), time.mktime(now)))
+    os.utime(full_marker_file_path, times=(time.mktime(now), time.mktime(now)))
     return access_time
 
 
