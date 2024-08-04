@@ -1,5 +1,9 @@
 # Podcast Downloader
 
+<p align="center">
+    <img src="image/banner.png" alt="Logo" width="80%">
+</p>
+
 ![GitHub](https://img.shields.io/github/license/dplocki/podcast-downloader)
 ![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fdplocki%2Fpodcast-downloader%2Fbadge%3Fref%3Dmaster&style=flat)
 ![PyPI](https://img.shields.io/pypi/v/podcast-downloader)
