@@ -335,7 +335,8 @@ Set by `download_since_last_run`. Requires establish the store file by `last_run
     {
       "name": "The Skeptic Guide",
       "rss_link": "https://feed.theskepticsguide.org/feed/rss.aspx",
-      "path": "~/podcasts/SGTTU"
+      "path": "~/podcasts/SGTTU",
+      "if_directory_empty": "download_since_last_run"
     }
   ]
 }
