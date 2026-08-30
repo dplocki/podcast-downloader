@@ -22,12 +22,7 @@ class RSSEntity:
 
 def link_to_file_name_with_extension(link: str) -> str:
     path = urlsplit(link).path
-    return (
-        unquote(path)
-        .rsplit("/")[-1]
-        .replace("\\", "")
-        .lower()
-    )
+    return unquote(path).rsplit("/")[-1].replace("\\", "").lower()
 
 
 def link_to_file_name(link: str) -> str:
