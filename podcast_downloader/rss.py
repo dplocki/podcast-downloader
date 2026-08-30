@@ -6,6 +6,7 @@ from itertools import takewhile, islice
 from typing import Callable, Generator, Iterator, List
 import unicodedata
 import feedparser
+from urllib.parse import urlsplit, unquote
 
 
 FILE_NAME_CHARACTER_LIMIT = 255
@@ -20,15 +21,18 @@ class RSSEntity:
 
 
 def link_to_file_name_with_extension(link: str) -> str:
-    if link.find("?") > 0:
-        link = link.rpartition("?")[0]
-
-    return link.rpartition("/")[-1].lower()
+    path = urlsplit(link).path
+    return (
+        unquote(path)
+        .rsplit("/")[-1]
+        .replace("\\", "")
+        .lower()
+    )
 
 
 def link_to_file_name(link: str) -> str:
     link = link_to_file_name_with_extension(link)
-    if link.find(".") > 0:
+    if link.find(".") >= 0:
         link = link.rpartition(".")[0]
 
     return link
@@ -36,7 +40,7 @@ def link_to_file_name(link: str) -> str:
 
 def link_to_extension(link: str) -> str:
     link = link_to_file_name_with_extension(link)
-    if link.find(".") > 0:
+    if link.find(".") >= 0:
         return link.rpartition(".")[-1]
 
     return ""
