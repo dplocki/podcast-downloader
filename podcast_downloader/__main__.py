@@ -352,7 +352,7 @@ if __name__ == "__main__":
                     continue
 
                 if DOWNLOADS_LIMITS == 0:
-                    continue
+                    break
 
                 if rss_download_delay > 0 and not first_element:
                     logger.info(
