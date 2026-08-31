@@ -116,4 +116,4 @@ def parse_day_label(raw_label: str) -> Union[str, int]:
     if capitalize_raw_label in short_weekdays:
         return WEEK_DAYS[short_weekdays.index(capitalize_raw_label)]
 
-    raise Exception(f"Cannot read weekday name '{raw_label}'")
+    raise ValueError(f"Cannot read weekday name '{raw_label}'")
