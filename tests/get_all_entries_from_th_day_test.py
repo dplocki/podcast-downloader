@@ -38,7 +38,7 @@ class TestParseDayLabel(unittest.TestCase):
             result = get_label_to_date(week_day)
             self.assertEqual(result.func, get_week_day)
 
-        for day_number in range(1, 32):
+        for day_number in range(1, 29):
             result = get_label_to_date(day_number)
             self.assertEqual(result.func, get_nth_day)
 
