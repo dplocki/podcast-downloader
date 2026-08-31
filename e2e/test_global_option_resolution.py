@@ -120,8 +120,6 @@ def test_cli_zero_downloads_limit_overrides_configuration(
     )
 
     config_path = podcast_downloader.script_directory / DEFAULT_CONFIG_NAME
-    podcast_downloader.run(
-        ["--config", str(config_path), "--downloads_limit", "0"]
-    )
+    podcast_downloader.run(["--config", str(config_path), "--downloads_limit", "0"])
 
     podcast_directory.is_containing_only([])
