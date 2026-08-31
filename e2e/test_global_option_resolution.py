@@ -6,6 +6,7 @@ from e2e.fixures import (
     FeedBuilder,
     PodcastDirectory,
     PodcastDownloaderRunner,
+    download_destination_directory,
     feed,
     use_config,
     podcast_directory,
@@ -94,7 +95,8 @@ def test_configuration_global_download_delay_option(
     podcast_downloader.run()
 
     podcast_directory.is_containing_only([name.lower() for name in files_to_download])
-    assert podcast_downloader.is_containing("The download is sleeping (1 second)")
+    assert podcast_downloader.is_containing("The download is sleeping (")
+    assert podcast_downloader.is_highlighted_in_outcome("1")
 
 
 def test_cli_zero_downloads_limit_overrides_configuration(
