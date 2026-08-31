@@ -31,19 +31,24 @@ WEEK_DAYS = (
     "Sunday",
 )
 
+MIN_MONTH_DAY = 1
+MAX_MONTH_DAY = 28
+
 
 def configuration_verification(config: dict) -> Tuple[bool, List[str]]:
     for podcast in config[CONFIG_PODCASTS]:
-        if not CONFIG_PODCASTS_PATH in podcast:
+        podcast_name = podcast.get(CONFIG_PODCASTS_NAME, "<unnamed>")
+
+        if CONFIG_PODCASTS_PATH not in podcast:
             return (
                 False,
-                f"There is no path for podcast {podcast[CONFIG_PODCASTS_NAME]}",
+                f"There is no path for podcast {podcast_name}",
             )
 
-        if not CONFIG_PODCASTS_RSS_LINK in podcast:
+        if CONFIG_PODCASTS_RSS_LINK not in podcast:
             return (
                 False,
-                f"There is no RSS link for podcast {podcast[CONFIG_PODCASTS_NAME]}",
+                f"There is no RSS link for podcast {podcast_name}",
             )
 
     return True, None
@@ -53,11 +58,19 @@ def get_n_age_date(day_number: int, from_date: time.struct_time) -> time.struct_
     return time.localtime(time.mktime(from_date) - day_number * SECONDS_IN_DAY)
 
 
+def validate_month_day(day: int) -> int:
+    if day < MIN_MONTH_DAY or day > MAX_MONTH_DAY:
+        raise ValueError(
+            f"Day number must be between {MIN_MONTH_DAY} and {MAX_MONTH_DAY}"
+        )
+    return day
+
+
 def get_label_to_date(day_label: Union[str, int]) -> partial:
     if day_label in WEEK_DAYS:
         return partial(get_week_day, day_label)
 
-    return partial(get_nth_day, int(day_label))
+    return partial(get_nth_day, validate_month_day(int(day_label)))
 
 
 def get_week_day(weekday_label: str, from_date: time.struct_time) -> time.struct_time:
@@ -74,21 +87,21 @@ def get_week_day(weekday_label: str, from_date: time.struct_time) -> time.struct
 
 
 def get_nth_day(day: int, from_date: time.struct_time) -> time.struct_time:
+    day = validate_month_day(day)
     from_datetime = datetime(*from_date[:6])
 
-    day_difference = from_date[2] - day
-    datetime_result = (
-        from_datetime - timedelta(days=day_difference - 1)
-        if day_difference > 0
-        else (from_datetime.replace(day=1) - timedelta(days=28)).replace(day=day + 1)
-    )
+    if from_datetime.day > day:
+        selected_day = from_datetime.replace(day=day)
+    else:
+        previous_month_last_day = from_datetime.replace(day=1) - timedelta(days=1)
+        selected_day = previous_month_last_day.replace(day=day)
 
-    return datetime_result.timetuple()
+    return (selected_day + timedelta(days=1)).timetuple()
 
 
 def parse_day_label(raw_label: str) -> Union[str, int]:
     if raw_label.isnumeric():
-        return int(raw_label)
+        return validate_month_day(int(raw_label))
 
     if raw_label == "1st":
         return 1
@@ -100,7 +113,7 @@ def parse_day_label(raw_label: str) -> Union[str, int]:
         return 3
 
     if raw_label[-2:] == "th":
-        return int(raw_label[:-2])
+        return validate_month_day(int(raw_label[:-2]))
 
     capitalize_raw_label = raw_label.capitalize()
     if capitalize_raw_label in WEEK_DAYS:
