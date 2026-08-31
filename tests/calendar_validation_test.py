@@ -21,6 +21,17 @@ class CalendarValidationTest(unittest.TestCase):
 
         self.assertEqual(get_nth_day(28, current_date), expected_date)
 
+    def test_same_day_uses_previous_month(self):
+        current_date = strptime("21.08.2026", "%d.%m.%Y")
+        expected_date = strptime("22.07.2026", "%d.%m.%Y")
+
+        self.assertEqual(get_nth_day(21, current_date), expected_date)
+
+    def test_ordinal_day_labels_are_supported(self):
+        for value, expected in (("21st", 21), ("22nd", 22), ("23rd", 23)):
+            with self.subTest(value=value):
+                self.assertEqual(expected, parse_day_label(value))
+
     def test_day_labels_outside_documented_range_are_rejected(self):
         for value in ("0", "29", "31", "29th", "31st"):
             with self.subTest(value=value):
