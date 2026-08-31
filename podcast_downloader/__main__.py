@@ -265,12 +265,12 @@ if __name__ == "__main__":
             rss_source.get(configuration.CONFIG_HTTP_HEADER, {}),
         )
         rss_fill_up_gaps = rss_source.get(
+            configuration.CONFIG_FILL_UP_GAPS,
             CONFIGURATION[configuration.CONFIG_FILL_UP_GAPS],
-            rss_source.get(configuration.CONFIG_FILL_UP_GAPS, False),
         )
         rss_download_delay = rss_source.get(
+            configuration.CONFIG_DOWNLOAD_DELAY,
             CONFIGURATION[configuration.CONFIG_DOWNLOAD_DELAY],
-            rss_source.get(configuration.CONFIG_DOWNLOAD_DELAY, 0),
         )
 
         if rss_disable:
@@ -347,20 +347,18 @@ if __name__ == "__main__":
 
             first_element = True
             for rss_entry in reversed(missing_files_links):
-                if rss_download_delay > 0:
-                    if not first_element:
-                        logger.info(
-                            "The download is sleeping (%d second)", rss_download_delay
-                        )
-                        time.sleep(rss_download_delay)
-                        first_element = False
-
                 wanted_podcast_file_name = to_name_function(rss_entry)
                 if wanted_podcast_file_name in downloaded_files:
                     continue
 
                 if DOWNLOADS_LIMITS == 0:
                     continue
+
+                if rss_download_delay > 0 and not first_element:
+                    logger.info(
+                        "The download is sleeping (%d second)", rss_download_delay
+                    )
+                    time.sleep(rss_download_delay)
 
                 if len(wanted_podcast_file_name) > file_length_limit:
                     logger.info(
@@ -377,6 +375,7 @@ if __name__ == "__main__":
 
                 download_podcast(rss_source_path, rss_entry)
                 DOWNLOADS_LIMITS -= 1
+                first_element = False
         else:
             logger.info("%s: Nothing new", rss_source_name)
 
