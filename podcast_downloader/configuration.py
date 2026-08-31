@@ -1,6 +1,7 @@
 from functools import partial
 from typing import List, Tuple, Union
 from datetime import datetime, timedelta
+import re
 import time
 
 SECONDS_IN_DAY = 24 * 60 * 60
@@ -103,17 +104,9 @@ def parse_day_label(raw_label: str) -> Union[str, int]:
     if raw_label.isnumeric():
         return validate_month_day(int(raw_label))
 
-    if raw_label == "1st":
-        return 1
-
-    if raw_label == "2nd":
-        return 2
-
-    if raw_label == "3rd":
-        return 3
-
-    if raw_label[-2:] == "th":
-        return validate_month_day(int(raw_label[:-2]))
+    ordinal_match = re.fullmatch(r"(\d+)(st|nd|rd|th)", raw_label)
+    if ordinal_match:
+        return validate_month_day(int(ordinal_match.group(1)))
 
     capitalize_raw_label = raw_label.capitalize()
     if capitalize_raw_label in WEEK_DAYS:
