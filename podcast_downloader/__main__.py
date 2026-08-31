@@ -293,9 +293,18 @@ if __name__ == "__main__":
             rss_file_name_template_value, rss_source
         )
 
-        on_empty_directory = configuration_to_function_on_empty_directory(
-            rss_on_empty_directory, LAST_RUN_DATETIME
-        )
+        try:
+            on_empty_directory = configuration_to_function_on_empty_directory(
+                rss_on_empty_directory, LAST_RUN_DATETIME
+            )
+        except (ValueError, TypeError) as error:
+            logger.error(
+                'Invalid if_directory_empty value "%s" for "%s": %s',
+                rss_on_empty_directory,
+                rss_source_name or rss_source_link,
+                error,
+            )
+            continue
 
         downloaded_files = list(
             get_downloaded_files(
