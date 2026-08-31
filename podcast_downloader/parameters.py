@@ -22,4 +22,8 @@ def load_configuration_file(file_path: str) -> dict:
 
 
 def parse_argv(parser: ArgumentParser, args=None):
-    return {key: value for key, value in vars(parser.parse_args(args)).items() if value}
+    return {
+        key: value
+        for key, value in vars(parser.parse_args(args)).items()
+        if value is not None
+    }
