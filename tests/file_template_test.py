@@ -92,6 +92,8 @@ class TestFileTemplateToFileNameConverter(unittest.TestCase):
         test_parameters = [
             ("Ala ma kota", "Ala ma kota"),
             (" abcdefg hijk ", "abcdefg hijk"),
+            ("2º Cromo", "2º Cromo"),
+            ("1ª Parte", "1ª Parte"),
             (
                 "AEE 226: How to 80/20 Your English to Make More Friends with italki Teacher Nick Vance",
                 "AEE 226  How to 80 20 Your English to Make More Friends with italki Teacher Nick Vance",
