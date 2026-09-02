@@ -130,7 +130,7 @@ def configuration_to_function_on_empty_directory(
 
         return only_entities_from_date(get_label_to_date(day_label)(local_time))
 
-    raise ValueError(f"The value the '{configuration_value}' is not recognizable")
+    raise ValueError(f"Unrecognized if_directory_empty value '{configuration_value}'")
 
 
 def is_windows_running():

@@ -1,5 +1,5 @@
 from functools import partial
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 from datetime import datetime, timedelta
 import re
 import time
@@ -36,7 +36,7 @@ MIN_MONTH_DAY = 1
 MAX_MONTH_DAY = 28
 
 
-def configuration_verification(config: dict) -> Tuple[bool, List[str]]:
+def configuration_verification(config: dict) -> Tuple[bool, Optional[str]]:
     for podcast in config[CONFIG_PODCASTS]:
         podcast_name = podcast.get(CONFIG_PODCASTS_NAME, "<unnamed>")
 
@@ -116,4 +116,4 @@ def parse_day_label(raw_label: str) -> Union[str, int]:
     if capitalize_raw_label in short_weekdays:
         return WEEK_DAYS[short_weekdays.index(capitalize_raw_label)]
 
-    raise ValueError(f"Cannot read weekday name '{raw_label}'")
+    raise ValueError(f"Cannot read day or weekday label '{raw_label}'")
