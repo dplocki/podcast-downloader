@@ -110,7 +110,7 @@ def configuration_to_function_on_empty_directory(
         logger.error(
             'The "download_since_last_run" require setup the "last_run_mark_file_path"'
         )
-        raise Exception("Missing the last run mark file")
+        raise ValueError("Missing the last run mark file")
 
     local_time = time.localtime()
 
