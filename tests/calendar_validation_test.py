@@ -47,6 +47,22 @@ class CalendarValidationTest(unittest.TestCase):
         self.assertIn("<unnamed>", error)
         self.assertIn("path", error)
 
+    def test_null_name_uses_unnamed_fallback_in_configuration_validation(self):
+        valid, error = configuration_verification(
+            {
+                "podcasts": [
+                    {
+                        "name": None,
+                        "rss_link": "https://example.com/feed.xml",
+                    }
+                ]
+            }
+        )
+
+        self.assertFalse(valid)
+        self.assertIn("<unnamed>", error)
+        self.assertNotIn("podcast None", error)
+
 
 if __name__ == "__main__":
     unittest.main()

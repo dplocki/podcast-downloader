@@ -1,5 +1,5 @@
 from functools import partial
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 from datetime import datetime, timedelta
 import re
 import time
@@ -38,7 +38,7 @@ MAX_MONTH_DAY = 28
 
 def configuration_verification(config: dict) -> Tuple[bool, Optional[str]]:
     for podcast in config[CONFIG_PODCASTS]:
-        podcast_name = podcast.get(CONFIG_PODCASTS_NAME, "<unnamed>")
+        podcast_name = podcast.get(CONFIG_PODCASTS_NAME) or "<unnamed>"
 
         if CONFIG_PODCASTS_PATH not in podcast:
             return (
