@@ -67,7 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--downloads_limit",
         required=False,
         type=int,
-        help="The maximum number of mp3 files which script will download",
+        help="The maximum number of media files the script will download",
     )
 
     parser.add_argument(
