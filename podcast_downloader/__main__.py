@@ -15,6 +15,7 @@ from podcast_downloader.configuration import (
     get_n_age_date,
     parse_day_label,
 )
+from .cover import download_podcast_cover
 from .utils import ConsoleOutputFormatter, compose
 from .downloaded import (
     get_downloaded_files,
@@ -209,6 +210,7 @@ if __name__ == "__main__":
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_FILL_UP_GAPS: False,
         configuration.CONFIG_DOWNLOAD_DELAY: 0,
+        configuration.CONFIG_DOWNLOAD_PODCAST_COVER: False,
         configuration.CONFIG_LAST_RUN_MARK_PATH: None,
         configuration.CONFIG_PODCASTS: [],
     }
@@ -272,6 +274,10 @@ if __name__ == "__main__":
             configuration.CONFIG_DOWNLOAD_DELAY,
             CONFIGURATION[configuration.CONFIG_DOWNLOAD_DELAY],
         )
+        rss_download_podcast_cover = rss_source.get(
+            configuration.CONFIG_DOWNLOAD_PODCAST_COVER,
+            CONFIGURATION[configuration.CONFIG_DOWNLOAD_PODCAST_COVER],
+        )
 
         if rss_disable:
             logger.info('Skipping the "%s"', rss_source_name or rss_source_link)
@@ -288,6 +294,18 @@ if __name__ == "__main__":
             rss_source_name = get_feed_title_from_feed(feed)
 
         logger.info('Checking "%s"', rss_source_name)
+
+        if rss_download_podcast_cover:
+            try:
+                cover_path = download_podcast_cover(rss_https_header, rss_source_path, feed)
+                if cover_path:
+                    logger.info(
+                        '%s: Downloaded podcast cover as "%s"',
+                        rss_source_name,
+                        os.path.basename(cover_path),
+                    )
+            except Exception:
+                logger.exception('%s: Podcast cover could not be downloaded', rss_source_name)
 
         to_name_function = configuration_to_function_rss_to_name(
             rss_file_name_template_value, rss_source
