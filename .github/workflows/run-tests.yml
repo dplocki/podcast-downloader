@@ -1,0 +1,61 @@
+name: Run Tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  unit_tests:
+    name: Unit - Python ${{ matrix.python-version }}
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
+
+    steps:
+      - name: Get sources
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest pytest-httpserver feedgen
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -p "*_test.py"
+
+  e2e_tests:
+    name: E2E - Python ${{ matrix.python-version }}
+    if: github.event_name == 'pull_request' || github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
+
+    steps:
+      - name: Get sources
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install pytest pytest-httpserver feedgen
+
+      - name: Run end-to-end tests
+        run: pytest e2e
