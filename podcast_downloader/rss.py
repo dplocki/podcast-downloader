@@ -3,10 +3,10 @@ import time
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
-from typing import Callable, Generator, Iterator, List
+from typing import Callable, Generator, Iterator, List, Optional
 import unicodedata
 import feedparser
-from urllib.parse import urlsplit, unquote
+from urllib.parse import urljoin, urlsplit, unquote
 
 
 FILE_NAME_CHARACTER_LIMIT = 255
@@ -92,8 +92,35 @@ def limit_file_name(maximum_length: int, file_name: str) -> str:
     )
 
 
+def get_next_feed_link(feed: feedparser.FeedParserDict) -> Optional[str]:
+    for link in feed.get("feed", {}).get("links", []):
+        if str(link.get("rel", "")).lower() == "next" and link.get("href"):
+            return link["href"]
+
+    return None
+
+
 def load_feed(rss_link: str) -> feedparser.FeedParserDict:
-    return feedparser.parse(rss_link)
+    feed = feedparser.parse(rss_link)
+    current_feed = feed
+    current_link = rss_link
+    visited_links = {rss_link}
+
+    while True:
+        next_link = get_next_feed_link(current_feed)
+        if not next_link:
+            break
+
+        next_link = urljoin(current_feed.get("href", current_link), next_link)
+        if next_link in visited_links:
+            break
+
+        visited_links.add(next_link)
+        current_feed = feedparser.parse(next_link)
+        feed.entries.extend(current_feed.entries)
+        current_link = next_link
+
+    return feed
 
 
 def get_feed_title_from_feed(feedParser: feedparser.FeedParserDict) -> str:
