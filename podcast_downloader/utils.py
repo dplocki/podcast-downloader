@@ -1,5 +1,18 @@
 from functools import reduce
-from logging import Formatter, WARNING, ERROR
+from logging import ERROR, Formatter, Handler, LogRecord, WARNING
+from typing import List
+
+
+class ErrorSummaryHandler(Handler):
+    def __init__(self) -> None:
+        super().__init__(ERROR)
+        self.messages: List[str] = []
+
+    def emit(self, record: LogRecord) -> None:
+        try:
+            self.messages.append(record.getMessage())
+        except Exception:
+            self.handleError(record)
 
 
 class ConsoleOutputFormatter(Formatter):

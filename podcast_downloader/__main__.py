@@ -15,7 +15,7 @@ from podcast_downloader.configuration import (
     get_n_age_date,
     parse_day_label,
 )
-from .utils import ConsoleOutputFormatter, compose
+from .utils import ConsoleOutputFormatter, ErrorSummaryHandler, compose
 from .downloaded import (
     get_downloaded_files,
     get_extensions_checker,
@@ -197,8 +197,10 @@ if __name__ == "__main__":
 
     logger = getLogger(__name__)
     logger.setLevel(INFO)
+    error_summary_handler = ErrorSummaryHandler()
     stdout_handler = StreamHandler(stream=sys.stdout)
     stdout_handler.setFormatter(ConsoleOutputFormatter())
+    logger.addHandler(error_summary_handler)
     logger.addHandler(stdout_handler)
 
     DEFAULT_CONFIGURATION = {
@@ -388,4 +390,11 @@ if __name__ == "__main__":
         else:
             logger.info("%s: Nothing new", rss_source_name)
 
-    logger.info("Finished")
+    if error_summary_handler.messages:
+        error_count = len(error_summary_handler.messages)
+        error_label = "error" if error_count == 1 else "errors"
+        logger.info("Finished with %d recoverable %s:", error_count, error_label)
+        for error_message in error_summary_handler.messages:
+            logger.info("- %s", error_message)
+    else:
+        logger.info("Finished")
