@@ -23,6 +23,8 @@ from .downloaded import (
 )
 from .parameters import merge_parameters_collection, load_configuration_file, parse_argv
 from .rss import (
+    DEFAULT_MAX_RSS_PAGES,
+    RSSPaginationError,
     RSSEntity,
     build_only_allowed_filter_for_link_data,
     build_only_new_entities,
@@ -209,6 +211,7 @@ if __name__ == "__main__":
         configuration.CONFIG_HTTP_HEADER: {"User-Agent": "podcast-downloader"},
         configuration.CONFIG_FILL_UP_GAPS: False,
         configuration.CONFIG_DOWNLOAD_DELAY: 0,
+        configuration.CONFIG_MAX_RSS_PAGES: DEFAULT_MAX_RSS_PAGES,
         configuration.CONFIG_LAST_RUN_MARK_PATH: None,
         configuration.CONFIG_PODCASTS: [],
     }
@@ -272,12 +275,20 @@ if __name__ == "__main__":
             CONFIGURATION[configuration.CONFIG_DOWNLOAD_DELAY],
             rss_source.get(configuration.CONFIG_DOWNLOAD_DELAY, 0),
         )
+        rss_max_pages = rss_source.get(
+            configuration.CONFIG_MAX_RSS_PAGES,
+            CONFIGURATION[configuration.CONFIG_MAX_RSS_PAGES],
+        )
 
         if rss_disable:
             logger.info('Skipping the "%s"', rss_source_name or rss_source_link)
             continue
 
-        feed = load_feed(rss_source_link)
+        try:
+            feed = load_feed(rss_source_link, max_pages=rss_max_pages)
+        except RSSPaginationError as error:
+            logger.error('Cannot complete RSS feed "%s": %s', rss_source_link, error)
+            continue
         if feed.bozo and len(feed.entries) == 0:
             logger.error(
                 f"Error while checking the link: '{rss_source_link}': {feed['bozo_exception']}"
