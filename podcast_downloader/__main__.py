@@ -260,9 +260,15 @@ if __name__ == "__main__":
             configuration.CONFIG_PODCAST_EXTENSIONS,
             CONFIGURATION[configuration.CONFIG_PODCAST_EXTENSIONS],
         )
-        rss_https_header = merge_parameters_collection(
-            CONFIGURATION[configuration.CONFIG_HTTP_HEADER],
-            rss_source.get(configuration.CONFIG_HTTP_HEADER, {}),
+        rss_source_http_headers = rss_source.get(configuration.CONFIG_HTTP_HEADER)
+        rss_https_header = (
+            {}
+            if configuration.CONFIG_HTTP_HEADER in rss_source
+            and rss_source_http_headers == {}
+            else merge_parameters_collection(
+                CONFIGURATION[configuration.CONFIG_HTTP_HEADER],
+                rss_source_http_headers or {},
+            )
         )
         rss_fill_up_gaps = rss_source.get(
             configuration.CONFIG_FILL_UP_GAPS,
@@ -277,7 +283,7 @@ if __name__ == "__main__":
             logger.info('Skipping the "%s"', rss_source_name or rss_source_link)
             continue
 
-        feed = load_feed(rss_source_link)
+        feed = load_feed(rss_source_link, rss_https_header)
         if feed.bozo and len(feed.entries) == 0:
             logger.error(
                 f"Error while checking the link: '{rss_source_link}': {feed['bozo_exception']}"
@@ -285,7 +291,7 @@ if __name__ == "__main__":
             continue
 
         if not rss_source_name:
-            rss_source_name = get_feed_title_from_feed(feed)
+            rss_source_name = get_feed_title_from_feed(feed) or rss_source_link
 
         logger.info('Checking "%s"', rss_source_name)
 

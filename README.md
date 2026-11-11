@@ -177,6 +177,13 @@ Example:
 
 In this example, the Unua Podcast will be download just with the header: `User-Agent: Mozilla/5.0`, and the Dua Podcast with: `User-Agent: podcast-downloader` and `Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
 
+RSS feed requests do not follow HTTP redirects to a **different origin**
+(protocol, hostname or port), even when the redirect is valid. This prevents
+configured feed headers such as `Authorization` or `Cookie` from being
+forwarded to an unexpected server. Same-origin redirects are still allowed.
+If a podcast feed has moved to another domain, update its `rss_link` in your
+configuration to the new URL rather than relying on a cross-origin redirect.
+
 ### Download delay
 
 When you had a lot of files to download from a single server, it may be better to set up the small delay between downloads to avoid being recognized as an attacker by the server. In the script there is an option called `download_delay`, which represents the **number of seconds** the script will wait between downloads.

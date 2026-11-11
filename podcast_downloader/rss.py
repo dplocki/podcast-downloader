@@ -1,15 +1,17 @@
 import re
 import time
+import urllib.request
 from dataclasses import dataclass
 from functools import partial
 from itertools import takewhile, islice
-from typing import Callable, Generator, Iterator, List
+from typing import Callable, Dict, Generator, Iterator, List, Optional
 import unicodedata
 import feedparser
 from urllib.parse import urlsplit, unquote
 
 
 FILE_NAME_CHARACTER_LIMIT = 255
+FEED_TIMEOUT_SECONDS = 30
 
 
 @dataclass
@@ -92,12 +94,88 @@ def limit_file_name(maximum_length: int, file_name: str) -> str:
     )
 
 
-def load_feed(rss_link: str) -> feedparser.FeedParserDict:
-    return feedparser.parse(rss_link)
+class RSSRedirectError(RuntimeError):
+    """A feed redirect attempted to change the trusted origin."""
+
+
+def _http_origin(url: str):
+    try:
+        parts = urlsplit(url)
+        if (
+            parts.scheme.lower() not in ("http", "https")
+            or not parts.hostname
+            or parts.username is not None
+            or parts.password is not None
+        ):
+            return None
+        port = parts.port or (443 if parts.scheme.lower() == "https" else 80)
+        if not 1 <= port <= 65535:
+            return None
+    except ValueError:
+        return None
+    return parts.scheme.lower(), parts.hostname.lower().rstrip("."), port
+
+
+class _SameOriginRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def __init__(self, allowed_origin):
+        self.allowed_origin = allowed_origin
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if _http_origin(newurl) != self.allowed_origin:
+            raise RSSRedirectError(
+                "Blocked RSS feed redirect to a different origin"
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _open_feed_request(request, timeout, allowed_origin):
+    opener = urllib.request.build_opener(_SameOriginRedirectHandler(allowed_origin))
+    return opener.open(request, timeout=timeout)
+
+
+def load_feed(
+    rss_link: str, headers: Optional[Dict[str, str]] = None
+) -> feedparser.FeedParserDict:
+    if urlsplit(rss_link).scheme not in ("http", "https"):
+        return feedparser.parse(rss_link)
+
+    request_headers = (
+        headers if headers is not None else {"User-Agent": "podcast-downloader"}
+    )
+
+    try:
+        allowed_origin = _http_origin(rss_link)
+        if allowed_origin is None:
+            raise RSSRedirectError("Unsupported or malformed RSS URL")
+        request = urllib.request.Request(rss_link, headers=request_headers)
+        with _open_feed_request(request, FEED_TIMEOUT_SECONDS, allowed_origin) as response:
+            final_url = (
+                response.geturl() if hasattr(response, "geturl") else None
+            ) or rss_link
+            if _http_origin(final_url) != allowed_origin:
+                raise RSSRedirectError(
+                    "Blocked RSS feed response from a different origin"
+                )
+            response_headers = {
+                key.lower(): value
+                for key, value in getattr(response, "headers", {}).items()
+            }
+            response_headers.setdefault(
+                "content-location",
+                final_url,
+            )
+            return feedparser.parse(response, response_headers=response_headers)
+    except Exception as error:
+        return feedparser.FeedParserDict(
+            feed=feedparser.FeedParserDict(),
+            entries=[],
+            bozo=True,
+            bozo_exception=error,
+        )
 
 
 def get_feed_title_from_feed(feedParser: feedparser.FeedParserDict) -> str:
-    return feedParser.feed.title
+    return feedParser.feed.get("title", "")
 
 
 def get_raw_rss_entries_from_feed(
@@ -109,16 +187,36 @@ def get_raw_rss_entries_from_feed(
 def flatten_rss_links_data(
     source: Generator[feedparser.FeedParserDict, None, None]
 ) -> Generator[RSSEntity, None, None]:
-    return (
-        RSSEntity(
-            rss_entry.published_parsed,
-            rss_entry.title,
-            link.type,
-            link.get("href", None),
+    entities = []
+
+    for rss_entry in source:
+        published_date = rss_entry.get("published_parsed") or rss_entry.get(
+            "updated_parsed"
         )
-        for rss_entry in source
-        for link in rss_entry.links
+        if published_date is None:
+            continue
+
+        title = rss_entry.get("title", "")
+        for link in rss_entry.get("links", []):
+            link_type = link.get("type")
+            href = link.get("href")
+            if not link_type or not href:
+                continue
+
+            entities.append(RSSEntity(published_date, title, link_type, href))
+
+    is_ascending = all(
+        first.published_date <= second.published_date
+        for first, second in zip(entities, entities[1:])
     )
+    if (
+        len(entities) > 1
+        and is_ascending
+        and entities[0].published_date < entities[-1].published_date
+    ):
+        entities.reverse()
+
+    yield from entities
 
 
 def build_only_allowed_filter_for_link_data(
