@@ -80,3 +80,40 @@ def test_downloads_entries_from_all_rss_pages(
     podcast_downloader.run()
 
     podcast_directory.is_containing_only([first_file, second_file])
+
+def test_pagination_limit_skips_incomplete_feed(
+    httpserver: HTTPServer,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: Callable[[List[str]], PodcastDownloaderRunner],
+    podcast_directory: PodcastDirectory,
+):
+    episode_url = httpserver.url_for("/episode.mp3")
+    httpserver.expect_request("/feed.xml").respond_with_data(
+        build_rss_page(
+            "New episode",
+            episode_url,
+            "Fri, 04 Sep 2026 10:00:00 +0000",
+            "/feed-2.xml",
+        ),
+        content_type="application/rss+xml",
+    )
+
+    use_config(
+        {
+            "max_rss_pages": 100,
+            "if_directory_empty": "download_all_from_feed",
+            "podcasts": [
+                {
+                    "path": podcast_directory.path(),
+                    "rss_link": httpserver.url_for("/feed.xml"),
+                    "max_rss_pages": 1,
+                }
+            ],
+        }
+    )
+
+    result = podcast_downloader.run()
+    assert result.is_containing("max_rss_pages=1")
+    assert result.is_containing("Cannot complete RSS feed")
+    podcast_directory.is_containing_only([])
+    assert [request.path for request, _ in httpserver.log] == ["/feed.xml"]
