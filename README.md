@@ -207,7 +207,12 @@ more pages than the configured limit, the downloader logs an **error and
 skips that podcast for the current run** instead of treating incomplete
 history as a complete feed. Increase the limit for that podcast and rerun.
 Previously downloaded episodes are not deleted. Pagination also stops on
-repeated URLs and rejects non-HTTP(S) next links.
+repeated URLs. For security, each next-page URL must use the **same origin**
+(scheme, hostname and effective port) as the feed URL. HTTP redirects to
+another origin are also rejected before following them. When this happens
+the downloader skips the incomplete feed, rather than treating it as complete.
+This can reject feeds that deliberately paginate through a different domain
+or CDN; such feeds need an explicit, separately reviewed origin policy.
 
 Very large limits increase network requests, memory usage and run time.
 Choose a limit that fits the feed rather than disabling safeguards.
