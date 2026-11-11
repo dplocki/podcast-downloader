@@ -1,10 +1,13 @@
 import unittest
+import urllib.request
 from unittest.mock import call, patch
 
 from podcast_downloader.rss import (
     DEFAULT_MAX_RSS_PAGES,
     RSSPaginationError,
     RSSPaginationLimitExceeded,
+    _SameOriginRedirectHandler,
+    _http_origin,
     load_feed,
 )
 
@@ -18,129 +21,142 @@ class FakeFeed(dict):
 
 
 class RssPaginationTest(unittest.TestCase):
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_load_feed_follows_next_links_and_combines_entries(self, parse):
-        first_page = FakeFeed(
-            ["first"],
-            [{"rel": "next", "href": "?page=2"}],
-        )
-        second_page = FakeFeed(
-            ["second"],
-            [{"rel": "next", "href": "page3.xml"}],
-        )
-        third_page = FakeFeed(["third"])
-        parse.side_effect = [first_page, second_page, third_page]
+    def test_load_feed_follows_next_links_and_combines_entries(self, parse, fetch):
+        first = FakeFeed(["first"], [{"rel": "next", "href": "?page=2"}])
+        second = FakeFeed(["second"], [{"rel": "next", "href": "page3.xml"}])
+        third = FakeFeed(["third"])
+        parse.return_value = first
+        fetch.side_effect = [second, third]
 
-        feed = load_feed("https://example.com/show/feed.xml?page=1")
+        url = "https://example.com/show/feed.xml?page=1"
+        feed = load_feed(url)
 
-        self.assertIs(feed, first_page)
+        self.assertIs(feed, first)
         self.assertEqual(["first", "second", "third"], feed.entries)
+        parse.assert_called_once_with(url)
+        origin = ("https", "example.com", 443)
         self.assertEqual(
             [
-                call("https://example.com/show/feed.xml?page=1"),
-                call("https://example.com/show/feed.xml?page=2"),
-                call("https://example.com/show/page3.xml"),
+                call("https://example.com/show/feed.xml?page=2", origin),
+                call("https://example.com/show/page3.xml", origin),
             ],
-            parse.call_args_list,
+            fetch.call_args_list,
         )
 
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_load_feed_stops_when_next_link_creates_cycle(self, parse):
-        first_page = FakeFeed(
-            ["first"],
-            [{"rel": "next", "href": "?page=2"}],
+    def test_load_feed_stops_when_next_link_creates_cycle(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["first"], [{"rel": "next", "href": "?page=2"}]
         )
-        second_page = FakeFeed(
-            ["second"],
-            [{"rel": "next", "href": "?page=1"}],
+        fetch.return_value = FakeFeed(
+            ["second"], [{"rel": "next", "href": "?page=1"}]
         )
-        parse.side_effect = [first_page, second_page]
-
         feed = load_feed("https://example.com/feed?page=1")
-
         self.assertEqual(["first", "second"], feed.entries)
-        self.assertEqual(2, parse.call_count)
+        fetch.assert_called_once()
 
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_load_feed_rejects_file_protocol_pagination(self, parse):
-        first_page = FakeFeed(
-            ["first"],
-            [{"rel": "next", "href": "file:///etc/passwd"}],
+    def test_rejects_unsafe_protocol_in_next_link(self, parse, fetch):
+        for target in ("file:///etc/passwd", "ftp://example.com/feed.xml"):
+            with self.subTest(target=target):
+                parse.return_value = FakeFeed(
+                    ["first"], [{"rel": "next", "href": target}]
+                )
+                with self.assertRaisesRegex(RSSPaginationError, "outside"):
+                    load_feed("https://example.com/feed.xml")
+                fetch.assert_not_called()
+
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
+    @patch("podcast_downloader.rss.feedparser.parse")
+    def test_rejects_external_origin_and_hostile_url(self, parse, fetch):
+        targets = (
+            "https://other.example.com/feed.xml",
+            "http://example.com/feed.xml",
+            "https://example.com:444/feed.xml",
+            "https://example.com@127.0.0.1/feed.xml",
+            "//127.0.0.1/internal",
+            "https://example.com:bad/feed.xml",
+            "https://example.com:443@127.0.0.1/feed.xml",
         )
-        parse.return_value = first_page
+        for target in targets:
+            with self.subTest(target=target):
+                parse.return_value = FakeFeed(
+                    ["first"], [{"rel": "next", "href": target}]
+                )
+                with self.assertRaises(RSSPaginationError):
+                    load_feed("https://example.com/feed.xml")
+                fetch.assert_not_called()
 
-        with self.assertLogs("podcast_downloader.rss", level="WARNING"):
-            feed = load_feed("https://example.com/feed.xml")
-
-        self.assertEqual(["first"], feed.entries)
-        parse.assert_called_once_with("https://example.com/feed.xml")
-
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_feed_with_more_than_fifty_pages_downloads_all_pages(self, parse):
-        def make_feed(url):
-            number = parse.call_count
+    def test_feed_with_more_than_fifty_pages_downloads_all_pages(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["page1"], [{"rel": "next", "href": "?page=2"}]
+        )
+
+        def make_feed(url, allowed_origin):
+            number = fetch.call_count + 1
             next_links = (
                 [{"rel": "next", "href": "?page=" + str(number + 1)}]
                 if number < 56
                 else []
             )
-            return FakeFeed([url], next_links)
+            return FakeFeed(["page" + str(number)], next_links)
 
-        parse.side_effect = make_feed
+        fetch.side_effect = make_feed
         feed = load_feed("https://example.com/feed?page=1")
-
-        self.assertEqual(56, parse.call_count)
+        self.assertEqual(55, fetch.call_count)
         self.assertEqual(56, len(feed.entries))
         self.assertGreaterEqual(DEFAULT_MAX_RSS_PAGES, 56)
 
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_limit_raises_instead_of_returning_incomplete_history(self, parse):
-        def make_feed(url):
-            number = parse.call_count
-            return FakeFeed(
-                [url], [{"rel": "next", "href": "?page=" + str(number + 1)}]
-            )
-
-        parse.side_effect = make_feed
-
+    def test_limit_raises_instead_of_returning_incomplete_history(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["first"], [{"rel": "next", "href": "?page=2"}]
+        )
+        fetch.return_value = FakeFeed(
+            ["second"], [{"rel": "next", "href": "?page=3"}]
+        )
         with self.assertRaisesRegex(RSSPaginationLimitExceeded, "max_rss_pages=2"):
             load_feed("https://example.com/feed?page=1", max_pages=2)
+        fetch.assert_called_once()
 
-        self.assertEqual(2, parse.call_count)
-
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_limit_accepts_exactly_the_last_page(self, parse):
-        parse.side_effect = [
-            FakeFeed(["first"], [{"rel": "next", "href": "?page=2"}]),
-            FakeFeed(["second"]),
-        ]
-
-        feed = load_feed("https://example.com/feed?page=1", max_pages=2)
-        self.assertEqual(["first", "second"], feed.entries)
-        self.assertEqual(2, parse.call_count)
-
-    @patch("podcast_downloader.rss.feedparser.parse")
-    def test_limit_accepts_cycle_on_last_allowed_page(self, parse):
-        parse.side_effect = [
-            FakeFeed(["first"], [{"rel": "next", "href": "?page=2"}]),
-            FakeFeed(["second"], [{"rel": "next", "href": "?page=1"}]),
-        ]
+    def test_limit_accepts_exactly_the_last_page(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["first"], [{"rel": "next", "href": "?page=2"}]
+        )
+        fetch.return_value = FakeFeed(["second"])
         feed = load_feed("https://example.com/feed?page=1", max_pages=2)
         self.assertEqual(["first", "second"], feed.entries)
 
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_failed_next_page_does_not_return_partial_history(self, parse):
-        failure = FakeFeed([])
-        failure["bozo"] = True
-        failure["bozo_exception"] = ValueError("invalid feed")
-        parse.side_effect = [
-            FakeFeed(["first"], [{"rel": "next", "href": "?page=2"}]),
-            failure,
-        ]
+    def test_limit_accepts_cycle_on_last_allowed_page(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["first"], [{"rel": "next", "href": "?page=2"}]
+        )
+        fetch.return_value = FakeFeed(
+            ["second"], [{"rel": "next", "href": "?page=1"}]
+        )
+        feed = load_feed("https://example.com/feed?page=1", max_pages=2)
+        self.assertEqual(["first", "second"], feed.entries)
 
-        with self.assertRaisesRegex(RSSPaginationError, "invalid feed"):
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
+    @patch("podcast_downloader.rss.feedparser.parse")
+    def test_failed_next_page_does_not_return_partial_history(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["first"], [{"rel": "next", "href": "?page=2"}]
+        )
+        fetch.side_effect = RSSPaginationError("network failure")
+        with self.assertRaisesRegex(RSSPaginationError, "network failure"):
             load_feed("https://example.com/feed?page=1")
-        self.assertEqual(2, parse.call_count)
 
     @patch("podcast_downloader.rss.feedparser.parse")
     def test_invalid_limits_fail_before_fetching(self, parse):
@@ -150,21 +166,48 @@ class RssPaginationTest(unittest.TestCase):
                     load_feed("https://example.com/feed", max_pages=invalid)
         parse.assert_not_called()
 
+    @patch("podcast_downloader.rss._fetch_paginated_feed")
     @patch("podcast_downloader.rss.feedparser.parse")
-    def test_load_feed_ignores_links_that_are_not_next(self, parse):
-        first_page = FakeFeed(
-            ["first"],
-            [
-                {"rel": "self", "href": "https://example.com/feed.xml"},
-                {"rel": "next"},
-            ],
+    def test_unrelated_links_are_ignored(self, parse, fetch):
+        parse.return_value = FakeFeed(
+            ["first"], [{"rel": "self", "href": "/feed.xml"}, {"rel": "next"}]
         )
-        parse.return_value = first_page
-
         feed = load_feed("https://example.com/feed.xml")
-
         self.assertEqual(["first"], feed.entries)
-        self.assertEqual(1, parse.call_count)
+        fetch.assert_not_called()
+
+    def test_origin_normalizes_default_ports_but_not_distinct_ports(self):
+        self.assertEqual(
+            _http_origin("HTTPS://EXAMPLE.com:443/feed"),
+            _http_origin("https://example.com/feed"),
+        )
+        self.assertNotEqual(
+            _http_origin("https://example.com:8443/feed"),
+            _http_origin("https://example.com/feed"),
+        )
+        self.assertIsNone(_http_origin("https://example.com:bad/feed"))
+        self.assertIsNone(_http_origin("https://username:token@example.com/feed"))
+
+    def test_cross_origin_redirect_is_blocked_before_request(self):
+        handler = _SameOriginRedirectHandler(("https", "example.com", 443))
+        request = urllib.request.Request("https://example.com/page2")
+        for target in (
+            "http://127.0.0.1/internal",
+            "https://example.com:444/page3",
+            "https://elsewhere.example/page3",
+        ):
+            with self.subTest(target=target):
+                with self.assertRaises(RSSPaginationError):
+                    handler.redirect_request(request, None, 302, "Found", {}, target)
+
+    def test_same_origin_redirect_is_permitted(self):
+        handler = _SameOriginRedirectHandler(("https", "example.com", 443))
+        request = urllib.request.Request("https://example.com/page2")
+        redirect = handler.redirect_request(
+            request, None, 302, "Found", {},
+            "https://example.com:443/page3",
+        )
+        self.assertEqual("https://example.com:443/page3", redirect.full_url)
 
 
 if __name__ == "__main__":
