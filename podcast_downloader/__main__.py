@@ -297,7 +297,9 @@ if __name__ == "__main__":
 
         if rss_download_podcast_cover:
             try:
-                cover_path = download_podcast_cover(rss_https_header, rss_source_path, feed)
+                cover_path = download_podcast_cover(
+                    rss_https_header, rss_source_path, feed, rss_source_link
+                )
                 if cover_path:
                     logger.info(
                         '%s: Downloaded podcast cover as "%s"',
