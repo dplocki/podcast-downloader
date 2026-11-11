@@ -12,6 +12,7 @@ CONFIG_PODCAST_EXTENSIONS = "podcast_extensions"
 CONFIG_HTTP_HEADER = "http_headers"
 CONFIG_FILL_UP_GAPS = "fill_up_gaps"
 CONFIG_DOWNLOAD_DELAY = "download_delay"
+CONFIG_MAX_RSS_PAGES = "max_rss_pages"
 CONFIG_LAST_RUN_MARK_PATH = "last_run_mark_file_path"
 
 CONFIG_PODCASTS = "podcasts"
@@ -33,7 +34,20 @@ WEEK_DAYS = (
 
 
 def configuration_verification(config: dict) -> Tuple[bool, List[str]]:
+    if CONFIG_MAX_RSS_PAGES in config:
+        value = config[CONFIG_MAX_RSS_PAGES]
+        if type(value) is not int or value < 1:
+            return False, "max_rss_pages must be a positive integer"
+
     for podcast in config[CONFIG_PODCASTS]:
+        if CONFIG_MAX_RSS_PAGES in podcast:
+            value = podcast[CONFIG_MAX_RSS_PAGES]
+            if type(value) is not int or value < 1:
+                return (
+                    False,
+                    "max_rss_pages must be a positive integer for podcast %s"
+                    % (podcast.get(CONFIG_PODCASTS_NAME) or podcast.get(CONFIG_PODCASTS_RSS_LINK, "<unnamed>")),
+                )
         if not CONFIG_PODCASTS_PATH in podcast:
             return (
                 False,
