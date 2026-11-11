@@ -240,16 +240,18 @@ class RssResilienceTest(unittest.TestCase):
 
     def test_relative_enclosure_uses_redirected_feed_url(self):
         xml = (
-            b"<?xml version='1.0'?><rss version='2.0'><channel>"
-            b"<title>Redirected feed</title><item><title>Episode</title>"
-            b"<pubDate>Mon, 10 Feb 2020 17:03:38 GMT</pubDate>"
-            b'<enclosure url="../media/episode.mp3" type="audio/mpeg"/>'
-            b"</item></channel></rss>"
+            b"<?xml version='1.0'?><feed xmlns='http://www.w3.org/2005/Atom'>"
+            b"<id>urn:feed:test</id><title>Redirected feed</title>"
+            b"<updated>2020-02-10T17:03:38Z</updated>"
+            b"<entry><id>urn:episode:1</id><title>Episode</title>"
+            b"<updated>2020-02-10T17:03:38Z</updated>"
+            b'<link rel="enclosure" href="../media/episode.mp3" type="audio/mpeg"/>'
+            b"</entry></feed>"
         )
         response = Response(
             xml,
             url="https://example.org/podcasts/feed.xml",
-            headers={"Content-Type": "application/rss+xml"},
+            headers={"Content-Type": "application/atom+xml"},
         )
         with patch(
             "podcast_downloader.rss.urllib.request.urlopen",
@@ -263,11 +265,13 @@ class RssResilienceTest(unittest.TestCase):
 
     def test_content_location_overrides_response_url(self):
         xml = (
-            b"<?xml version='1.0'?><rss version='2.0'><channel>"
-            b"<title>Content location feed</title><item><title>Episode</title>"
-            b"<pubDate>Mon, 10 Feb 2020 17:03:38 GMT</pubDate>"
-            b'<enclosure url="episode.mp3" type="audio/mpeg"/>'
-            b"</item></channel></rss>"
+            b"<?xml version='1.0'?><feed xmlns='http://www.w3.org/2005/Atom'>"
+            b"<id>urn:feed:test</id><title>Content location feed</title>"
+            b"<updated>2020-02-10T17:03:38Z</updated>"
+            b"<entry><id>urn:episode:1</id><title>Episode</title>"
+            b"<updated>2020-02-10T17:03:38Z</updated>"
+            b'<link rel="enclosure" href="episode.mp3" type="audio/mpeg"/>'
+            b"</entry></feed>"
         )
         response = Response(
             xml,
