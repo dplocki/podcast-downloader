@@ -2,10 +2,13 @@ import io
 import tempfile
 import time
 import unittest
+import urllib.request
 from pathlib import Path
 from unittest.mock import patch
 
 from podcast_downloader.rss import (
+    RSSRedirectError,
+    _SameOriginRedirectHandler,
     FEED_TIMEOUT_SECONDS,
     flatten_rss_links_data,
     get_feed_title_from_feed,
@@ -211,13 +214,14 @@ class RssResilienceTest(unittest.TestCase):
         headers = {"User-Agent": "custom-agent", "Authorization": "Bearer test"}
 
         with patch(
-            "podcast_downloader.rss.urllib.request.urlopen",
+            "podcast_downloader.rss._open_feed_request",
             return_value=Response(xml),
         ) as urlopen:
             feed = load_feed("https://example.com/feed.xml", headers)
 
         self.assertEqual("Test", feed.feed.title)
-        self.assertEqual(FEED_TIMEOUT_SECONDS, urlopen.call_args.kwargs["timeout"])
+        self.assertEqual(FEED_TIMEOUT_SECONDS, urlopen.call_args.args[1])
+        self.assertEqual(("https", "example.com", 443), urlopen.call_args.args[2])
         request = urlopen.call_args.args[0]
         self.assertEqual("custom-agent", request.get_header("User-agent"))
         self.assertEqual("Bearer test", request.get_header("Authorization"))
@@ -229,7 +233,7 @@ class RssResilienceTest(unittest.TestCase):
         )
 
         with patch(
-            "podcast_downloader.rss.urllib.request.urlopen",
+            "podcast_downloader.rss._open_feed_request",
             return_value=Response(xml),
         ) as urlopen:
             feed = load_feed("https://example.com/feed.xml", {})
@@ -254,7 +258,7 @@ class RssResilienceTest(unittest.TestCase):
             headers={"Content-Type": "application/atom+xml"},
         )
         with patch(
-            "podcast_downloader.rss.urllib.request.urlopen",
+            "podcast_downloader.rss._open_feed_request",
             return_value=response,
         ):
             feed = load_feed("https://example.org/redirect.xml")
@@ -279,7 +283,7 @@ class RssResilienceTest(unittest.TestCase):
             headers={"Content-Location": "https://cdn.example.org/podcasts/feed.xml"},
         )
         with patch(
-            "podcast_downloader.rss.urllib.request.urlopen",
+            "podcast_downloader.rss._open_feed_request",
             return_value=response,
         ):
             feed = load_feed("https://example.org/feed.xml")
@@ -304,7 +308,7 @@ class RssResilienceTest(unittest.TestCase):
 
     def test_feed_network_error_becomes_bozo_feed(self):
         with patch(
-            "podcast_downloader.rss.urllib.request.urlopen",
+            "podcast_downloader.rss._open_feed_request",
             side_effect=TimeoutError("timeout"),
         ):
             feed = load_feed("https://example.com/feed.xml")
@@ -312,6 +316,42 @@ class RssResilienceTest(unittest.TestCase):
         self.assertTrue(feed.bozo)
         self.assertEqual([], feed.entries)
         self.assertIsInstance(feed.bozo_exception, TimeoutError)
+
+    def test_cross_origin_redirect_is_rejected_before_auth_can_follow(self):
+        request = urllib.request.Request(
+            "https://example.com/rss.xml",
+            headers={"Authorization": "Bearer feed-secret"},
+        )
+        redirect_handler = _SameOriginRedirectHandler(
+            ("https", "example.com", 443)
+        )
+        for target in (
+            "https://other.example.com/feed.xml",
+            "http://example.com/rss.xml",
+            "http://127.0.0.1/internal",
+            "https://example.com:444/rss.xml",
+        ):
+            with self.subTest(target=target):
+                with self.assertRaises(RSSRedirectError):
+                    redirect_handler.redirect_request(
+                        request, None, 302, "Found", {}, target
+                    )
+
+    def test_same_origin_feed_redirect_keeps_auth(self):
+        request = urllib.request.Request(
+            "https://example.com/rss.xml",
+            headers={"Authorization": "Bearer feed-secret"},
+        )
+        redirect_handler = _SameOriginRedirectHandler(
+            ("https", "example.com", 443)
+        )
+        redirected = redirect_handler.redirect_request(
+            request, None, 302, "Found", {},
+            "https://example.com:443/moved.xml",
+        )
+        self.assertEqual(
+            "Bearer feed-secret", redirected.get_header("Authorization")
+        )
 
 
 if __name__ == "__main__":
