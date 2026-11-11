@@ -91,6 +91,45 @@ def limit_file_name(maximum_length: int, file_name: str) -> str:
     )
 
 
+class RSSRedirectError(RuntimeError):
+    """A feed redirect attempted to change the trusted origin."""
+
+
+def _http_origin(url: str):
+    try:
+        parts = urlsplit(url)
+        if (
+            parts.scheme.lower() not in ("http", "https")
+            or not parts.hostname
+            or parts.username is not None
+            or parts.password is not None
+        ):
+            return None
+        port = parts.port or (443 if parts.scheme.lower() == "https" else 80)
+        if not 1 <= port <= 65535:
+            return None
+    except ValueError:
+        return None
+    return parts.scheme.lower(), parts.hostname.lower().rstrip("."), port
+
+
+class _SameOriginRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def __init__(self, allowed_origin):
+        self.allowed_origin = allowed_origin
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if _http_origin(newurl) != self.allowed_origin:
+            raise RSSRedirectError(
+                "Blocked RSS feed redirect to a different origin"
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _open_feed_request(request, timeout, allowed_origin):
+    opener = urllib.request.build_opener(_SameOriginRedirectHandler(allowed_origin))
+    return opener.open(request, timeout=timeout)
+
+
 def load_feed(
     rss_link: str, headers: Optional[Dict[str, str]] = None
 ) -> feedparser.FeedParserDict:
@@ -102,16 +141,25 @@ def load_feed(
     )
 
     try:
+        allowed_origin = _http_origin(rss_link)
+        if allowed_origin is None:
+            raise RSSRedirectError("Unsupported or malformed RSS URL")
         request = urllib.request.Request(rss_link, headers=request_headers)
-        with urllib.request.urlopen(request, timeout=FEED_TIMEOUT_SECONDS) as response:
+        with _open_feed_request(request, FEED_TIMEOUT_SECONDS, allowed_origin) as response:
+            final_url = (
+                response.geturl() if hasattr(response, "geturl") else None
+            ) or rss_link
+            if _http_origin(final_url) != allowed_origin:
+                raise RSSRedirectError(
+                    "Blocked RSS feed response from a different origin"
+                )
             response_headers = {
                 key.lower(): value
                 for key, value in getattr(response, "headers", {}).items()
             }
             response_headers.setdefault(
                 "content-location",
-                (response.geturl() if hasattr(response, "geturl") else None)
-                or rss_link,
+                final_url,
             )
             return feedparser.parse(response, response_headers=response_headers)
     except Exception as error:
