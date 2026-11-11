@@ -51,3 +51,62 @@ def test_explicit_empty_podcast_headers_do_not_inherit_global_headers(
 
     assert feed_requests
     assert all(request.headers.get(global_header_name) is None for request in feed_requests)
+
+
+def test_rss_redirect_to_other_origin_does_not_expose_authorization(
+    httpserver: HTTPServer,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: PodcastDownloaderRunner,
+    podcast_directory: PodcastDirectory,
+):
+    source_url = httpserver.url_for("/rss.xml")
+    httpserver.expect_request("/rss.xml").respond_with_data(
+        "redirect",
+        status=302,
+        headers={"Location": "http://127.0.0.1:9/private-feed"},
+    )
+    use_config(
+        {
+            "http_headers": {"Authorization": "Bearer do-not-leak"},
+            "podcasts": [{
+                "rss_link": source_url,
+                "path": podcast_directory.path(),
+            }],
+        }
+    )
+
+    result = podcast_downloader.run()
+    assert result.is_containing("Blocked RSS feed redirect")
+    paths = [request.path for request, _ in httpserver.log]
+    assert paths == ["/rss.xml"]
+
+
+def test_rss_redirect_within_origin_preserves_authentication(
+    httpserver: HTTPServer,
+    use_config: Callable[[Dict], None],
+    podcast_downloader: PodcastDownloaderRunner,
+    podcast_directory: PodcastDirectory,
+):
+    source_url = httpserver.url_for("/rss.xml")
+    httpserver.expect_request("/rss.xml").respond_with_data(
+        "redirect", status=302, headers={"Location": "/final.xml"}
+    )
+    httpserver.expect_request("/final.xml").respond_with_data(
+        "<?xml version='1.0'?><rss version='2.0'><channel>"
+        "<title>Safe redirected feed</title></channel></rss>",
+        content_type="application/rss+xml",
+    )
+    use_config(
+        {
+            "http_headers": {"Authorization": "Bearer do-not-leak"},
+            "podcasts": [{
+                "rss_link": source_url,
+                "path": podcast_directory.path(),
+            }],
+        }
+    )
+
+    podcast_downloader.run()
+    requests = [request for request, _ in httpserver.log]
+    assert [request.path for request in requests] == ["/rss.xml", "/final.xml"]
+    assert requests[-1].headers.get("Authorization") == "Bearer do-not-leak"
