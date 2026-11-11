@@ -14,6 +14,14 @@ from podcast_downloader.rss import (
 
 
 class Response(io.BytesIO):
+    def __init__(self, data, url=None, headers=None):
+        super().__init__(data)
+        self._url = url
+        self.headers = headers or {}
+
+    def geturl(self):
+        return self._url
+
     def __enter__(self):
         return self
 
@@ -229,6 +237,53 @@ class RssResilienceTest(unittest.TestCase):
         self.assertEqual("Test", feed.feed.title)
         request = urlopen.call_args.args[0]
         self.assertIsNone(request.get_header("User-agent"))
+
+    def test_relative_enclosure_uses_redirected_feed_url(self):
+        xml = (
+            b"<?xml version='1.0'?><rss version='2.0'><channel>"
+            b"<title>Redirected feed</title><item><title>Episode</title>"
+            b"<pubDate>Mon, 10 Feb 2020 17:03:38 GMT</pubDate>"
+            b'<enclosure url="../media/episode.mp3" type="audio/mpeg"/>'
+            b"</item></channel></rss>"
+        )
+        response = Response(
+            xml,
+            url="https://example.org/podcasts/feed.xml",
+            headers={"Content-Type": "application/rss+xml"},
+        )
+        with patch(
+            "podcast_downloader.rss.urllib.request.urlopen",
+            return_value=response,
+        ):
+            feed = load_feed("https://example.org/redirect.xml")
+
+        self.assertEqual(
+            "https://example.org/media/episode.mp3", feed.entries[0].links[0].href
+        )
+
+    def test_content_location_overrides_response_url(self):
+        xml = (
+            b"<?xml version='1.0'?><rss version='2.0'><channel>"
+            b"<title>Content location feed</title><item><title>Episode</title>"
+            b"<pubDate>Mon, 10 Feb 2020 17:03:38 GMT</pubDate>"
+            b'<enclosure url="episode.mp3" type="audio/mpeg"/>'
+            b"</item></channel></rss>"
+        )
+        response = Response(
+            xml,
+            url="https://example.org/redirected/feed.xml",
+            headers={"Content-Location": "https://cdn.example.org/podcasts/feed.xml"},
+        )
+        with patch(
+            "podcast_downloader.rss.urllib.request.urlopen",
+            return_value=response,
+        ):
+            feed = load_feed("https://example.org/feed.xml")
+
+        self.assertEqual(
+            "https://cdn.example.org/podcasts/episode.mp3",
+            feed.entries[0].links[0].href,
+        )
 
     def test_local_feed_path_remains_supported(self):
         xml = (
