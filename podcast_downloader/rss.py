@@ -140,7 +140,7 @@ def load_feed(
 
         visited_links.add(next_link)
         next_feed = feedparser.parse(next_link)
-        if next_feed.bozo and not next_feed.entries:
+        if next_feed.get("bozo", False) and not next_feed.entries:
             raise RSSPaginationError(
                 "Could not load RSS pagination page %s: %s"
                 % (next_link, next_feed.get("bozo_exception", "invalid feed"))
