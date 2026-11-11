@@ -118,6 +118,7 @@ command line parameters > configuration file > default values
 | `http_headers`       | key-value  | no        | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 | `fill_up_gaps`       | boolean    | no        | false                                  | See [Download files from gaps](#download-files-from-gaps) |
 | `download_delay`     | number     | no        | `0`                                    | See [Download delay](#download-delay) |
+| `max_rss_pages`      | integer    | no        | `1000`                                 | See [RSS pagination](#rss-pagination) |
 
 ### Podcasts sub category
 
@@ -135,6 +136,7 @@ The `podcasts` segment is the part of configuration file where you provide the a
 | `require_date`       | boolean    | no       | `false`                                | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
 | `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 | `fill_up_gaps`       | boolean    | no       | false                                  | See [Download files from gaps](#download-files-from-gaps) |
+| `max_rss_pages`      | integer    | no       | inherits global `1000`                 | See [RSS pagination](#rss-pagination) |
 
 ### HTTP request headers
 
@@ -176,6 +178,39 @@ Example:
 ```
 
 In this example, the Unua Podcast will be download just with the header: `User-Agent: Mozilla/5.0`, and the Dua Podcast with: `User-Agent: podcast-downloader` and `Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
+
+### RSS pagination
+
+Some podcast feeds provide older episodes on subsequent RSS pages using an Atom
+`<link rel="next">`. The downloader follows these links and combines entries
+before applying the normal episode filters.
+
+`max_rss_pages` is the maximum number of RSS pages to load **per podcast**,
+including the first page. It defaults to **1000** (not 50), and accepts any
+positive integer. You can override it globally or for an individual podcast:
+
+```json
+{
+  "max_rss_pages": 1000,
+  "podcasts": [
+    {
+      "rss_link": "https://example.com/podcast/feed.xml",
+      "path": "~/podcasts/example",
+      "max_rss_pages": 5000
+    }
+  ]
+}
+```
+
+A 56-page feed is fully processed with the default setting. If a feed has
+more pages than the configured limit, the downloader logs an **error and
+skips that podcast for the current run** instead of treating incomplete
+history as a complete feed. Increase the limit for that podcast and rerun.
+Previously downloaded episodes are not deleted. Pagination also stops on
+repeated URLs and rejects non-HTTP(S) next links.
+
+Very large limits increase network requests, memory usage and run time.
+Choose a limit that fits the feed rather than disabling safeguards.
 
 ### Download delay
 
