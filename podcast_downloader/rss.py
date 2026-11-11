@@ -11,7 +11,15 @@ from urllib.parse import urljoin, urlsplit, unquote
 
 
 FILE_NAME_CHARACTER_LIMIT = 255
-MAX_RSS_PAGES = 50
+DEFAULT_MAX_RSS_PAGES = 1000
+
+
+class RSSPaginationError(RuntimeError):
+    """An RSS pagination run could not be completed safely."""
+
+
+class RSSPaginationLimitExceeded(RSSPaginationError):
+    """The configured RSS page limit was reached before pagination ended."""
 
 
 @dataclass
@@ -99,13 +107,18 @@ def get_next_feed_link(feed: feedparser.FeedParserDict) -> Optional[str]:
     return None
 
 
-def load_feed(rss_link: str) -> feedparser.FeedParserDict:
+def load_feed(
+    rss_link: str, max_pages: int = DEFAULT_MAX_RSS_PAGES
+) -> feedparser.FeedParserDict:
+    if type(max_pages) is not int or max_pages < 1:
+        raise ValueError("max_rss_pages must be a positive integer")
+
     feed = feedparser.parse(rss_link)
     current_feed = feed
     current_link = rss_link
     visited_links = {rss_link}
 
-    for _ in range(MAX_RSS_PAGES - 1):
+    while True:
         next_link = get_next_feed_link(current_feed)
         if not next_link:
             break
@@ -119,20 +132,25 @@ def load_feed(rss_link: str) -> feedparser.FeedParserDict:
         if next_link in visited_links:
             break
 
-        visited_links.add(next_link)
-        current_feed = feedparser.parse(next_link)
-        feed.entries.extend(current_feed.entries)
-        current_link = next_link
-    else:
-        if get_next_feed_link(current_feed):
-            logging.getLogger(__name__).warning(
-                "RSS pagination stopped after %d pages for %s",
-                MAX_RSS_PAGES,
-                rss_link,
+        if len(visited_links) >= max_pages:
+            raise RSSPaginationLimitExceeded(
+                "RSS pagination for %s exceeded max_rss_pages=%d; "
+                "increase the limit to load the complete feed" % (rss_link, max_pages)
             )
 
-    return feed
+        visited_links.add(next_link)
+        next_feed = feedparser.parse(next_link)
+        if next_feed.bozo and not next_feed.entries:
+            raise RSSPaginationError(
+                "Could not load RSS pagination page %s: %s"
+                % (next_link, next_feed.get("bozo_exception", "invalid feed"))
+            )
 
+        feed.entries.extend(next_feed.entries)
+        current_feed = next_feed
+        current_link = next_link
+
+    return feed
 
 def get_feed_title_from_feed(feedParser: feedparser.FeedParserDict) -> str:
     return feedParser.feed.title
