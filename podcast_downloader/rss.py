@@ -104,7 +104,16 @@ def load_feed(
     try:
         request = urllib.request.Request(rss_link, headers=request_headers)
         with urllib.request.urlopen(request, timeout=FEED_TIMEOUT_SECONDS) as response:
-            return feedparser.parse(response)
+            response_headers = {
+                key.lower(): value
+                for key, value in getattr(response, "headers", {}).items()
+            }
+            response_headers.setdefault(
+                "content-location",
+                (response.geturl() if hasattr(response, "geturl") else None)
+                or rss_link,
+            )
+            return feedparser.parse(response, response_headers=response_headers)
     except Exception as error:
         return feedparser.FeedParserDict(
             feed=feedparser.FeedParserDict(),
