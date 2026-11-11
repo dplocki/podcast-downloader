@@ -109,6 +109,9 @@ def get_raw_rss_entries_from_feed(
 def flatten_rss_links_data(
     source: Generator[feedparser.FeedParserDict, None, None]
 ) -> Generator[RSSEntity, None, None]:
+    # Entries without a published date cannot be ordered or filtered by date
+    # (is_entity_newer needs published_date), so skip them instead of crashing
+    # with AttributeError on the missing 'published_parsed' attribute.
     return (
         RSSEntity(
             rss_entry.published_parsed,
@@ -117,6 +120,7 @@ def flatten_rss_links_data(
             link.get("href", None),
         )
         for rss_entry in source
+        if hasattr(rss_entry, "published_parsed")
         for link in rss_entry.links
     )
 
