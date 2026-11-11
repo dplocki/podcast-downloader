@@ -1,3 +1,4 @@
+import logging
 import re
 import time
 from dataclasses import dataclass
@@ -10,6 +11,7 @@ from urllib.parse import urljoin, urlsplit, unquote
 
 
 FILE_NAME_CHARACTER_LIMIT = 255
+MAX_RSS_PAGES = 50
 
 
 @dataclass
@@ -103,12 +105,17 @@ def load_feed(rss_link: str) -> feedparser.FeedParserDict:
     current_link = rss_link
     visited_links = {rss_link}
 
-    while True:
+    for _ in range(MAX_RSS_PAGES - 1):
         next_link = get_next_feed_link(current_feed)
         if not next_link:
             break
 
         next_link = urljoin(current_feed.get("href", current_link), next_link)
+        if urlsplit(next_link).scheme.lower() not in ("http", "https"):
+            logging.getLogger(__name__).warning(
+                "Ignoring non-HTTP RSS pagination link: %s", next_link
+            )
+            break
         if next_link in visited_links:
             break
 
@@ -116,6 +123,13 @@ def load_feed(rss_link: str) -> feedparser.FeedParserDict:
         current_feed = feedparser.parse(next_link)
         feed.entries.extend(current_feed.entries)
         current_link = next_link
+    else:
+        if get_next_feed_link(current_feed):
+            logging.getLogger(__name__).warning(
+                "RSS pagination stopped after %d pages for %s",
+                MAX_RSS_PAGES,
+                rss_link,
+            )
 
     return feed
 
