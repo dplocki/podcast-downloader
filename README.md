@@ -118,6 +118,7 @@ command line parameters > configuration file > default values
 | `http_headers`       | key-value  | no        | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 | `fill_up_gaps`       | boolean    | no        | false                                  | See [Download files from gaps](#download-files-from-gaps) |
 | `download_delay`     | number     | no        | `0`                                    | See [Download delay](#download-delay) |
+| `download_podcast_cover` | boolean | no | `false` | See [Podcast cover downloads](#podcast-cover-downloads) |
 
 ### Podcasts sub category
 
@@ -135,6 +136,7 @@ The `podcasts` segment is the part of configuration file where you provide the a
 | `require_date`       | boolean    | no       | `false`                                | **Deprecated** Is date of podcast should be added into name of file - use the `file_name_template`: `[%publish_date%] %file_name%.%file_extension%"` |
 | `http_headers`       | key-value  | no       | `{"User-Agent": "podcast-downloader"}` | See [HTTP request headers](#http-request-headers) |
 | `fill_up_gaps`       | boolean    | no       | false                                  | See [Download files from gaps](#download-files-from-gaps) |
+| `download_podcast_cover` | boolean | no | inherits global `false` | See [Podcast cover downloads](#podcast-cover-downloads) |
 
 ### HTTP request headers
 
@@ -176,6 +178,39 @@ Example:
 ```
 
 In this example, the Unua Podcast will be download just with the header: `User-Agent: Mozilla/5.0`, and the Dua Podcast with: `User-Agent: podcast-downloader` and `Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
+
+### Podcast cover downloads
+
+Set `download_podcast_cover` to `true` globally, or for an individual
+podcast, to save the RSS/iTunes channel artwork as `cover.jpg`, `cover.png`
+or another supported image format. The feature is **disabled by default**.
+If a cover already exists, it is not downloaded again.
+
+```json
+{
+  "download_podcast_cover": true,
+  "podcasts": [
+    {
+      "rss_link": "https://example.com/podcast/feed.xml",
+      "path": "~/podcasts/example"
+    }
+  ]
+}
+```
+
+Cover downloads use a **30-second network timeout** and have a maximum
+response size of **20 MiB**, checked both against `Content-Length`
+(where provided) and while streaming. The destination is only published
+after a complete, nonempty response has been written to a unique
+temporary file. Failed downloads do not leave a published cover.
+
+**Security:** configured podcast headers (including `Authorization` and
+`Cookie`) are sent to the cover server only if it has the **same origin**
+(scheme, hostname and effective port) as the configured RSS URL. External
+CDNs and cross-origin redirects receive only a generic User-Agent, not the
+RSS credentials. Covers requiring those same credentials on another domain
+will need separately scoped authentication support; this intentional
+restriction avoids leaking credentials via feed-supplied artwork URLs.
 
 ### Download delay
 
