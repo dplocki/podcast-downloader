@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import call, patch
 
-from podcast_downloader.rss import load_feed
+from podcast_downloader.rss import MAX_RSS_PAGES, load_feed
 
 
 class FakeFeed(dict):
@@ -55,6 +55,37 @@ class RssPaginationTest(unittest.TestCase):
 
         self.assertEqual(["first", "second"], feed.entries)
         self.assertEqual(2, parse.call_count)
+
+    @patch("podcast_downloader.rss.feedparser.parse")
+    def test_load_feed_rejects_file_protocol_pagination(self, parse):
+        first_page = FakeFeed(
+            ["first"],
+            [{"rel": "next", "href": "file:///etc/passwd"}],
+        )
+        parse.return_value = first_page
+
+        with self.assertLogs("podcast_downloader.rss", level="WARNING"):
+            feed = load_feed("https://example.com/feed.xml")
+
+        self.assertEqual(["first"], feed.entries)
+        parse.assert_called_once_with("https://example.com/feed.xml")
+
+    @patch("podcast_downloader.rss.feedparser.parse")
+    def test_load_feed_limits_pagination_to_fifty_pages(self, parse):
+        def make_feed(url):
+            return FakeFeed(
+                [url],
+                [{"rel": "next", "href": "?page=" + str(parse.call_count + 1)}],
+            )
+
+        parse.side_effect = make_feed
+
+        with self.assertLogs("podcast_downloader.rss", level="WARNING") as logs:
+            feed = load_feed("https://example.com/feed?page=1")
+
+        self.assertEqual(MAX_RSS_PAGES, parse.call_count)
+        self.assertEqual(MAX_RSS_PAGES, len(feed.entries))
+        self.assertTrue(any("pagination stopped" in line for line in logs.output))
 
     @patch("podcast_downloader.rss.feedparser.parse")
     def test_load_feed_ignores_links_that_are_not_next(self, parse):
